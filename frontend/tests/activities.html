@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hoạt động – CTXH DUT</title>
+<link rel="stylesheet" href="css.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+</head>
+<body>
+
+<!-- Navbar -->
+<header>
+  <div class="nav-container">
+    <a href="index1.html" class="logo">CTXHDUT</a>
+    <nav class="nav-link">
+      <a href="index1.html">Trang chủ</a>
+      <a href="activities.html" class="active">Hoạt động</a>
+      <a href="posts.html">Tin Tức</a>
+      <a href="member-profile.html">Thành Viên</a>
+    </nav>
+    <div class="nav-right" id="navActions">
+      <input type="text" placeholder="Tìm kiếm">
+      <button class="login" onclick="location.href='login.html'">Đăng Nhập</button>
+      <button class="signup" onclick="location.href='register.html'">Đăng Ký</button>
+    </div>
+  </div>
+</header>
+
+<div class="page-body">
+
+  <!-- Page Hero -->
+  <div class="page-hero">
+    <div class="container">
+      <div class="breadcrumb">
+        <a href="index.html">Trang chủ</a> › <span>Hoạt động</span>
+      </div>
+      <h1>Hoạt động <span>CLB</span></h1>
+      <p>Khám phá và đăng ký tham gia các hoạt động tình nguyện ý nghĩa</p>
+    </div>
+  </div>
+
+  <!-- Content -->
+  <div class="section">
+    <div class="container">
+
+      <!-- Filter -->
+      <div class="filter-bar">
+        <input id="searchAct" placeholder="🔍 Tìm kiếm hoạt động..." oninput="renderActivities()">
+        <select id="statusFilter" onchange="renderActivities()">
+          <option value="">Tất cả trạng thái</option>
+          <option value="Open">Đang mở</option>
+          <option value="Closed">Đã đóng</option>
+          <option value="Cancelled">Đã hủy</option>
+        </select>
+        <span id="countLabel" style="font-size:12px;color:#475569;margin-left:auto"></span>
+      </div>
+
+      <!-- Grid -->
+      <div class="grid grid-3" id="actGrid">
+        <div class="loading" style="grid-column:1/-1"><div class="spinner"></div></div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Detail Modal -->
+<div class="modal-overlay" id="detailModal">
+  <div class="modal" style="max-width:640px" id="detailBody"></div>
+</div>
+
+<!-- Footer -->
+<footer>
+  <div class="container">
+    <div class="footer-bottom" style="border:none;padding-top:0">
+      <span>© 2024 CLB Công Tác Xã Hội DUT</span>
+      <a href="index.html" style="color:#ff2d55">← Trang chủ</a>
+    </div>
+  </div>
+</footer>
+
+<script src ="api.js"></script>
+<script src="Activity.js"></script>
+</body>
+</html>

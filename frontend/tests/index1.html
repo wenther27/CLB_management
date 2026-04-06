@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CTXH DUT - Kết nối Cộng đồng</title>
+<link rel="stylesheet" href="css.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+</head>
+<body>
+
+<!-- Navbar -->
+<header>
+  <div class="nav-container">
+    <div class="logo">CTXHDUT</div>
+
+    <nav class="nav-link">
+      <a href="index1.html" class="active"> Trang chủ</a>
+      <a href="activities.html"> Hoạt động</a>
+      <a href="posts.html">Tin Tức</a>
+      <a href="member-profile.html">Thành Viên</a>
+    </nav>
+
+    <div class="nav-right" id="navActions">
+      <input type="text" placeholder="Tìm kiếm">
+      <button class="login" onclick="location.href='login.html'">Đăng Nhập</button>
+      <button class="signup" onclick="location.href='register.html'">Đăng Ký</button>
+    </div>
+  </div>
+</header>
+
+<!-- Hero -->
+<section class="hero">
+  <div class="hero-content">
+    <span class="tag">★ CLB Công tác xã hội DUT</span>
+
+    <h1>
+      Kết nối Cộng đồng,<br>
+      <span>Lan tỏa Yêu thương</span>
+    </h1>
+
+    <p>
+      Câu lạc bộ Công tác Xã hội DUT – nơi các bạn sinh viên cùng nhau tạo ra
+      những giá trị tích cực thông qua các hoạt động thiện nguyện đầy ý nghĩa.
+    </p>
+
+    <div class="hero-buttons">
+      <button class="btn-primary" onclick="location.href='register.html'">Tham gia ngay</button>
+      <button class="btn-outline" onclick="location.href='activities.html'">Xem hoạt động</button>
+    </div>
+  </div>
+</section>
+
+<!-- Features -->
+<div class="features">
+  <div class="container">
+    <div class="features-grid">
+      <div class="feat-card">
+        <div class="ico"><i class="fa-solid fa-heart fa-beat fa-sm" style="color: rgb(255, 0, 0);"></i></div>
+        <h4>Thiện nguyện</h4>
+        <p>Hỗ trợ các hoàn cảnh khó khăn, trao học bổng và quà tặng ý nghĩa</p>
+      </div>
+      <div class="feat-card">
+        <div class="ico"><i class="fa-solid fa-graduation-cap fa-beat" style="color: rgb(116, 192, 252);"></i></div>
+        <h4>Giảng dạy</h4>
+        <p>Dạy học miễn phí, hướng nghiệp cho học sinh vùng xa</p>
+      </div>
+      <div class="feat-card">
+        <div class="ico"><i class="fa-solid fa-seedling fa-bounce" style="color: rgb(99, 230, 190);"></i></div>
+        <h4>Môi trường</h4>
+        <p>Dọn vệ sinh, trồng cây xanh, bảo vệ môi trường Đà Nẵng</p>
+      </div>
+      <div class="feat-card">
+        <div class="ico"><i class="fa-solid fa-hand-holding-heart fa-beat" style="color: rgb(255, 255, 255);"></i></div>
+        <h4>Kết nối</h4>
+        <p>Gắn kết sinh viên, xây dựng cộng đồng DUT vững mạnh</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Hoạt động nổi bật -->
+<div class="section">
+  <div class="container">
+    <div class="section-header">
+      <div>
+        <div class="section-label"><i class="fa-solid fa-people-group fa-bounce fa-lg" style="color: rgb(239, 239, 239);"></i> Hoạt động nổi bật</div>
+        <div class="section-title">Đang mở <span>đăng ký</span></div>
+      </div>
+      <a href="activities.html" class="btn-outline" style="padding:8px 18px;font-size:13px">Xem tất cả →</a>
+    </div>
+    <div class="grid grid-3" id="homeActivities">
+      <div class="loading" style="grid-column:1/-1"><div class="spinner"></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- Tin tức -->
+<div style="background:#0d1424;border-top:1px solid rgba(255,255,255,0.05);border-bottom:1px solid rgba(255,255,255,0.05)">
+  <div class="section">
+    <div class="container">
+      <div class="section-header">
+        <div>
+          <div class="section-label"><i class="fa-solid fa-envelopes-bulk fa-bounce" style="color: rgb(239, 239, 239);"></i> Tin tức CLB</div>
+          <div class="section-title">Thông tin <span>mới nhất</span></div>
+        </div>
+        <a href="posts.html" class="btn-outline" style="padding:8px 18px;font-size:13px">Xem tất cả →</a>
+      </div>
+      <div class="grid grid-4" id="homePosts">
+        <div class="loading" style="grid-column:1/-1"><div class="spinner"></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CTA -->
+<div class="section">
+  <div class="container">
+    <div class="cta-section">
+      <h2>Sẵn sàng gia nhập CLB?</h2>
+      <p>Hãy cùng chúng tôi tạo nên những điều ý nghĩa. Đăng ký ngay hôm nay để tham gia cộng đồng hơn 200 thành viên tích cực.</p>
+      <div class="cta-buttons">
+        <button class="btn-primary" onclick="location.href='register.html'"><i class="fa-solid fa-heart-circle-plus" style="color: rgb(255, 255, 255);"></i> Đăng ký thành viên</button>
+        <button class="btn-outline" onclick="location.href='activities.html'">Khám phá hoạt động</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Footer -->
+<footer>
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <div class="name">CTXH<span>DUT</span></div>
+        <p>Câu lạc bộ Công tác Xã hội<br>Trường Đại học Bách Khoa Đà Nẵng<br>54 Nguyễn Lương Bằng, Đà Nẵng</p>
+      </div>
+      <div>
+        <h5>Liên kết</h5>
+        <ul>
+          <li><a href="index1.html">Trang chủ</a></li>
+          <li><a href="activities.html">Hoạt động</a></li>
+          <li><a href="posts.html">Tin tức</a></li>
+          <li><a href="register.html">Đăng ký thành viên</a></li>
+        </ul>
+      </div>
+      <div>
+        <h5>Liên hệ</h5>
+        <ul>
+          <li><a href="#"><i class="fa-regular fa-envelope" style="color: rgb(255, 255, 255);"></i> ctxh@dut.edu.vn</a></li>
+          <li><a href="#"><i class="fa-brands fa-facebook" style="color: rgb(255, 255, 255);"></i> Facebook</a></li>
+          <li><a href="#"><i class="fa-solid fa-earth-asia" style="color: rgb(255, 255, 255);"></i> dut.udn.vn</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2024 CLB Công Tác Xã Hội DUT</span>
+      <span>Made with ❤️ for the community</span>
+    </div>
+  </div>
+</footer>
+
+<!-- Modal đọc bài viết -->
+<div class="modal-overlay" id="postModal">
+  <div class="modal" style="max-width:640px" id="postModalBody"></div>
+</div>
+
+<script src="api.js"></script>
+<script>
+// Render activity cards
+function renderActCard(a) {
+  const pct = a.maxParticipants ? Math.min(100, Math.round(a.registeredCount / a.maxParticipants * 100)) : 0;
+  const emojis = ['🎯','🌟','🏠','📚','🌿','🤝','❤️','🎗️'];
+  const em = emojis[a.activityID % emojis.length];
+  return `
+  <div class="card">
+    <div class="card-thumb">${em}</div>
+    <div class="card-body">
+      ${Utils.statusLabel(a.status)}
+      <div class="card-title">${Utils.escapeHtml(a.activityName)}</div>
+      <div class="card-desc">${Utils.truncate(a.description || 'Không có mô tả', 100)}</div>
+      ${a.maxParticipants ? `
+        <div style="display:flex;justify-content:space-between;font-size:12px;color:#64748b;margin-bottom:6px">
+          <span><i class="fa-solid fa-user-group" style="color: rgb(249, 249, 249);"></i> ${a.registeredCount} / ${a.maxParticipants} người</span>
+          <span style="color:#ff2d55">${pct}%</span>
+        </div>
+        <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
+      ` : `<div style="font-size:12px;color:#64748b"><i class="fa-solid fa-user-group" style="color: rgb(249, 249, 249);"></i> ${a.registeredCount} người đăng ký</div>`}
+      <div class="card-meta" style="margin-top:10px">
+        <span><i class="fa-solid fa-clock" style="color: rgb(249, 249, 249);"></i> ${Utils.formatDateTime(a.time)}</span>
+        <span><i class="fa-solid fa-location-dot" style="color: rgb(248, 117, 117);"></i> ${Utils.escapeHtml(a.location || 'TBD')}</span>
+      </div>
+    </div>
+    <div class="card-footer">
+      <a href="activities.html" class="btn-outline" style="flex:1;padding:8px;font-size:13px;text-align:center">Chi tiết</a>
+      ${a.status === 'Open' && Auth.isLoggedIn()
+        ? `<button onclick="regActivity(${a.activityID}, this)" class="btn-primary" style="padding:8px 14px;font-size:13px">Đăng ký</button>`
+        : (!Auth.isLoggedIn() && a.status === 'Open'
+            ? `<button onclick="location.href='login.html'" class="btn-outline" style="padding:8px 14px;font-size:13px">Đăng nhập</button>` : '')}
+    </div>
+  </div>`;
+}
+
+// Render post cards
+function renderPostCard(p) {
+  const catCls = {'Tin tức':'badge-gold','Thông báo':'badge-blue','Hoạt động':'badge-open','Tuyển thành viên':'badge-red'};
+  const catIco = {'Tin tức':'📰','Thông báo':'📢','Hoạt động':'🎯','Tuyển thành viên':'🌟'};
+  return `
+  <div class="card" style="cursor:pointer" onclick="openPost(${p.postID})">
+    <div class="card-thumb" style="height:130px;font-size:2rem">${catIco[p.category] || '📰'}</div>
+    <div class="card-body">
+      <span class="badge ${catCls[p.category] || 'badge-gold'}">${Utils.escapeHtml(p.category)}</span>
+      ${p.title ? `<div class="card-title">${Utils.escapeHtml(p.title)}</div>` : ''}
+      <div class="card-desc">${Utils.truncate(p.content, 80)}</div>
+      <div class="card-meta">
+        <span>✍️ ${Utils.escapeHtml(p.authorName || 'BTC')}</span>
+        <span>📅 ${Utils.formatDate(p.createdDate)}</span>
+      </div>
+    </div>
+  </div>`;
+}
+
+async function regActivity(id, btn) {
+  if (!Auth.isLoggedIn()) { Toast.info('Vui lòng đăng nhập'); setTimeout(() => location.href = 'login.html', 700); return; }
+  btn.disabled = true; btn.textContent = '...';
+  try {
+    await API.register({ activityID: id });
+    Toast.success('Đăng ký thành công!');
+    btn.textContent = '✓ Đã đăng ký';
+    btn.className = 'btn-outline';
+    btn.style.cssText = 'padding:8px 14px;font-size:13px';
+  } catch(e) {
+    Toast.error(e.message);
+    btn.disabled = false; btn.textContent = 'Đăng ký';
+  }
+}
+
+async function openPost(id) {
+  const modal = document.getElementById('postModal');
+  const body = document.getElementById('postModalBody');
+  body.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+  modal.classList.add('open');
+  try {
+    const r = await API.getPost(id); const p = r.data;
+    const catCls = {'Tin tức':'badge-gold','Thông báo':'badge-blue','Hoạt động':'badge-open','Tuyển thành viên':'badge-red'};
+    body.innerHTML = `
+      <div class="modal-header">
+        <span class="badge ${catCls[p.category] || 'badge-gold'}">${Utils.escapeHtml(p.category)}</span>
+        <button class="modal-close" onclick="document.getElementById('postModal').classList.remove('open')">✕</button>
+      </div>
+      ${p.title ? `<div style="font-size:18px;font-weight:700;margin-bottom:12px">${Utils.escapeHtml(p.title)}</div>` : ''}
+      <div style="font-size:12px;color:#475569;margin-bottom:18px">
+        ✍️ ${Utils.escapeHtml(p.authorName || 'BTC')} &nbsp;·&nbsp; 📅 ${Utils.formatDateTime(p.createdDate)}
+      </div>
+      <div style="color:#94a3b8;line-height:1.85;white-space:pre-wrap;font-size:14px">${Utils.escapeHtml(p.content)}</div>`;
+  } catch(e) {
+    body.innerHTML = `<p style="color:#ff2d55;padding:20px">${e.message}</p>`;
+  }
+}
+
+document.getElementById('postModal').addEventListener('click', e => {
+  if (e.target === e.currentTarget) e.currentTarget.classList.remove('open');
+});
+
+// Load data
+async function loadHome() {
+  // Activities
+  try {
+    const r = await API.getActivities();
+    const list = (r.data?.items || []).slice(0, 3);
+    const el = document.getElementById('homeActivities');
+    if (!list.length) {
+      el.innerHTML = '<div class="empty" style="grid-column:1/-1"><div class="ico">🎯</div><p>Chưa có hoạt động nào đang mở</p></div>';
+    } else {
+      el.innerHTML = list.map(renderActCard).join('');
+    }
+  } catch(e) {
+    document.getElementById('homeActivities').innerHTML = `<div class="empty" style="grid-column:1/-1"><p>${e.message}</p></div>`;
+  }
+
+  // Posts
+  try {
+    const r = await API.getPosts();
+    const list = (r.data || []).slice(0, 4);
+    const el = document.getElementById('homePosts');
+    if (!list.length) {
+      el.innerHTML = '<div class="empty" style="grid-column:1/-1"><div class="ico">📰</div><p>Chưa có bài viết nào</p></div>';
+    } else {
+      el.innerHTML = list.map(renderPostCard).join('');
+    }
+  } catch {}
+}
+
+document.addEventListener('DOMContentLoaded', loadHome);
+
+</script>
+<script src="api.js"></script>
+</body>
+</html>
