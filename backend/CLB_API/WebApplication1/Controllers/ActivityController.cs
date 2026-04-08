@@ -19,19 +19,15 @@ namespace ClubManagement.API.Controllers
             _activityService = activityService;
         }
 
-        // ────────────────────────────────────────────────────────────────────
-        // Helper lấy UserID và Role từ JWT token
-        // ────────────────────────────────────────────────────────────────────
+       
         private int GetUserId() =>
             int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "0");
 
         private string GetUserRole() =>
             User.FindFirstValue(ClaimTypes.Role) ?? "Member";
-
-        // ────────────────────────────────────────────────────────────────────
         // GET /api/activities
         // Ai cũng xem được, có thể filter theo Status, Keyword, FromDate, ToDate
-        // ────────────────────────────────────────────────────────────────────
+     
         [HttpGet]
         [AllowAnonymous]
         public async Task<IActionResult> GetAll([FromQuery] ActivityQueryDTO query)
@@ -40,10 +36,9 @@ namespace ClubManagement.API.Controllers
             return Ok(ApiResponse<PagedResultDTO<ActivityDTO>>.Ok( result, "Lấy danh sách hoạt động thành công"));
         }
 
-        // ────────────────────────────────────────────────────────────────────
         // GET /api/activities/{id}
         // Ai cũng xem được
-        // ────────────────────────────────────────────────────────────────────
+  
         [HttpGet("{id:int}")]
         [AllowAnonymous]
         public async Task<IActionResult> GetById(int id)
@@ -55,10 +50,9 @@ namespace ClubManagement.API.Controllers
             return Ok(ApiResponse<ActivityDTO>.Ok(result, "Lấy thông tin hoạt động thành công"));
         }
 
-        // ────────────────────────────────────────────────────────────────────
         // POST /api/activities
         // Chỉ Admin hoặc ExecutiveBoard mới được tạo hoạt động
-        // ────────────────────────────────────────────────────────────────────
+     
         [HttpPost]
         [Authorize(Roles = "Admin,ExecutiveBoard")]
         public async Task<IActionResult> Create([FromBody] CreateActivityDTO dto)
@@ -74,10 +68,9 @@ namespace ClubManagement.API.Controllers
                 ApiResponse<ActivityDTO>.Ok(result, "Tạo hoạt động thành công"));
         }
 
-        // ────────────────────────────────────────────────────────────────────
         // PUT /api/activities/{id}
         // Admin hoặc người tạo hoạt động mới được sửa
-        // ────────────────────────────────────────────────────────────────────
+
         [HttpPut("{id:int}")]
         [Authorize(Roles = "Admin,ExecutiveBoard")]
         public async Task<IActionResult> Update(int id, [FromBody] UpdateActivityDTO dto)
@@ -85,17 +78,17 @@ namespace ClubManagement.API.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ApiResponse<string>.Fail("Dữ liệu không hợp lệ"));
 
-            var result = await _activityService.UpdateAsyns(id, dto, GetUserId(), GetUserRole());
+            var result = await _activityService.UpdateAsync(id, dto, GetUserId(), GetUserRole());
             if (result == null)
                 return NotFound(ApiResponse<string>.Fail("Không tìm thấy hoạt động hoặc không có quyền sửa"));
 
             return Ok(ApiResponse<ActivityDTO>.Ok(result, "Cập nhật hoạt động thành công"));
         }
 
-        // ────────────────────────────────────────────────────────────────────
+     
         // PATCH /api/activities/{id}/cancel
         // Admin hoặc người tạo có thể hủy hoạt động (không xóa, chỉ đổi status)
-        // ────────────────────────────────────────────────────────────────────
+
         [HttpPatch("{id:int}/cancel")]
         [Authorize(Roles = "Admin,ExecutiveBoard")]
         public async Task<IActionResult> Cancel(int id)
@@ -107,12 +100,11 @@ namespace ClubManagement.API.Controllers
             return Ok(ApiResponse<string>.Ok("Cancelled", "Hủy hoạt động thành công"));
         }
 
-        // ────────────────────────────────────────────────────────────────────
         // DELETE /api/activities/{id}
         // Chỉ Admin mới được xóa hoàn toàn
-        // ────────────────────────────────────────────────────────────────────
+
         [HttpDelete("{id:int}")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin, ExecutiveBoard")]
         public async Task<IActionResult> Delete(int id)
         {
             var success = await _activityService.DeleteAsync(id, GetUserId(), GetUserRole());
@@ -122,14 +114,10 @@ namespace ClubManagement.API.Controllers
             return Ok(ApiResponse<string>.Ok("Deleted", "Xóa hoạt động thành công"));
         }
 
-        // ════════════════════════════════════════════════════════════════════
+      
         //  ĐĂNG KÝ THAM GIA
-        // ════════════════════════════════════════════════════════════════════
-
-        // ────────────────────────────────────────────────────────────────────
         // POST /api/activities/{id}/register
         // Thành viên đăng ký tham gia hoạt động
-        // ────────────────────────────────────────────────────────────────────
         [HttpPost("{id:int}/register")]
         [Authorize(Roles = "Member,ExecutiveBoard,Admin")]
         public async Task<IActionResult> Register(int id)
@@ -142,10 +130,8 @@ namespace ClubManagement.API.Controllers
             return Ok(ApiResponse<RegistrationResponseDTO>.Ok(result, "Đăng ký tham gia thành công"));
         }
 
-        // ────────────────────────────────────────────────────────────────────
         // DELETE /api/activities/{id}/register
         // Thành viên hủy đăng ký tham gia
-        // ────────────────────────────────────────────────────────────────────
         [HttpDelete("{id:int}/register")]
         [Authorize(Roles = "Member,ExecutiveBoard,Admin")]
         public async Task<IActionResult> CancelRegistration(int id)
@@ -157,10 +143,9 @@ namespace ClubManagement.API.Controllers
             return Ok(ApiResponse<string>.Ok("Cancelled", "Hủy đăng ký thành công"));
         }
 
-        // ────────────────────────────────────────────────────────────────────
+      
         // GET /api/activities/{id}/registrations
         // Admin/Board xem danh sách người đăng ký của một hoạt động
-        // ────────────────────────────────────────────────────────────────────
         [HttpGet("{id:int}/registrations")]
         [Authorize(Roles = "Admin,ExecutiveBoard")]
         public async Task<IActionResult> GetRegistrations(
@@ -170,11 +155,8 @@ namespace ClubManagement.API.Controllers
             return Ok(ApiResponse<PagedResultDTO<RegistrationResponseDTO>>.Ok(
                 result, "Lấy danh sách đăng ký thành công"));
         }
-
-        // ────────────────────────────────────────────────────────────────────
         // GET /api/activities/my-registrations
         // Thành viên xem lịch sử hoạt động của bản thân
-        // ────────────────────────────────────────────────────────────────────
         [HttpGet("my-registrations")]
         [Authorize]
         public async Task<IActionResult> GetMyRegistrations(

@@ -59,7 +59,7 @@ const del = (path) => request('DELETE', path, null, true);
 const API = {
   // Auth
   login: (data) => post('/auth/login', data),
-  register: (data) => post('/auth/register', data),
+  registerUser: (data) => post('/auth/register', data),
 
   // Users
   getUsers: (params = '') => request('GET', `/users${params}`, null, true),
@@ -82,12 +82,14 @@ const API = {
   createActivity: (data) => post('/activities', data),
   updateActivity: (id, data) => put(`/activities/${id}`, data),
   deleteActivity: (id) => del(`/activities/${id}`),
-  getActivityRegistrations: (id) => request('GET', `/activities/${id}/registrations`, null, true),
 
   // Registrations
-  getMyRegistrations: () => request('GET', '/registrations/my', null, true),
-  register: (data) => post('/registrations', data),
-  cancelRegistration: (id) => del(`/registrations/${id}`),
+  register: (activityId) => post(`/activities/${activityId}/register`, null),
+  cancelRegistration: (activityId) => del(`/activities/${activityId}/register`),
+  getActivityRegistrations: (activityId, page = 1, pageSize = 20) => 
+    get(`/activities/${activityId}/registrations?page=${page}&pageSize=${pageSize}`),
+  getMyRegistrations: (page = 1, pageSize = 10) => 
+    get(`/activities/my-registrations?page=${page}&pageSize=${pageSize}`),
 
   // Posts
   getPosts: (params = '') => get(`/posts${params}`),
@@ -100,6 +102,25 @@ const API = {
   getNotifications: () => request('GET', '/notifications', null, true),
   sendNotification: (data) => post('/notifications', data),
   markRead: (id) => put(`/notifications/${id}/read`, {}),
+  uploadImage: async (file) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    
+    const token = Auth.getToken();
+    const res = await fetch(`${API_BASE}/upload/image`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` },
+        body: formData
+    });
+    
+    if (!res.ok) {
+        const error = await res.text();
+        throw new Error(error);
+    }
+    
+    const data = await res.json();
+    return data;
+}
 };
 
 // ---- Toast Notifications ----
@@ -187,6 +208,7 @@ function updateNavbar() {
       <a href="register.html" class="btn btn-primary btn-sm">Đăng ký</a>
     `;
   }
+  
 }
 
 function logout() {
@@ -195,5 +217,4 @@ function logout() {
   setTimeout(() => window.location.href = 'index1.html', 800);
 }
 
-// Auto update navbar
 document.addEventListener('DOMContentLoaded', updateNavbar);

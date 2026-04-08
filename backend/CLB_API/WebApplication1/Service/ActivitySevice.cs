@@ -10,16 +10,16 @@ namespace ClubManagement.API.Service
         Task<PagedResultDTO<ActivityDTO>> GetAllAsync(ActivityQueryDTO query);
         Task<ActivityDTO?> GetByIdAsync(int id);
         Task<ActivityDTO?> CreateAsync(CreateActivityDTO dto, int creatorUserId);
-        Task<ActivityDTO?> UpdateAsyns(int id , UpdateActivityDTO dto , int requestUserId , string requestUserRole );
+        Task<ActivityDTO?> UpdateAsync(int id, UpdateActivityDTO dto, int requestUserId, string requestUserRole);
         Task<bool> DeleteAsync(int id, int requestUserId, string requestUserRole);
-        Task<bool> CancelAsync (int id , int requestUserId , string requestUserRole );
+        Task<bool> CancelAsync(int id, int requestUserId, string requestUserRole);
 
         // Dang ky // Huy dang ky
-        Task<RegistrationResponseDTO?> RegisterAsync (int activityId , int userId);
-        Task<bool> CancelRegistrationAsync (int activityId , int userId);
-        Task <PagedResultDTO<RegistrationResponseDTO>> GetRegistrationsAsync (int activityId , int page ,  int pageSize);
-        Task <PagedResultDTO<RegistrationResponseDTO>> GetMyRegistrationsAsync (int userId , int page , int pageSize);
-       
+        Task<RegistrationResponseDTO?> RegisterAsync(int activityId, int userId);
+        Task<bool> CancelRegistrationAsync(int activityId, int userId);
+        Task<PagedResultDTO<RegistrationResponseDTO>> GetRegistrationsAsync(int activityId, int page, int pageSize);
+        Task<PagedResultDTO<RegistrationResponseDTO>> GetMyRegistrationsAsync(int userId, int page, int pageSize);
+
     }
     public class ActivityService : IActivityService
     {
@@ -32,22 +32,22 @@ namespace ClubManagement.API.Service
         public async Task<PagedResultDTO<ActivityDTO>> GetAllAsync(ActivityQueryDTO query)
         {
             var q = _context.Activities
-                .Include(a => a.Creator )
+                .Include(a => a.Creator)
                 .Include(a => a.Registrations)
                 .Include(a => a.ActivityImages)
                 .AsQueryable();
-            if(!string.IsNullOrWhiteSpace(query.status))
+            if (!string.IsNullOrWhiteSpace(query.status))
             {
                 q = q.Where(a => a.Status == query.status);
             }
-            if (!string.IsNullOrWhiteSpace(query.status))
+            if (!string.IsNullOrWhiteSpace(query.Keyword))
             {
                 q = q.Where(a => a.ActivityName.Contains(query.Keyword) || (a.Description != null && a.Description.Contains(query.Keyword)));
             }
-            if(query.FromDate.HasValue)
-                    q = q.Where(a => a.time >= query.FromDate.Value);
             if (query.FromDate.HasValue)
-                    q = q.Where(a => a.time <= query.ToDate.Value);
+                q = q.Where(a => a.time >= query.FromDate.Value);
+            if (query.ToDate.HasValue)
+                q = q.Where(a => a.time <= query.ToDate.Value);
             var total = await q.CountAsync();
 
             var items = await q
@@ -67,18 +67,18 @@ namespace ClubManagement.API.Service
         }
         // Lay chi tiet mot hoat dong
 
-        public async Task<ActivityDTO ?> GetByIdAsync(int id)
-            {
-                var activity = await _context.Activities
-                    .Include(a => a.Creator)
-                    .Include(a => a.Registrations)
-                    .Include(a => a.ActivityImages)
-                    .FirstOrDefaultAsync(a => a.ActivityID == id);
-               return activity == null ? null : MapToDTO(activity);
+        public async Task<ActivityDTO?> GetByIdAsync(int id)
+        {
+            var activity = await _context.Activities
+                .Include(a => a.Creator)
+                .Include(a => a.Registrations)
+                .Include(a => a.ActivityImages)
+                .FirstOrDefaultAsync(a => a.ActivityID == id);
+            return activity == null ? null : MapToDTO(activity);
         }
 
         // Lay hoat dong moi
-        public async Task <ActivityDTO?> CreateAsync (CreateActivityDTO dto, int creatorUserId)
+        public async Task<ActivityDTO?> CreateAsync(CreateActivityDTO dto, int creatorUserId)
         {
             var activity = new ClubActivity
             {
@@ -92,7 +92,11 @@ namespace ClubManagement.API.Service
                 CreateAt = DateTime.UtcNow,
                 Registrations = new List<Registrations>(),
                 ExecutiveBoards = new List<ExecutiveBoard>(),
-                ActivityImages = new List<ActivityImage>()
+                ActivityImages = dto.ImageUrls?.Select(url => new ActivityImage
+                {
+                    ImageUrl = url
+                }).ToList() ?? new List<ActivityImage>()
+
 
             };
             _context.Activities.Add(activity);
@@ -102,44 +106,53 @@ namespace ClubManagement.API.Service
         }
 
         // Cap nhat hoat dong
-        public async Task <ActivityDTO?> UpdateAsyns (int id, UpdateActivityDTO dto , int requestUserId , string requestUserRole)
+        public async Task<ActivityDTO?> UpdateAsync(int id, UpdateActivityDTO dto, int requestUserId, string requestUserRole)
         {
             var activity = await _context.Activities
                 .Include(a => a.Creator)
                 .Include(a => a.Registrations)
                 .Include(a => a.ActivityImages)
                 .FirstOrDefaultAsync(a => a.ActivityID == id);
-            if (activity == null ) return null;
-            if ( requestUserRole != "Admin" && requestUserRole != "ExecutiveBoard" && activity.CreateBy != requestUserId)
+            if (activity == null) return null;
+            if (requestUserRole != "Admin" && requestUserRole != "ExecutiveBoard" && activity.CreateBy != requestUserId)
             {
                 return null;
             }
             if (dto.ActivityName != null) activity.ActivityName = dto.ActivityName;
             if (dto.Description != null) activity.Description = dto.Description;
             if (dto.Location != null) activity.Location = dto.Location;
-            if(dto.Status != null) activity.Status = dto.Status;
-            if(dto.Time.HasValue) activity.time = dto.Time.Value;
-            if(dto.MaxParticipans.HasValue) activity.MaxParticipants = dto.MaxParticipans;
+            if (dto.Status != null) activity.Status = dto.Status;
+            if (dto.Time.HasValue) activity.time = dto.Time.Value;
+            if (dto.MaxParticipans.HasValue) activity.MaxParticipants = dto.MaxParticipans;
+            if (dto.ImageUrls != null)
+            {
+                _context.ActivityImages.RemoveRange(activity.ActivityImages);
+                activity.ActivityImages = dto.ImageUrls.Select(url => new ActivityImage
+                {
+                    ImageUrl = url,
+                    ActivityID = id
+                }).ToList();
+            }
 
             await _context.SaveChangesAsync();
             return MapToDTO(activity);
         }
         // Xoa hoat dong
-        public async Task<bool> DeleteAsync (int id , int requestUserId , string requestUserRole)
+        public async Task<bool> DeleteAsync(int id, int requestUserId, string requestUserRole)
         {
             if (requestUserRole != "Admin" && requestUserRole != "ExecutiveBoard") return false;
             var activity = await _context.Activities.FindAsync(id);
             if (activity == null) return false;
-            
+
             _context.Activities.Remove(activity);
             await _context.SaveChangesAsync();
             return true;
         }
         // Huy hoat dong
-        public async Task <bool> CancelAsync(int id , int requestUserId , string requestUserRole)
+        public async Task<bool> CancelAsync(int id, int requestUserId, string requestUserRole)
         {
             var activity = await _context.Activities.FindAsync(id);
-            if (activity == null ) return false; 
+            if (activity == null) return false;
             if (requestUserRole != "Admin" && activity.CreateBy != requestUserId) return false;
             activity.Status = "Cancelled";
             await _context.SaveChangesAsync();
@@ -147,17 +160,17 @@ namespace ClubManagement.API.Service
 
         }
         // dang ky tham gia hoat dong
-        public async Task<RegistrationResponseDTO?> RegisterAsync (int activityId , int userId)
+        public async Task<RegistrationResponseDTO?> RegisterAsync(int activityId, int userId)
         {
             var activity = await _context.Activities
                 .Include(a => a.Registrations)
                 .FirstOrDefaultAsync(a => a.ActivityID == activityId);
             if (activity == null || activity.Status != "Open") return null;
             var member = await _context.Members.FirstOrDefaultAsync(m => m.UserID == userId);
-            if (member == null) return null;    
+            if (member == null) return null;
             bool alreadyRegistered = await _context.Registrations
                 .AnyAsync(r => r.ActivityID == activityId && r.MemberID == member.MemberID);
-            if (alreadyRegistered) return null; 
+            if (alreadyRegistered) return null;
             if (activity.MaxParticipants.HasValue)
             {
                 var count = await _context.Registrations
@@ -275,6 +288,6 @@ namespace ClubManagement.API.Service
             RegisteredCount = a.Registrations?.Count(r => r.Status == "Confirmed") ?? 0,
             Image = a.ActivityImages?.Select(i => i.ImageUrl).ToList() ?? new()
         };
-        
+
     }
 }

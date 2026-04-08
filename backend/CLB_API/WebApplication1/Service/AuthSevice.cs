@@ -7,13 +7,13 @@ using System.Security.Claims;
 using System.Text;
 
 namespace ClubManagement.API.AuthService
- 
+
 {
     public interface IAuthService
     {
         Task<AuthResponseDTO?> LoginAsync(LoginDTO dto);
         Task<AuthResponseDTO?> RegisterAsync(RegisterDTO dto);
-        string GenerateToken (User user);
+        string GenerateToken(User user);
     }
     public class AuthService : IAuthService
     {
@@ -25,7 +25,7 @@ namespace ClubManagement.API.AuthService
             _context = context;
             _config = config;
         }
-        public async Task <AuthResponseDTO?> LoginAsync (LoginDTO dto)
+        public async Task<AuthResponseDTO?> LoginAsync(LoginDTO dto)
         {
             var user = await _context.Users
                 .Include(u => u.Role)
@@ -43,12 +43,12 @@ namespace ClubManagement.API.AuthService
             };
 
         }
-        public async Task <AuthResponseDTO ? > RegisterAsync (RegisterDTO dto)
+        public async Task<AuthResponseDTO?> RegisterAsync(RegisterDTO dto)
         {
-            if (await _context.Users.AnyAsync(u => u.Username == dto.Username || u.Email == dto.Email)) 
-            return null;
+            if (await _context.Users.AnyAsync(u => u.Username == dto.Username || u.Email == dto.Email))
+                return null;
 
-            var memberRole = await _context.Roles.FirstOrDefaultAsync (r => r.RoleName == "Member");
+            var memberRole = await _context.Roles.FirstOrDefaultAsync(r => r.RoleName == "Member");
 
             var user = new User
             {
@@ -87,11 +87,12 @@ namespace ClubManagement.API.AuthService
             };
 
         }
-        
+
         public string GenerateToken(User user)
         {
+            // FIX: Fallback key phải giống hệt với Program.cs
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(
-                            _config["JwtSettings:SecretKey"] ?? "DefaultSecretKey12345678901234567890"));
+                            _config["JwtSettings:SecretKey"] ?? "DefaultSecretKey123!@#$%^&*()_+CLUBMANAGEMENT"));
 
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
@@ -105,8 +106,8 @@ namespace ClubManagement.API.AuthService
             };
 
             var token = new JwtSecurityToken(
-                issuer: _config["JwtSettings:Issuer"],
-                audience: _config["JwtSettings:Audience"],
+                issuer: _config["JwtSettings:Issuer"] ?? "https://localhost:5190",
+                audience: _config["JwtSettings:Audience"] ?? "ClubManagementAPI",
                 claims: claims,
                 expires: DateTime.UtcNow.AddHours(
                     double.Parse(_config["JwtSettings:ExpirationHours"] ?? "24")),
@@ -117,5 +118,5 @@ namespace ClubManagement.API.AuthService
         }
     }
 
-   
+
 }

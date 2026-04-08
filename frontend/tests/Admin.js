@@ -33,10 +33,12 @@ async function loadStats() {
   try {
     const [mr, ar, pr] = await Promise.all([API.getMembers(), API.getActivities(), API.getPosts()]);
     const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
-    const members = mr.data || [], acts = ar.data || [];
+    const members = mr.data || [];
+    const acts = ar.data?.items || [];
+    const posts = pr.data || [];
     set('sMembers', members.filter(m => m.status === 'Active').length);
     set('sOpenActs', acts.filter(a => a.status === 'Open').length);
-    set('sPosts', (pr.data || []).length);
+    set('sPosts', posts.length);
     set('sAllActs', acts.length);
   } catch {}
 }
@@ -141,7 +143,7 @@ function openActModal(data = {}) {
   const tv = data.time ? new Date(data.time).toISOString().slice(0, 16) : '';
  
   // Render ảnh đã có sẵn (khi edit)
-  const existingImages = (data.images || [])
+  const existingImages = (data.image || data.images || [])
     .map((url, i) => renderPreviewItem(url, i))
     .join('');
  
@@ -218,7 +220,7 @@ function openActModal(data = {}) {
   `, null);
  
   // Reset danh sách URL ảnh (giữ lại ảnh cũ nếu edit)
-  window._actImageUrls = data.images ? [...data.images] : [];
+  window._actImageUrls = data.image ? [...data.image] : (data.images ? [...data.images] : []);
 }
  
 // ── Render một ảnh preview ────────────────────────────────────────────────────
@@ -268,6 +270,7 @@ function handleFileSelect(e) {
   e.target.value = ''; // reset để có thể chọn lại cùng file
 }
  
+
 // ── Upload ảnh lên server ─────────────────────────────────────────────────────
 async function uploadImages(files) {
   const currentCount = (window._actImageUrls || []).length;
@@ -288,7 +291,6 @@ async function uploadImages(files) {
   let successCount = 0;
  
   for (const file of toUpload) {
-    // Kiểm tra dung lượng ngay tại client
     if (file.size > 5 * 1024 * 1024) {
       Toast.error(`"${file.name}" quá 5MB, bỏ qua`);
       continue;
@@ -301,11 +303,28 @@ async function uploadImages(files) {
       const res = await fetch('http://localhost:5190/api/upload/image', {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${Auth.getToken()}` },
-        body: formData   // KHÔNG set Content-Type, để browser tự set multipart
+        body: formData
       });
  
+      // Kiểm tra content-type trước khi parse JSON
+      const contentType = res.headers.get('content-type');
+      
+      if (!res.ok) {
+        const errorText = await res.text();
+        throw new Error(`HTTP ${res.status}: ${errorText.substring(0, 200)}`);
+      }
+      
+      if (!contentType || !contentType.includes('application/json')) {
+        const textResponse = await res.text();
+        console.warn('Non-JSON response:', textResponse);
+        throw new Error('Server không trả về JSON hợp lệ');
+      }
+ 
       const data = await res.json();
-      if (!res.ok) throw new Error(data.message || 'Upload thất bại');
+ 
+      if (!data || !data.data) {
+        throw new Error('Server không trả về URL ảnh');
+      }
  
       const url = data.data;
       window._actImageUrls = window._actImageUrls || [];
@@ -320,13 +339,14 @@ async function uploadImages(files) {
       successCount++;
  
     } catch (e) {
+      console.error('Upload error:', e);
       Toast.error(`Lỗi upload "${file.name}": ${e.message}`);
     }
   }
  
   status.innerHTML = successCount > 0
     ? `<span style="color:#22c55e">✅ Đã upload ${successCount} ảnh</span>`
-    : '';
+    : '<span style="color:#ff2d55">❌ Upload thất bại, vui lòng thử lại</span>';
 }
  
 // ── Lưu hoạt động (đã gắn ImageUrls từ _actImageUrls) ───────────────────────
@@ -361,7 +381,51 @@ async function saveAct(id) {
     Toast.error(e.message);
   }
 }
- 
+ async function loadActivitiesAdmin() {
+  const tbody = document.getElementById('aBody');
+  tbody.innerHTML = '<tr><td colspan="7" class="loading"><div class="spinner"></div></td></tr>';
+
+  try {
+    const r = await API.getActivities();
+    const list = r.data?.items || [];
+
+    if (!list.length) {
+      tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:30px;color:#475569">Không có hoạt động</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = list.map(a => {
+      let toggleBtn = '';
+      if (a.status === 'Open') {
+        toggleBtn = `<button onclick="toggleActivityStatus(${a.activityID}, 'Closed')" class="btn-warning btn-sm" style="background:#f59e0b;color:white;border:none;padding:5px 10px;border-radius:6px;cursor:pointer" title="Khóa đăng ký"><i class="fa-solid fa-lock" style="color: rgb(255, 255, 255);"></i> Khóa</button>`;
+      } else if (a.status === 'Closed') {
+        toggleBtn = `<button onclick="toggleActivityStatus(${a.activityID}, 'Open')" class="btn-success btn-sm" style="background:#22c55e;color:white;border:none;padding:5px 10px;border-radius:6px;cursor:pointer" title="Mở đăng ký"><i class="fa-solid fa-unlock" style="color: rgb(255, 255, 255);"></i> Mở</button>`;
+      } else if (a.status === 'Cancelled') {
+        toggleBtn = `<button onclick="toggleActivityStatus(${a.activityID}, 'Open')" class="btn-outline btn-sm" style="padding:5px 10px" title="Khôi phục">🔄 Khôi phục</button>`;
+      }
+
+      return `
+      <tr>
+        <td style="color:#475569">${a.activityID}</td>
+        <td><strong style="cursor:pointer;color:#ff2d55;text-decoration:underline;text-underline-offset:2px" 
+            onclick="showActivityDetail(${a.activityID}, { showAdminButtons: true })" 
+            title="Xem chi tiết">${Utils.escapeHtml(a.activityName)}</strong></td>
+        <td style="color:#94a3b8">${Utils.formatDateTime(a.time)}</td>
+        <td style="color:#94a3b8">${Utils.escapeHtml(a.location || '—')}</td>
+        <td style="color:#94a3b8">${a.registeredCount}${a.maxParticipants ? ' / ' + a.maxParticipants : ''}</td>
+        <td>${Utils.statusLabel(a.status)}</td>
+        <td style="display:flex;gap:6px;flex-wrap:wrap">
+          ${toggleBtn}
+          <button onclick='openActModalForEdit(${JSON.stringify(a).replace(/'/g, "&#39;")})' class="btn-outline btn-sm"><i class="fa-solid fa-pen" style="color: rgb(255, 255, 255);"></i> Sửa</button>
+          <button onclick="deleteActivity(${a.activityID})" class="btn-danger btn-sm"><i class="fa-solid fa-trash-can" style="color: rgb(255, 0, 0);"></i></button>
+        </td>
+      <tr>
+    `}).join('');
+
+  } catch (e) {
+    tbody.innerHTML = `<tr><td colspan="7" style="color:#ff2d55;padding:20px">${e.message}</td></tr>`;
+  }
+}
 // ── POSTS ──
 async function loadPostsAdmin() {
   const tbody = document.getElementById('pBody');
@@ -491,4 +555,77 @@ function updateNavbar() {
     el.innerHTML = `<span class="navbar-user"> <i class="fa-solid fa-crown" style="color: rgb(255, 212, 59);"></i> ${Utils.escapeHtml(u.username)}</span>
       <button onclick="logout()" class="btn-secondary btn-sm">Đăng xuất</button>`;
   }
+}
+// Thêm vào cuối file Admin.js (trước dấu đóng ngoặc)
+
+// ── TOGGLE ACTIVITY STATUS (Khóa/Mở hoạt động) ────────────────────────────────
+async function toggleActivityStatus(activityId, newStatus) {
+  let confirmMessage = '';
+  let successMessage = '';
+  
+  if (newStatus === 'Closed') {
+    confirmMessage = 'Bạn có chắc chắn muốn KHÓA hoạt động này? Người dùng sẽ không thể đăng ký tham gia.';
+    successMessage = 'Đã khóa hoạt động thành công!';
+  } else if (newStatus === 'Open') {
+    confirmMessage = 'Bạn có chắc chắn muốn MỞ lại hoạt động này? Người dùng có thể đăng ký tham gia.';
+    successMessage = 'Đã mở hoạt động thành công!';
+  } else {
+    return;
+  }
+  
+  if (!confirm(confirmMessage)) return;
+  
+  try {
+    // Lấy thông tin hoạt động hiện tại
+    const activityRes = await API.getActivity(activityId);
+    const currentActivity = activityRes.data;
+    
+    // Cập nhật chỉ status, giữ nguyên các trường khác
+    const updateData = {
+      activityName: currentActivity.activityName,
+      description: currentActivity.description || null,
+      location: currentActivity.location || null,
+      maxParticipants: currentActivity.maxParticipants || null,
+      time: currentActivity.time,
+      status: newStatus,
+      imageUrls: currentActivity.image || []
+    };
+    
+    await API.updateActivity(activityId, updateData);
+    Toast.success(successMessage);
+    loadActivitiesAdmin(); // Refresh danh sách
+    loadStats(); // Refresh thống kê
+    
+  } catch (e) {
+    Toast.error(e.message || 'Có lỗi xảy ra khi cập nhật trạng thái');
+  }
+}
+
+// ── DELETE ACTIVITY ───────────────────────────────────────────────────────────
+async function deleteActivity(activityId) {
+  if (!confirm('Bạn có chắc chắn muốn XÓA hoạt động này? Hành động này không thể hoàn tác!')) return;
+  
+  try {
+    await API.deleteActivity(activityId);
+    Toast.success('Đã xóa hoạt động thành công');
+    loadActivitiesAdmin();
+    loadStats();
+  } catch (e) {
+    Toast.error(e.message || 'Có lỗi xảy ra khi xóa hoạt động');
+  }
+}
+
+// ── Hàm riêng để mở modal edit (tránh lỗi escape JSON) ───────────────────────
+function openActModalForEdit(activityData) {
+  const data = {
+    activityID: activityData.activityID,
+    activityName: activityData.activityName,
+    description: activityData.description,
+    location: activityData.location,
+    maxParticipants: activityData.maxParticipants,
+    time: activityData.time,
+    status: activityData.status,
+    images: activityData.image || activityData.images || []
+  };
+  openActModal(data);
 }
