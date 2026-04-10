@@ -68,13 +68,13 @@ async function showActivityDetail(activityId, options = {}) {
       if (Auth.isLoggedIn()) {
         regSection = `<button id="modalRegBtn" onclick="registerActivity(${a.activityID}, this, true)"
           class="btn-primary w-100" style="padding:12px;margin-top:4px;font-size:15px">
-           📝 Đăng ký tham gia
+           <i class="fa-solid fa-person-circle-plus" style="color: rgb(255, 255, 255);"></i> Đăng ký tham gia
         </button>`;
       } else {
         regSection = `
           <div style="background:#111827;border:1px solid rgba(255,255,255,0.06);border-radius:10px;padding:14px;text-align:center;margin-top:8px">
-            <p style="color:#94a3b8;font-size:13px;margin-bottom:10px">🔐 Đăng nhập để đăng ký tham gia hoạt động</p>
-            <button onclick="location.href='login.html'" class="btn-primary" style="padding:9px 20px">Đăng nhập ngay</button>
+            <p style="color:#94a3b8;font-size:13px;margin-bottom:10px"> Đăng nhập để đăng ký tham gia hoạt động</p>
+            <button onclick="AuthModal.open('login')" class="btn-primary" style="padding:9px 20px">Đăng nhập ngay</button>
           </div>`;
       }
     } else if (isFull) {
@@ -87,7 +87,7 @@ async function showActivityDetail(activityId, options = {}) {
       </div>`;
     } else if (a.status === 'Closed') {
       regSection = `<div style="text-align:center;padding:12px;background:rgba(100,116,139,0.1);border-radius:8px;border:1px solid rgba(100,116,139,0.2);color:#64748b;font-size:13px;margin-top:8px">
-        🔒 Đã đóng đăng ký
+        <i class="fa-solid fa-lock" style="color: rgb(255, 255, 255);"></i> Đã đóng đăng ký
       </div>`;
     }
     
@@ -97,10 +97,10 @@ async function showActivityDetail(activityId, options = {}) {
       adminSection = `
         <div style="display:flex;gap:10px;margin-top:16px">
           <button onclick="editActivityFromDetail(${a.activityID})" class="btn-outline" style="flex:1;padding:10px">
-            ✏️ Chỉnh sửa hoạt động
+            <i class="fa-solid fa-pen" style="color: rgb(255, 255, 255);"></i> Chỉnh sửa hoạt động
           </button>
           <button onclick="deleteActivityFromDetail(${a.activityID})" class="btn-danger" style="flex:1;padding:10px">
-            🗑️ Xóa hoạt động
+            <i class="fa-solid fa-trash" style="color: rgb(255, 255, 255);"></i> Xóa hoạt động
           </button>
         </div>
       `;
@@ -190,7 +190,7 @@ function closeDetailModal() {
 async function registerActivity(id, btn, fromModal = false) {
   if (!Auth.isLoggedIn()) {
     Toast.info('Vui lòng đăng nhập để đăng ký');
-    setTimeout(() => location.href = 'login.html', 700);
+    setTimeout(() => AuthModal.open('login'), 700);
     return;
   }
 

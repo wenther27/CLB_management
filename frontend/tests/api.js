@@ -135,7 +135,7 @@ const Toast = {
   },
   show(message, type = 'info', duration = 3500) {
     this.init();
-    const icons = { success: '✅', error: '❌', info: 'ℹ️', warning: '⚠️' };
+    const icons = { success: '<i class="fa-solid fa-check" style="color: rgb(0, 208, 144);"></i>', error: '<i class="fa-solid fa-xmark" style="color: rgb(255, 77, 77);"></i>', info: '<i class="fa-solid fa-info" style="color: rgb(59, 130, 246);"></i>', warning: '<i class="fa-solid fa-triangle-exclamation" style="color: rgb(255, 193, 7);"></i>' };
     const toast = document.createElement('div');
     toast.className = `toast ${type}`;
     toast.innerHTML = `<span class="toast-icon">${icons[type] || icons.info}</span><span class="toast-msg">${message}</span>`;
@@ -195,17 +195,33 @@ function updateNavbar() {
   const user = Auth.getUser();
   const navActions = document.getElementById('navActions');
   if (!navActions) return;
-
-  if (user) {
-    navActions.innerHTML = `
-      <span class="navbar-user">👤 ${Utils.escapeHtml(user.username)}</span>
-      ${Auth.isExecutive() ? '<a href="admin-dashboard.html" class="btn btn-gold btn-sm">⚙️ Quản trị</a>' : '<a href="member-profile.html" class="btn btn-secondary btn-sm">Hồ sơ</a>'}
-      <button onclick="logout()" class="btn btn-secondary btn-sm">Đăng xuất</button>
-    `;
-  } else {
-    navActions.innerHTML = `
-      <a href="login.html" class="btn btn-secondary btn-sm">Đăng nhập</a>
-      <a href="register.html" class="btn btn-primary btn-sm">Đăng ký</a>
+  if (user){
+    let roleLabel = '';
+    let roleClass = '';
+    if (user.role === 'Admin') {
+      navActions.innerHTML = `
+        <span class="navbar-user"><i class="fa-solid fa-crown" style="color: rgb(255, 212, 59);"></i> ${Utils.escapeHtml(user.username)} (${user.role})</span>
+        <a href="admin-dashboard.html" class="btn btn-gold btn-sm"><i class="fa-solid fa-user-gear" style="color: rgb(0, 0, 0);"></i> Quản trị</a>
+        <button onclick="logout()" class="btn btn-secondary btn-sm">Đăng xuất</button>
+      `;
+    } else if (user.role === 'ExecutiveBoard') {
+      navActions.innerHTML = `
+        <span class="navbar-user"><i class="fa-regular fa-clipboard" style="color: rgb(116, 192, 252);"></i> ${Utils.escapeHtml(user.username)} (${user.role})</span>
+        <a href="admin-dashboard.html" class="btn btn-gold btn-sm"><i class="fa-solid fa-user-gear" style="color: rgb(249, 0, 0);"></i>Quản trị</a>
+        <button onclick="logout()" class="btn btn-secondary btn-sm">Đăng xuất</button>
+      `;
+    } else if (user.role === 'Member') {
+      navActions.innerHTML = `
+        <span class="navbar-user"><i class="fa-regular fa-user" style="color: rgb(251, 251, 251);"></i> ${Utils.escapeHtml(user.username)}</span>
+        <a href="member-profile.html" class="btn btn-secondary btn-sm">Hồ sơ</a>
+        <button onclick="logout()" class="btn btn-secondary btn-sm">Đăng xuất</button>
+      `;
+    }
+  }
+  else {
+   navActions.innerHTML = `
+      <button class="login" onclick="AuthModal.open('login')">Đăng Nhập</button>
+      <button class="signup" onclick="AuthModal.open('register')">Đăng Ký</button>
     `;
   }
   
@@ -213,7 +229,7 @@ function updateNavbar() {
 
 function logout() {
   Auth.clear();
-  Toast.success('Đã đăng xuất thành công');
+  Toast.success('Đăng xuất thành công');
   setTimeout(() => window.location.href = 'index1.html', 800);
 }
 

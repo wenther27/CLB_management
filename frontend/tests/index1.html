@@ -23,8 +23,11 @@
 
     <div class="nav-right" id="navActions">
       <input type="text" placeholder="Tìm kiếm">
-      <button class="login" onclick="location.href='login.html'">Đăng Nhập</button>
-      <button class="signup" onclick="location.href='register.html'">Đăng Ký</button>
+      <!-- <button class="login" onclick="location.href='login.html'">Đăng Nhập</button>
+      <button class="signup" onclick="location.href='register.html'">Đăng Ký</button> -->
+      <!-- Thay thế onclick cũ -->
+     <button class="login" onclick="AuthModal.open('login')">Đăng Nhập</button>
+     <button class="signup" onclick="AuthModal.open('register')">Đăng Ký</button>
     </div>
   </div>
 </header>
@@ -120,7 +123,7 @@
       <h2>Sẵn sàng gia nhập CLB?</h2>
       <p>Hãy cùng chúng tôi tạo nên những điều ý nghĩa. Đăng ký ngay hôm nay để tham gia cộng đồng hơn 200 thành viên tích cực.</p>
       <div class="cta-buttons">
-        <button class="btn-primary" onclick="location.href='register.html'"><i class="fa-solid fa-heart-circle-plus" style="color: rgb(255, 255, 255);"></i> Đăng ký thành viên</button>
+        <button class="btn-primary" onclick="AuthModal.open('register')"><i class="fa-solid fa-heart-circle-plus" style="color: rgb(255, 255, 255);"></i> Đăng ký thành viên</button>
         <button class="btn-outline" onclick="location.href='activities.html'">Khám phá hoạt động</button>
       </div>
     </div>
@@ -148,7 +151,7 @@
         <h5>Liên hệ</h5>
         <ul>
           <li><a href="#"><i class="fa-regular fa-envelope" style="color: rgb(255, 255, 255);"></i> ctxh@dut.edu.vn</a></li>
-          <li><a href="#"><i class="fa-brands fa-facebook" style="color: rgb(255, 255, 255);"></i> Facebook</a></li>
+          <li><a href="https://www.facebook.com/tran.le.minh.141006?locale=vi_VN"><i class="fa-brands fa-facebook" style="color: rgb(255, 255, 255);"></i> Facebook</a></li>
           <li><a href="#"><i class="fa-solid fa-earth-asia" style="color: rgb(255, 255, 255);"></i> dut.udn.vn</a></li>
         </ul>
       </div>
@@ -166,6 +169,9 @@
 </div>
 
 <script src="api.js"></script>
+<script src="shared.js"></script>
+<script src="auth-modal.js"> </script>
+
 <script>
 // Render activity cards
 function renderActCard(a) {
@@ -196,7 +202,7 @@ function renderActCard(a) {
       ${a.status === 'Open' && Auth.isLoggedIn()
         ? `<button onclick="regActivity(${a.activityID}, this)" class="btn-primary" style="padding:8px 14px;font-size:13px">Đăng ký</button>`
         : (!Auth.isLoggedIn() && a.status === 'Open'
-            ? `<button onclick="location.href='login.html'" class="btn-outline" style="padding:8px 14px;font-size:13px">Đăng nhập</button>` : '')}
+            ? `<button onclick="AuthModal.open('login')" class="btn-outline" style="padding:8px 14px;font-size:13px">Đăng nhập</button>` : '')}
     </div>
   </div>`;
 }
@@ -221,7 +227,7 @@ function renderPostCard(p) {
 }
 
 async function regActivity(id, btn) {
-  if (!Auth.isLoggedIn()) { Toast.info('Vui lòng đăng nhập'); setTimeout(() => location.href = 'login.html', 700); return; }
+  if (!Auth.isLoggedIn()) { Toast.info('Vui lòng đăng nhập'); setTimeout(() => AuthModal.open('login'), 700); return; }
   btn.disabled = true; btn.textContent = '...';
   try {
     await API.register({ activityID: id });
@@ -296,5 +302,6 @@ document.addEventListener('DOMContentLoaded', loadHome);
 </script>
 
 <script src="api.js"></script>
+
 </body>
 </html>

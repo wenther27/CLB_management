@@ -87,7 +87,7 @@ function renderCard(a) {
     if (Auth.isLoggedIn()) {
       regBtn = `<button onclick="registerActivity(${a.activityID}, this)" class="btn-primary" style="padding:8px 14px;font-size:13px">Đăng ký</button>`;
     } else {
-      regBtn = `<button onclick="location.href='login.html'" class="btn-outline" style="padding:8px 14px;font-size:13px">Đăng nhập để đăng ký</button>`;
+      regBtn = `<button onclick="AuthModal.open('login')" class="btn-outline" style="padding:8px 14px;font-size:13px">Đăng nhập để đăng ký</button>`;
     }
   } else if (isFull) {
     regBtn = `<span class="badge badge-inactive" style="padding:8px 12px">Đã đủ chỗ</span>`;
