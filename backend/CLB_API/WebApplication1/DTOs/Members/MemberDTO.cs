@@ -8,11 +8,13 @@
         public string FullName { get; set; } = string.Empty;
         public string ClassName { get; set; } = string.Empty;
         public string ? Faculty {  get; set; }
-        public string ? Posittion { get; set; } // chức vụ
+        public string ? Position { get; set; } // chức vụ
         public string ? Status { get; set; }
-        public DateTime joinDate { get; set; }
+        public DateTime JoinDate { get; set; }
 
         public string ? Username {  get; set; }
         public string ? Email { get; set; }
+        public string ? Phone { get; set; }
+        public string ? RoleName { get; set; }
     }
 }

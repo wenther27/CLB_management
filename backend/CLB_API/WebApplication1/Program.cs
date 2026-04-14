@@ -67,6 +67,7 @@ builder.Services.AddCors(options =>
 // Dependency Injection
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IActivityService, ActivityService>();
+builder.Services.AddScoped<IMemberService, MemberService>();
 
 // Cấu hình upload file
 builder.Services.Configure<FormOptions>(options =>
