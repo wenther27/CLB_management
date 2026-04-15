@@ -13,10 +13,12 @@ namespace ClubManagement.API.Service
         Task<ActivityDTO?> UpdateAsync(int id, UpdateActivityDTO dto, int requestUserId, string requestUserRole);
         Task<bool> DeleteAsync(int id, int requestUserId, string requestUserRole);
         Task<bool> CancelAsync(int id, int requestUserId, string requestUserRole);
+    
 
         // Dang ky // Huy dang ky
         Task<RegistrationResponseDTO?> RegisterAsync(int activityId, int userId);
         Task<bool> CancelRegistrationAsync(int activityId, int userId);
+        Task<bool> HasUserRegisteredAsync(int activityId, int userId);
         Task<PagedResultDTO<RegistrationResponseDTO>> GetRegistrationsAsync(int activityId, int page, int pageSize);
         Task<PagedResultDTO<RegistrationResponseDTO>> GetMyRegistrationsAsync(int userId, int page, int pageSize);
 
@@ -158,6 +160,15 @@ namespace ClubManagement.API.Service
             await _context.SaveChangesAsync();
             return true;
 
+        }
+        // chekc usser dang ky
+        public async Task<bool> HasUserRegisteredAsync(int activityId, int userId)
+        {
+            var member = await _context.Members.FirstOrDefaultAsync(m => m.UserID == userId);
+            if (member == null) return false;
+
+            return await _context.Registrations
+                .AnyAsync(r => r.ActivityID == activityId && r.MemberID == member.MemberID);
         }
         // dang ky tham gia hoat dong
         public async Task<RegistrationResponseDTO?> RegisterAsync(int activityId, int userId)

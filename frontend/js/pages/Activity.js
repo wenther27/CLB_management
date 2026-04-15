@@ -5,17 +5,47 @@
 let allActivities = [];
 let currentPage = 1;
 const PAGE_SIZE = 9;
+let userRegistrations = new Map(); // Lưu trạng thái đăng ký của user
 
 document.addEventListener('DOMContentLoaded', async () => {
   updateNavbar();
   await loadActivities();
 });
 
+// Kiểm tra user đã đăng ký các hoạt động chưa
+async function checkUserRegistrations(activities) {
+    if (!Auth.isLoggedIn()) {
+        userRegistrations.clear();
+        return;
+    }
+    
+    try {
+        const promises = activities.map(async (act) => {
+            try {
+                const r = await API.hasRegistered(act.activityID);
+                return { id: act.activityID, registered: r.data };
+            } catch {
+                return { id: act.activityID, registered: false };
+            }
+        });
+        
+        const results = await Promise.all(promises);
+        userRegistrations.clear();
+        results.forEach(r => userRegistrations.set(r.id, r.registered));
+    } catch (e) {
+        console.error('Error checking registrations:', e);
+    }
+}
+
 async function loadActivities() {
   try {
     const r = await API.getActivities();
     allActivities = r.data?.items || [];
-    window.allActivities = allActivities; // Lưu global để shared.js dùng
+    window.allActivities = allActivities;
+    
+    // Kiểm tra user đã đăng ký hoạt động nào chưa
+    await checkUserRegistrations(allActivities);
+    
     renderActivities();
   } catch (e) {
     document.getElementById('actGrid').innerHTML = `
@@ -69,6 +99,7 @@ function renderCard(a) {
     ? Math.min(100, Math.round((a.registeredCount / a.maxParticipants) * 100))
     : 0;
   const isFull = a.maxParticipants && a.registeredCount >= a.maxParticipants;
+  const hasRegistered = userRegistrations.get(a.activityID) || false;
 
   const firstImage = a.image && a.image.length > 0 ? a.image[0] : null;
   const imageHtml = firstImage 
@@ -82,15 +113,34 @@ function renderCard(a) {
                   display:flex;align-items:center;justify-content:center;font-size:2rem;border-radius:8px 8px 0 0">
        </div>`;
 
-  let regBtn = '';
-  if (a.status === 'Open' && !isFull) {
+  // Xác định nút hành động dựa trên trạng thái
+  let actionBtn = '';
+  
+  if (hasRegistered) {
+    // Đã đăng ký - hiển thị nút hủy
+    actionBtn = `<button onclick="cancelRegistration(${a.activityID}, this)" 
+                   class="btn-outline" style="padding:8px 14px;font-size:13px;background:rgba(255,45,85,0.1);border-color:#ff2d55;color:#ff2d55">
+                    <i class="fa-solid fa-xmark"></i> Hủy đăng ký
+                  </button>`;
+  } else if (a.status === 'Open' && !isFull) {
+    // Chưa đăng ký và hoạt động đang mở
     if (Auth.isLoggedIn()) {
-      regBtn = `<button onclick="registerActivity(${a.activityID}, this)" class="btn-primary" style="padding:8px 14px;font-size:13px">Đăng ký</button>`;
+      actionBtn = `<button onclick="registerActivity(${a.activityID}, this)" 
+                     class="btn-primary" style="padding:8px 14px;font-size:13px">
+                      <i class="fa-solid fa-check"></i> Đăng ký
+                    </button>`;
     } else {
-      regBtn = `<button onclick="AuthModal.open('login')" class="btn-outline" style="padding:8px 14px;font-size:13px">Đăng nhập để đăng ký</button>`;
+      actionBtn = `<button onclick="AuthModal.open('login')" 
+                     class="btn-outline" style="padding:8px 14px;font-size:13px">
+                      Đăng nhập để đăng ký
+                    </button>`;
     }
   } else if (isFull) {
-    regBtn = `<span class="badge badge-inactive" style="padding:8px 12px">Đã đủ chỗ</span>`;
+    actionBtn = `<span class="badge badge-inactive" style="padding:8px 12px">Đã đủ chỗ</span>`;
+  } else if (a.status === 'Closed') {
+    actionBtn = `<span class="badge badge-closed" style="padding:8px 12px">Đã đóng đăng ký</span>`;
+  } else if (a.status === 'Cancelled') {
+    actionBtn = `<span class="badge badge-inactive" style="padding:8px 12px">Đã hủy</span>`;
   }
 
   return `
@@ -113,12 +163,81 @@ function renderCard(a) {
         <span><i class="fa-solid fa-calendar-days"></i> ${Utils.formatDateTime(a.time)}</span>
         <span><i class="fa-solid fa-location-dot"></i> ${Utils.escapeHtml(a.location || 'TBD')}</span>
       </div>
+      ${hasRegistered ? `<div style="margin-top:8px;font-size:12px;color:#22c55e"><i class="fa-solid fa-check-circle"></i> Bạn đã đăng ký</div>` : ''}
     </div>
     <div class="card-footer" onclick="event.stopPropagation()">
-      <button onclick="showActivityDetail(${a.activityID})" class="btn-outline" style="flex:1;padding:8px;font-size:13px">Chi tiết</button>
-      ${regBtn}
+      <button onclick="showActivityDetail(${a.activityID})" class="btn-outline" style="flex:1;padding:8px;font-size:13px">
+        <i class="fa-solid fa-info-circle"></i> Chi tiết
+      </button>
+      ${actionBtn}
     </div>
   </div>`;
+}
+
+// Hàm hủy đăng ký
+async function cancelRegistration(activityId, btn) {
+    if (!confirm('Bạn có chắc muốn hủy đăng ký hoạt động này?')) return;
+    
+    const originalText = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang xử lý...';
+    
+    try {
+        await API.cancelRegistration(activityId);
+        Toast.success('Hủy đăng ký thành công');
+        
+        // Cập nhật lại số lượng đăng ký trong cache
+        const act = allActivities.find(a => a.activityID === activityId);
+        if (act) {
+            act.registeredCount = Math.max(0, (act.registeredCount || 0) - 1);
+        }
+        
+        // Cập nhật trạng thái đăng ký của user
+        userRegistrations.set(activityId, false);
+        
+        // Render lại danh sách
+        renderActivities();
+        
+    } catch (e) {
+        Toast.error(e.message || 'Hủy đăng ký thất bại');
+        btn.disabled = false;
+        btn.innerHTML = originalText;
+    }
+}
+
+// Cập nhật hàm đăng ký
+async function registerActivity(id, btn) {
+    if (!Auth.isLoggedIn()) {
+        Toast.info('Vui lòng đăng nhập để đăng ký');
+        setTimeout(() => AuthModal.open('login'), 700);
+        return;
+    }
+
+    const originalText = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang xử lý...';
+
+    try {
+        await API.register(id);
+        Toast.success('Đăng ký tham gia thành công! 🎉');
+        
+        // Cập nhật số lượng đăng ký
+        const act = allActivities.find(a => a.activityID === id);
+        if (act) {
+            act.registeredCount = (act.registeredCount || 0) + 1;
+        }
+        
+        // Cập nhật trạng thái đăng ký
+        userRegistrations.set(id, true);
+        
+        // Render lại danh sách
+        renderActivities();
+
+    } catch (e) {
+        Toast.error(e.message || 'Đăng ký thất bại');
+        btn.disabled = false;
+        btn.innerHTML = originalText;
+    }
 }
 
 function renderPagination(totalPages) {
@@ -152,3 +271,7 @@ function clearFilter() {
   currentPage = 1;
   renderActivities();
 }
+
+// Export functions để dùng trong shared.js
+window.cancelRegistration = cancelRegistration;
+window.registerActivity = registerActivity;

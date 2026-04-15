@@ -82,6 +82,7 @@ const API = {
   createActivity: (data) => post('/activities', data),
   updateActivity: (id, data) => put(`/activities/${id}`, data),
   deleteActivity: (id) => del(`/activities/${id}`),
+    hasRegistered: (activityId) => get(`/activities/${activityId}/has-registered`),
 
   // Registrations
   register: (activityId) => post(`/activities/${activityId}/register`, null),

@@ -35,10 +35,17 @@ namespace ClubManagement.API.Controllers
             var result = await _activityService.GetAllAsync(query);
             return Ok(ApiResponse<PagedResultDTO<ActivityDTO>>.Ok( result, "Lấy danh sách hoạt động thành công"));
         }
-
+        // GET /api/activities/{id}/has-registered
+        [HttpGet("{id:int}/has-registered")]
+        [Authorize]
+        public async Task<IActionResult> HasUserRegistered(int id)
+        {
+            var result = await _activityService.HasUserRegisteredAsync(id, GetUserId());
+            return Ok(ApiResponse<bool>.Ok(result, "OK"));
+        }
         // GET /api/activities/{id}
         // Ai cũng xem được
-  
+
         [HttpGet("{id:int}")]
         [AllowAnonymous]
         public async Task<IActionResult> GetById(int id)

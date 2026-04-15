@@ -47,6 +47,17 @@ async function showActivityDetail(activityId, options = {}) {
       : 0;
     const isFull = a.maxParticipants && a.registeredCount >= a.maxParticipants;
     
+    // Kiểm tra user đã đăng ký chưa
+    let hasRegistered = false;
+    if (Auth.isLoggedIn()) {
+      try {
+        const regCheck = await API.hasRegistered(activityId);
+        hasRegistered = regCheck.data;
+      } catch(e) { 
+        console.error('Error checking registration:', e);
+      }
+    }
+    
     // Xử lý ảnh
     const imagesHtml = (a.image && a.image.length > 0) 
       ? `
@@ -62,18 +73,23 @@ async function showActivityDetail(activityId, options = {}) {
       `
       : '';
     
-    // Phần đăng ký
+    // Phần đăng ký/hủy đăng ký
     let regSection = '';
-    if (a.status === 'Open' && !isFull) {
+    if (hasRegistered) {
+      regSection = `<button onclick="cancelRegistrationFromModal(${a.activityID}, this)"
+        class="btn-outline w-100" style="padding:12px;margin-top:4px;font-size:15px;background:rgba(255,45,85,0.1);border-color:#ff2d55;color:#ff2d55">
+        <i class="fa-solid fa-xmark"></i> Hủy đăng ký
+      </button>`;
+    } else if (a.status === 'Open' && !isFull) {
       if (Auth.isLoggedIn()) {
-        regSection = `<button id="modalRegBtn" onclick="registerActivity(${a.activityID}, this, true)"
+        regSection = `<button onclick="registerActivity(${a.activityID}, this, true)"
           class="btn-primary w-100" style="padding:12px;margin-top:4px;font-size:15px">
-           <i class="fa-solid fa-person-circle-plus" style="color: rgb(255, 255, 255);"></i> Đăng ký tham gia
+          <i class="fa-solid fa-person-circle-plus"></i> Đăng ký tham gia
         </button>`;
       } else {
         regSection = `
           <div style="background:#111827;border:1px solid rgba(255,255,255,0.06);border-radius:10px;padding:14px;text-align:center;margin-top:8px">
-            <p style="color:#94a3b8;font-size:13px;margin-bottom:10px"> Đăng nhập để đăng ký tham gia hoạt động</p>
+            <p style="color:#94a3b8;font-size:13px;margin-bottom:10px">Đăng nhập để đăng ký tham gia hoạt động</p>
             <button onclick="AuthModal.open('login')" class="btn-primary" style="padding:9px 20px">Đăng nhập ngay</button>
           </div>`;
       }
@@ -87,7 +103,7 @@ async function showActivityDetail(activityId, options = {}) {
       </div>`;
     } else if (a.status === 'Closed') {
       regSection = `<div style="text-align:center;padding:12px;background:rgba(100,116,139,0.1);border-radius:8px;border:1px solid rgba(100,116,139,0.2);color:#64748b;font-size:13px;margin-top:8px">
-        <i class="fa-solid fa-lock" style="color: rgb(255, 255, 255);"></i> Đã đóng đăng ký
+        <i class="fa-solid fa-lock"></i> Đã đóng đăng ký
       </div>`;
     }
     
@@ -97,10 +113,10 @@ async function showActivityDetail(activityId, options = {}) {
       adminSection = `
         <div style="display:flex;gap:10px;margin-top:16px">
           <button onclick="editActivityFromDetail(${a.activityID})" class="btn-outline" style="flex:1;padding:10px">
-            <i class="fa-solid fa-pen" style="color: rgb(255, 255, 255);"></i> Chỉnh sửa hoạt động
+            <i class="fa-solid fa-pen"></i> Chỉnh sửa hoạt động
           </button>
           <button onclick="deleteActivityFromDetail(${a.activityID})" class="btn-danger" style="flex:1;padding:10px">
-            <i class="fa-solid fa-trash" style="color: rgb(255, 255, 255);"></i> Xóa hoạt động
+            <i class="fa-solid fa-trash"></i> Xóa hoạt động
           </button>
         </div>
       `;
@@ -112,9 +128,11 @@ async function showActivityDetail(activityId, options = {}) {
         <button class="modal-close" onclick="closeDetailModal()">✕</button>
       </div>
     
-      <img src="${a.image && a.image.length > 0 ? (a.image[0].startsWith('http') ? a.image[0] : 'http://localhost:5190' + a.image[0]) : ''}" 
-           style="width:100%;height:280px;object-fit:cover;border-radius:8px;margin-bottom:16px;display:${a.image && a.image.length > 0 ? 'block' : 'none'}"
-           onerror="this.style.display='none'">
+      ${a.image && a.image.length > 0 ? `
+        <img src="${a.image[0].startsWith('http') ? a.image[0] : 'http://localhost:5190' + a.image[0]}" 
+             style="width:100%;height:280px;object-fit:cover;border-radius:8px;margin-bottom:16px"
+             onerror="this.style.display='none'">
+      ` : ''}
            
       <div style="margin-bottom:6px">${Utils.statusLabel(a.status)}</div>
       <div style="font-size:20px;font-weight:700;margin-bottom:16px;line-height:1.3">
@@ -161,13 +179,12 @@ async function showActivityDetail(activityId, options = {}) {
         </div>
       ` : ''}
       
-   
-      
       ${regSection}
       ${adminSection}
     `;
     
   } catch (e) {
+    console.error('Error in showActivityDetail:', e);
     body.innerHTML = `
       <div class="modal-header">
         <span></span>
@@ -176,6 +193,7 @@ async function showActivityDetail(activityId, options = {}) {
       <div style="padding:40px;text-align:center;color:#ff2d55">
         <i class="fa-solid fa-circle-exclamation" style="font-size:48px;margin-bottom:16px"></i>
         <p>${e.message}</p>
+        <button onclick="closeDetailModal()" class="btn-primary btn-sm" style="margin-top:16px">Đóng</button>
       </div>`;
   }
 }
@@ -194,33 +212,79 @@ async function registerActivity(id, btn, fromModal = false) {
     return;
   }
 
-  const originalText = btn.textContent;
+  const originalText = btn.innerHTML || btn.textContent;
   btn.disabled = true;
-  btn.textContent = '⏳ Đang xử lý...';
+  btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang xử lý...';
 
   try {
     await API.register(id);
     Toast.success('Đăng ký tham gia thành công! 🎉');
 
-    btn.textContent = '✓ Đã đăng ký';
-    btn.className = 'btn-outline';
-    btn.onclick = null;
-    
     // Cập nhật lại cache nếu có
     if (window.allActivities) {
       const act = window.allActivities.find(a => a.activityID === id);
       if (act) act.registeredCount = (act.registeredCount || 0) + 1;
     }
     
+    // Cập nhật userRegistrations nếu có
+    if (typeof userRegistrations !== 'undefined') {
+      userRegistrations.set(id, true);
+    }
+    
     // Đóng modal sau 1.5 giây nếu đang ở modal
     if (fromModal) {
       setTimeout(() => closeDetailModal(), 1500);
+    }
+    
+    // Refresh lại danh sách nếu có hàm renderActivities
+    if (typeof renderActivities === 'function') {
+      renderActivities();
     }
 
   } catch (e) {
     Toast.error(e.message);
     btn.disabled = false;
-    btn.textContent = originalText;
+    btn.innerHTML = originalText;
+  }
+}
+
+// ── Hàm hủy đăng ký từ modal ───────────────────────────────────────────────
+async function cancelRegistrationFromModal(activityId, btn) {
+  if (!confirm('Bạn có chắc muốn hủy đăng ký hoạt động này?')) return;
+  
+  const originalText = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang xử lý...';
+  
+  try {
+    await API.cancelRegistration(activityId);
+    Toast.success('Hủy đăng ký thành công');
+    
+    // Đóng modal
+    closeDetailModal();
+    
+    // Cập nhật lại cache
+    if (window.allActivities) {
+      const act = window.allActivities.find(a => a.activityID === activityId);
+      if (act) {
+        act.registeredCount = Math.max(0, (act.registeredCount || 0) - 1);
+      }
+    }
+    
+    // Cập nhật userRegistrations nếu có
+    if (typeof userRegistrations !== 'undefined') {
+      userRegistrations.set(activityId, false);
+    }
+    
+    // Refresh lại danh sách nếu có hàm renderActivities
+    if (typeof renderActivities === 'function') {
+      renderActivities();
+    }
+    
+  } catch (e) {
+    Toast.error(e.message || 'Hủy đăng ký thất bại');
+    btn.disabled = false;
+    btn.innerHTML = originalText;
   }
 }
 
@@ -252,3 +316,11 @@ async function deleteActivityFromDetail(activityId) {
     Toast.error(e.message);
   }
 }
+
+// Export functions ra global
+window.showActivityDetail = showActivityDetail;
+window.closeDetailModal = closeDetailModal;
+window.registerActivity = registerActivity;
+window.cancelRegistrationFromModal = cancelRegistrationFromModal;
+window.editActivityFromDetail = editActivityFromDetail;
+window.deleteActivityFromDetail = deleteActivityFromDetail;

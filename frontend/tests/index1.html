@@ -174,115 +174,21 @@
 
 <script>
 // Render activity cards
-function renderActCard(a) {
-  const pct = a.maxParticipants ? Math.min(100, Math.round(a.registeredCount / a.maxParticipants * 100)) : 0;
-  const emojis = ['🎯','🌟','🏠','📚','🌿','🤝','❤️','🎗️'];
-  const em = emojis[a.activityID % emojis.length];
-  return `
-  <div class="card">
-    <div class="card-thumb">${em}</div>
-    <div class="card-body">
-      ${Utils.statusLabel(a.status)}
-      <div class="card-title">${Utils.escapeHtml(a.activityName)}</div>
-      <div class="card-desc">${Utils.truncate(a.description || 'Không có mô tả', 100)}</div>
-      ${a.maxParticipants ? `
-        <div style="display:flex;justify-content:space-between;font-size:12px;color:#64748b;margin-bottom:6px">
-          <span><i class="fa-solid fa-user-group" style="color: rgb(249, 249, 249);"></i> ${a.registeredCount} / ${a.maxParticipants} người</span>
-          <span style="color:#ff2d55">${pct}%</span>
-        </div>
-        <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
-      ` : `<div style="font-size:12px;color:#64748b"><i class="fa-solid fa-user-group" style="color: rgb(249, 249, 249);"></i> ${a.registeredCount} người đăng ký</div>`}
-      <div class="card-meta" style="margin-top:10px">
-        <span><i class="fa-solid fa-clock" style="color: rgb(249, 249, 249);"></i> ${Utils.formatDateTime(a.time)}</span>
-        <span><i class="fa-solid fa-location-dot" style="color: rgb(248, 117, 117);"></i> ${Utils.escapeHtml(a.location || 'TBD')}</span>
-      </div>
-    </div>
-    <div class="card-footer">
-      <a href="activities.html" class="btn-outline" style="flex:1;padding:8px;font-size:13px;text-align:center">Chi tiết</a>
-      ${a.status === 'Open' && Auth.isLoggedIn()
-        ? `<button onclick="regActivity(${a.activityID}, this)" class="btn-primary" style="padding:8px 14px;font-size:13px">Đăng ký</button>`
-        : (!Auth.isLoggedIn() && a.status === 'Open'
-            ? `<button onclick="AuthModal.open('login')" class="btn-outline" style="padding:8px 14px;font-size:13px">Đăng nhập</button>` : '')}
-    </div>
-  </div>`;
-}
-
-// Render post cards
-function renderPostCard(p) {
-  const catCls = {'Tin tức':'badge-gold','Thông báo':'badge-blue','Hoạt động':'badge-open','Tuyển thành viên':'badge-red'};
-  const catIco = {'Tin tức':'📰','Thông báo':'📢','Hoạt động':'🎯','Tuyển thành viên':'🌟'};
-  return `
-  <div class="card" style="cursor:pointer" onclick="openPost(${p.postID})">
-    <div class="card-thumb" style="height:130px;font-size:2rem">${catIco[p.category] || '📰'}</div>
-    <div class="card-body">
-      <span class="badge ${catCls[p.category] || 'badge-gold'}">${Utils.escapeHtml(p.category)}</span>
-      ${p.title ? `<div class="card-title">${Utils.escapeHtml(p.title)}</div>` : ''}
-      <div class="card-desc">${Utils.truncate(p.content, 80)}</div>
-      <div class="card-meta">
-        <span>✍️ ${Utils.escapeHtml(p.authorName || 'BTC')}</span>
-        <span>📅 ${Utils.formatDate(p.createdDate)}</span>
-      </div>
-    </div>
-  </div>`;
-}
-
-async function regActivity(id, btn) {
-  if (!Auth.isLoggedIn()) { Toast.info('Vui lòng đăng nhập'); setTimeout(() => AuthModal.open('login'), 700); return; }
-  btn.disabled = true; btn.textContent = '...';
-  try {
-    await API.register({ activityID: id });
-    Toast.success('Đăng ký thành công!');
-    btn.textContent = '✓ Đã đăng ký';
-    btn.className = 'btn-outline';
-    btn.style.cssText = 'padding:8px 14px;font-size:13px';
-  } catch(e) {
-    Toast.error(e.message);
-    btn.disabled = false; btn.textContent = 'Đăng ký';
-  }
-}
-
-async function openPost(id) {
-  const modal = document.getElementById('postModal');
-  const body = document.getElementById('postModalBody');
-  body.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
-  modal.classList.add('open');
-  try {
-    const r = await API.getPost(id); const p = r.data;
-    const catCls = {'Tin tức':'badge-gold','Thông báo':'badge-blue','Hoạt động':'badge-open','Tuyển thành viên':'badge-red'};
-    body.innerHTML = `
-      <div class="modal-header">
-        <span class="badge ${catCls[p.category] || 'badge-gold'}">${Utils.escapeHtml(p.category)}</span>
-        <button class="modal-close" onclick="document.getElementById('postModal').classList.remove('open')">✕</button>
-      </div>
-      ${p.title ? `<div style="font-size:18px;font-weight:700;margin-bottom:12px">${Utils.escapeHtml(p.title)}</div>` : ''}
-      <div style="font-size:12px;color:#475569;margin-bottom:18px">
-        ✍️ ${Utils.escapeHtml(p.authorName || 'BTC')} &nbsp;·&nbsp; 📅 ${Utils.formatDateTime(p.createdDate)}
-      </div>
-      <div style="color:#94a3b8;line-height:1.85;white-space:pre-wrap;font-size:14px">${Utils.escapeHtml(p.content)}</div>`;
-  } catch(e) {
-    body.innerHTML = `<p style="color:#ff2d55;padding:20px">${e.message}</p>`;
-  }
-}
-
-document.getElementById('postModal').addEventListener('click', e => {
-  if (e.target === e.currentTarget) e.currentTarget.classList.remove('open');
-});
-
-// Load data
+// Thay thế toàn bộ hàm loadHome() cũ bằng:
 async function loadHome() {
-  // Activities
+  await loadHomeActivities(); // Dùng hàm đã có trong shared.js
+  
+  // Load posts (giữ nguyên)
   try {
-    const r = await API.getActivities();
-    const list = (r.data?.items || []).slice(0, 3);
-    const el = document.getElementById('homeActivities');
+    const r = await API.getPosts();
+    const list = (r.data || []).slice(0, 4);
+    const el = document.getElementById('homePosts');
     if (!list.length) {
-      el.innerHTML = '<div class="empty" style="grid-column:1/-1"><div class="ico">🎯</div><p>Chưa có hoạt động nào đang mở</p></div>';
+      el.innerHTML = '<div class="empty" style="grid-column:1/-1"><div class="ico">📰</div><p>Chưa có bài viết nào</p></div>';
     } else {
-      el.innerHTML = list.map(renderActCard).join('');
+      el.innerHTML = list.map(renderPostCard).join('');
     }
-  } catch(e) {
-    document.getElementById('homeActivities').innerHTML = `<div class="empty" style="grid-column:1/-1"><p>${e.message}</p></div>`;
-  }
+  } catch {}
 
   // Posts
   try {
