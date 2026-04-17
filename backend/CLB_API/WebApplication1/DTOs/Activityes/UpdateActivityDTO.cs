@@ -8,6 +8,8 @@
         public string ? Location { get; set; } // vị trí
         public string ? Status { get; set; } // trạng thái
         public DateTime ? Time {  get; set; }
+        public DateTime ? RegistrationOpenDate { get; set; }
+        public DateTime ? RegistrationDeadLine { get; set; }
         public int ? MaxParticipans { get; set; } // giới hạn 
         public List<string>? ImageUrls { get; set; }
     }

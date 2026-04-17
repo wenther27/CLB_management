@@ -20,6 +20,11 @@ namespace ClubManagement.API.Models
         public string Status { get; set; } = "Open";
         [Required]
         public DateTime time { get; set; }
+        
+        public DateTime? RegistrationOpenDate { get; set; }
+
+        public DateTime? RegistrationDeadLine { get; set; }
+
         [MaxLength(50)]
         public DateTime? CreateAt { get; set; } = DateTime.Now;
 

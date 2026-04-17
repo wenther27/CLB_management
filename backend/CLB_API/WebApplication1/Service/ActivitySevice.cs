@@ -3,6 +3,7 @@ using ClubManagement.API.Data;
 using ClubManagement.API.DTOs;
 using ClubManagement.API.Models;
 using Microsoft.EntityFrameworkCore;
+using System.Diagnostics.CodeAnalysis;
 namespace ClubManagement.API.Service
 {
     public interface IActivityService
@@ -21,6 +22,7 @@ namespace ClubManagement.API.Service
         Task<bool> HasUserRegisteredAsync(int activityId, int userId);
         Task<PagedResultDTO<RegistrationResponseDTO>> GetRegistrationsAsync(int activityId, int page, int pageSize);
         Task<PagedResultDTO<RegistrationResponseDTO>> GetMyRegistrationsAsync(int userId, int page, int pageSize);
+        Task<int> AutoCloseExpiredActivitiesAsync();
 
     }
     public class ActivityService : IActivityService
@@ -79,9 +81,17 @@ namespace ClubManagement.API.Service
             return activity == null ? null : MapToDTO(activity);
         }
 
-        // Lay hoat dong moi
+        // Tao hoat dong moi
         public async Task<ActivityDTO?> CreateAsync(CreateActivityDTO dto, int creatorUserId)
         {
+            if(dto.RegistrationOpenTime.HasValue && dto.RegistrationDeadLine.Value >= dto.Time)
+            {
+                throw new ArgumentException("Thời hạn đăng ký phải trước thời gian diễn ra hoạt động");
+            }
+            if (dto.RegistrationOpenTime.HasValue && dto.RegistrationDeadLine.HasValue && dto.RegistrationOpenTime.Value >= dto.RegistrationDeadLine.Value)
+            {
+                throw new ArgumentException("Ngày mở đăng ký phải trước hạn chót đăng ký");
+            }
             var activity = new ClubActivity
             {
                 ActivityName = dto.ActivityName,
@@ -89,6 +99,8 @@ namespace ClubManagement.API.Service
                 Location = dto.Location,
                 Status = dto.Status,
                 time = dto.Time,
+                RegistrationOpenDate = dto.RegistrationOpenTime,  
+                RegistrationDeadLine = dto.RegistrationDeadLine,
                 MaxParticipants = dto.MaxParticipants,
                 CreateBy = creatorUserId,
                 CreateAt = DateTime.UtcNow,
@@ -126,6 +138,25 @@ namespace ClubManagement.API.Service
             if (dto.Status != null) activity.Status = dto.Status;
             if (dto.Time.HasValue) activity.time = dto.Time.Value;
             if (dto.MaxParticipans.HasValue) activity.MaxParticipants = dto.MaxParticipans;
+            if (dto.RegistrationOpenDate.HasValue)
+            {
+                activity.RegistrationOpenDate = dto.RegistrationOpenDate == DateTime.MinValue ? null : dto.RegistrationOpenDate;
+            }
+            if (dto.RegistrationDeadLine.HasValue)
+            {
+                activity.RegistrationDeadLine = dto.RegistrationDeadLine == DateTime.MinValue ? null : dto.RegistrationDeadLine;
+            }
+            var effectiveDeadLine = activity.RegistrationDeadLine;
+            var effectiveOpenDate = activity.RegistrationOpenDate;
+            var effectiveTime = activity.time;
+            if (effectiveDeadLine.HasValue && effectiveDeadLine.Value >= effectiveTime)
+            {
+            throw new ArgumentException("Hạn chót đăng ký phải trước thời gian diễn ra hoạt động");
+            }
+            if(effectiveOpenDate.HasValue && effectiveDeadLine.HasValue && effectiveOpenDate.Value >= effectiveDeadLine.Value)
+            {
+                throw new ArgumentException("Ngày mở đăng ký phải trước hạn chót đăng ký");
+            }
             if (dto.ImageUrls != null)
             {
                 _context.ActivityImages.RemoveRange(activity.ActivityImages);
@@ -161,6 +192,20 @@ namespace ClubManagement.API.Service
             return true;
 
         }
+        public async Task<int> AutoCloseExpiredActivitiesAsync()
+        {
+            var now = DateTime.UtcNow;
+            var expỉed = await _context.Activities
+                .Where(a => a.Status == "Open" && a.RegistrationDeadLine.HasValue && a.RegistrationDeadLine.Value <= now)
+                .ToListAsync();
+            if (!expỉed.Any()) return 0;
+            foreach (var activity in expỉed)
+            {
+                activity.Status = "Closed";
+            }
+            await _context.SaveChangesAsync();
+            return expỉed.Count;
+        }
         // chekc usser dang ky
         public async Task<bool> HasUserRegisteredAsync(int activityId, int userId)
         {
@@ -172,15 +217,31 @@ namespace ClubManagement.API.Service
         }
         // dang ky tham gia hoat dong
         public async Task<RegistrationResponseDTO?> RegisterAsync(int activityId, int userId)
+
         {
+            var now = DateTime.UtcNow;
             var activity = await _context.Activities
                 .Include(a => a.Registrations)
                 .FirstOrDefaultAsync(a => a.ActivityID == activityId);
+            //kiem tra trang thai hoat dong
             if (activity == null || activity.Status != "Open") return null;
+            // kiem tra thoi gian dang ky
+            if (activity.RegistrationOpenDate.HasValue && now < activity.RegistrationOpenDate.Value)
+            {
+                return null;
+            }
+            if (activity.RegistrationDeadLine.HasValue && now > activity.RegistrationDeadLine.Value)
+            {
+                activity.Status = "Closed";
+                await _context.SaveChangesAsync();
+                return null;
+            }
             var member = await _context.Members.FirstOrDefaultAsync(m => m.UserID == userId);
+
             if (member == null) return null;
             bool alreadyRegistered = await _context.Registrations
                 .AnyAsync(r => r.ActivityID == activityId && r.MemberID == member.MemberID);
+
             if (alreadyRegistered) return null;
             if (activity.MaxParticipants.HasValue)
             {
@@ -207,6 +268,18 @@ namespace ClubManagement.API.Service
                 RegisterDate = registration.RegisterDate,
                 Status = registration.Status
             };
+        }
+        // Huy dang ky tham gia hoat dong
+        public async Task<bool> CancelActivityAsync(int activityId ,int userId)
+        {
+            var member = await _context.Members.FirstOrDefaultAsync(m => m.UserID == userId);
+            if (member == null) return false;
+            var registration = await _context.Registrations
+                .FirstOrDefaultAsync(r => r.ActivityID == activityId && r.MemberID == member.MemberID);
+            if (registration == null) return false;
+            _context.Registrations.Remove(registration);
+            await _context.SaveChangesAsync();
+            return true;
         }
         public async Task<bool> CancelRegistrationAsync(int activityId, int userId)
         {
