@@ -34,10 +34,18 @@ namespace ClubManagement.API.Data
                 new Role { RoleID = 3, RoleName = "Member", Description = "Thành viên" },
                 new Role { RoleID = 4, RoleName = "Guest", Description = "Khách" }
             );
+            modelBuilder.Entity<ExecutiveBoard>(entity =>
+            {
+                entity.HasKey(e => e.BoardID); // Giả sử có khóa chính
 
-           
-         
-            
+                entity.HasOne(e => e.user)
+                      .WithMany()
+                      .HasForeignKey(e => e.userID)
+                      .OnDelete(DeleteBehavior.NoAction); // KHÔNG DÙNG CASCADE
+            });
+
+
+
         }
     }
 }

@@ -69,6 +69,10 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IActivityService, ActivityService>();
 builder.Services.AddScoped<IMemberService, MemberService>();
 
+// Background service: tự động khoá/mở hoạt động theo thời gian
+// Cấu hình tại appsettings.json > "ActivityAutoClose"
+builder.Services.AddHostedService<ActivityAutoCloseService>();
+
 // Cấu hình upload file
 builder.Services.Configure<FormOptions>(options =>
 {

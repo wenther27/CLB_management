@@ -195,16 +195,16 @@ namespace ClubManagement.API.Service
         public async Task<int> AutoCloseExpiredActivitiesAsync()
         {
             var now = DateTime.UtcNow;
-            var expỉed = await _context.Activities
+            var expied = await _context.Activities
                 .Where(a => a.Status == "Open" && a.RegistrationDeadLine.HasValue && a.RegistrationDeadLine.Value <= now)
                 .ToListAsync();
-            if (!expỉed.Any()) return 0;
-            foreach (var activity in expỉed)
+            if (!expied.Any()) return 0;
+            foreach (var activity in expied)
             {
                 activity.Status = "Closed";
             }
             await _context.SaveChangesAsync();
-            return expỉed.Count;
+            return expied.Count;
         }
         // chekc usser dang ky
         public async Task<bool> HasUserRegisteredAsync(int activityId, int userId)
@@ -370,7 +370,9 @@ namespace ClubManagement.API.Service
             CreateBy = a.CreateBy,
             CreatorName = a.Creator?.Username ?? "",
             RegisteredCount = a.Registrations?.Count(r => r.Status == "Confirmed") ?? 0,
-            Image = a.ActivityImages?.Select(i => i.ImageUrl).ToList() ?? new()
+            Image = a.ActivityImages?.Select(i => i.ImageUrl).ToList() ?? new(),
+            RegistrationOpenDate = a.RegistrationOpenDate,
+            RegistrationDeadLine = a.RegistrationDeadLine
         };
 
     }

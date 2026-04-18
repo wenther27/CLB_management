@@ -4,17 +4,22 @@
 // upload ảnh, khóa/mở, xóa
 // ================================================
 
+// ── Biến toàn cục ────────────────────────────────────────────────────────────
+let currentEditId = null;
+
 // ── Load danh sách hoạt động ──────────────────────────────────────────────────
 async function loadActivitiesAdmin() {
   const tbody = document.getElementById('aBody');
-  tbody.innerHTML = '<tr><td colspan="7" class="loading"><div class="spinner"></div></td></tr>';
+  if (!tbody) return;
+  
+  tbody.innerHTML = '<tr><td colspan="9" class="loading"><div class="spinner"></div></td></tr>';
 
   try {
     const r = await API.getActivities();
     const list = r.data?.items || r.data || [];
 
     if (!list.length) {
-      tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:30px;color:#475569">Chưa có hoạt động nào</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:30px;color:#475569">Chưa có hoạt động nào</td></tr>';
       return;
     }
 
@@ -45,6 +50,24 @@ async function loadActivitiesAdmin() {
           </button>`;
       }
 
+      // Hiển thị hạn đăng ký
+      const deadlineHtml = a.registrationDeadLine
+        ? (() => {
+            const dl = new Date(a.registrationDeadLine);
+            const now = new Date();
+            const isExpired = dl < now;
+            const isNear = !isExpired && (dl - now) < 24 * 60 * 60 * 1000;
+            const color = isExpired ? '#ff2d55' : isNear ? '#f59e0b' : '#94a3b8';
+            const icon = isExpired ? '🔒' : isNear ? '⚠️' : '⏰';
+            return `<span style="color:${color};font-size:12px">${icon} ${Utils.formatDateTime(a.registrationDeadLine)}</span>`;
+          })()
+        : '<span style="color:#475569;font-size:12px">—</span>';
+
+      // Hiển thị ngày mở đăng ký
+      const openDateHtml = a.registrationOpenDate
+        ? `<span style="font-size:12px;color:#60a5fa">📅 ${Utils.formatDateTime(a.registrationOpenDate)}</span>`
+        : '<span style="color:#475569;font-size:12px">Ngay khi tạo</span>';
+
       return `
         <tr>
           <td style="color:#475569">${a.activityID}</td>
@@ -57,6 +80,8 @@ async function loadActivitiesAdmin() {
             </strong>
           </td>
           <td style="color:#94a3b8">${Utils.formatDateTime(a.time)}</td>
+          <td style="font-size:12px">${openDateHtml}</td>
+          <td style="font-size:12px">${deadlineHtml}</td>
           <td style="color:#94a3b8">${Utils.escapeHtml(a.location || '—')}</td>
           <td style="color:#94a3b8">
             ${a.registeredCount}${a.maxParticipants ? ' / ' + a.maxParticipants : ''}
@@ -64,6 +89,10 @@ async function loadActivitiesAdmin() {
           <td>${Utils.statusLabel(a.status)}</td>
           <td>
             <div style="display:flex;gap:6px;flex-wrap:wrap">
+              <button onclick="showRegistrationsList(${a.activityID}, '${Utils.escapeHtml(a.activityName)}')"
+                class="btn-outline btn-sm" title="Xem danh sách đăng ký">
+                <i class="fa-solid fa-users"></i>
+              </button>
               ${toggleBtn}
               <button onclick='openActModalForEdit(${JSON.stringify(a).replace(/'/g, "&#39;")})'
                 class="btn-outline btn-sm" title="Sửa">
@@ -79,13 +108,17 @@ async function loadActivitiesAdmin() {
     }).join('');
 
   } catch (e) {
-    tbody.innerHTML = `<tr><td colspan="7" style="color:#ff2d55;padding:20px">${e.message}</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="9" style="color:#ff2d55;padding:20px">${e.message}</td></tr>`;
   }
 }
 
 // ── Modal tạo / sửa hoạt động ────────────────────────────────────────────────
 function openActModal(data = {}) {
+  currentEditId = data.activityID || null;
+  
   const tv = data.time ? new Date(data.time).toISOString().slice(0, 16) : '';
+  const rod = data.registrationOpenDate ? new Date(data.registrationOpenDate).toISOString().slice(0, 16) : '';
+  const rdl = data.registrationDeadLine ? new Date(data.registrationDeadLine).toISOString().slice(0, 16) : '';
   const existingImages = (data.image || data.images || [])
     .map((url, i) => renderPreviewItem(url, i))
     .join('');
@@ -110,8 +143,28 @@ function openActModal(data = {}) {
                value="${Utils.escapeHtml(data.location || '')}">
       </div>
       <div class="form-group">
-        <label class="form-label">Thời gian *</label>
+        <label class="form-label">Thời gian diễn ra *</label>
         <input type="datetime-local" id="af-time" class="form-control" value="${tv}">
+      </div>
+    </div>
+
+    <!-- Thời gian đăng ký -->
+    <div style="background:#0f172a;border-radius:10px;padding:14px 16px;margin-bottom:14px;border:1px solid rgba(255,255,255,0.06)">
+      <div style="font-size:12px;font-weight:600;color:#94a3b8;margin-bottom:10px;letter-spacing:0.5px">
+        <i class="fa-solid fa-calendar-check"></i> THỜI GIAN ĐĂNG KÝ
+      </div>
+      <div class="form-row" style="margin-bottom:0">
+        <div class="form-group" style="margin-bottom:0">
+          <label class="form-label">Ngày mở đăng ký</label>
+          <input type="datetime-local" id="af-reg-open" class="form-control" value="${rod}"
+                 placeholder="Để trống = mở ngay">
+          <div style="font-size:11px;color:#475569;margin-top:4px">Để trống = mở ngay khi tạo</div>
+        </div>
+        <div class="form-group" style="margin-bottom:0">
+          <label class="form-label">Hạn chót đăng ký</label>
+          <input type="datetime-local" id="af-reg-deadline" class="form-control" value="${rdl}">
+          <div style="font-size:11px;color:#475569;margin-top:4px">Hết hạn → tự động khoá</div>
+        </div>
       </div>
     </div>
 
@@ -125,8 +178,8 @@ function openActModal(data = {}) {
       <div class="form-group">
         <label class="form-label">Trạng thái</label>
         <select id="af-st" class="form-control">
-          <option value="Open"      ${(!data.status || data.status === 'Open')      ? 'selected' : ''}>Đang mở</option>
-          <option value="Closed"    ${data.status === 'Closed'    ? 'selected' : ''}>Đã đóng</option>
+          <option value="Open"      ${(!data.status || data.status === 'Open') ? 'selected' : ''}>Đang mở</option>
+          <option value="Closed"    ${data.status === 'Closed' ? 'selected' : ''}>Đã đóng</option>
           <option value="Cancelled" ${data.status === 'Cancelled' ? 'selected' : ''}>Đã hủy</option>
         </select>
       </div>
@@ -177,36 +230,60 @@ function openActModal(data = {}) {
     : (data.images ? [...data.images] : []);
 }
 
-// Helper để mở modal edit từ dòng table (tránh lỗi escape JSON)
+// Helper để mở modal edit từ dòng table
 function openActModalForEdit(activityData) {
   openActModal({
-    activityID:      activityData.activityID,
-    activityName:    activityData.activityName,
-    description:     activityData.description,
-    location:        activityData.location,
-    maxParticipants: activityData.maxParticipants,
-    time:            activityData.time,
-    status:          activityData.status,
-    images:          activityData.image || activityData.images || [],
+    activityID:              activityData.activityID,
+    activityName:            activityData.activityName,
+    description:             activityData.description,
+    location:                activityData.location,
+    maxParticipants:         activityData.maxParticipants,
+    time:                    activityData.time,
+    status:                  activityData.status,
+    registrationOpenDate:    activityData.registrationOpenDate,
+    registrationDeadLine:    activityData.registrationDeadLine,
+    image:                   activityData.image || activityData.images || [],
   });
 }
 
 // ── Lưu hoạt động (tạo / cập nhật) ──────────────────────────────────────────
 async function saveAct(id) {
+  const timeVal     = document.getElementById('af-time')?.value;
+  const deadlineVal = document.getElementById('af-reg-deadline')?.value;
+  const openVal     = document.getElementById('af-reg-open')?.value;
+  const nameEl      = document.getElementById('af-name');
+
+  if (!nameEl || !timeVal) {
+    Toast.error('Vui lòng nhập đầy đủ thông tin bắt buộc');
+    return;
+  }
+
   const d = {
-    activityName:    document.getElementById('af-name').value.trim(),
-    description:     document.getElementById('af-desc').value.trim() || null,
-    location:        document.getElementById('af-loc').value.trim()  || null,
-    maxParticipants: parseInt(document.getElementById('af-max').value) || null,
-    time:            document.getElementById('af-time').value
-                       ? new Date(document.getElementById('af-time').value).toISOString()
-                       : null,
-    status:          document.getElementById('af-st').value,
-    imageUrls:       window._actImageUrls || [],
+    activityName:         nameEl.value.trim(),
+    description:          document.getElementById('af-desc')?.value.trim() || null,
+    location:             document.getElementById('af-loc')?.value.trim()  || null,
+    maxParticipants:      parseInt(document.getElementById('af-max')?.value) || null,
+    time:                 timeVal     ? new Date(timeVal).toISOString()     : null,
+    registrationOpenDate: openVal     ? new Date(openVal).toISOString()     : null,
+    registrationDeadLine: deadlineVal ? new Date(deadlineVal).toISOString() : null,
+    status:               document.getElementById('af-st')?.value || 'Open',
+    imageUrls:            window._actImageUrls || [],
   };
 
   if (!d.activityName) { Toast.error('Vui lòng nhập tên hoạt động'); return; }
-  if (!d.time)         { Toast.error('Vui lòng chọn thời gian');      return; }
+  if (!d.time)         { Toast.error('Vui lòng chọn thời gian diễn ra'); return; }
+
+  // Validate deadline < thời gian diễn ra
+  if (d.registrationDeadLine && d.time && new Date(d.registrationDeadLine) >= new Date(d.time)) {
+    Toast.error('Hạn chót đăng ký phải trước thời gian diễn ra hoạt động');
+    return;
+  }
+  // Validate ngày mở < deadline
+  if (d.registrationOpenDate && d.registrationDeadLine &&
+      new Date(d.registrationOpenDate) >= new Date(d.registrationDeadLine)) {
+    Toast.error('Ngày mở đăng ký phải trước hạn chót đăng ký');
+    return;
+  }
 
   try {
     if (id) {
@@ -218,7 +295,7 @@ async function saveAct(id) {
     }
     closeModal();
     loadActivitiesAdmin();
-    loadStats();
+    if (typeof loadStats === 'function') loadStats();
   } catch (e) {
     Toast.error(e.message);
   }
@@ -236,17 +313,19 @@ async function toggleActivityStatus(activityId, newStatus) {
   try {
     const cur = (await API.getActivity(activityId)).data;
     await API.updateActivity(activityId, {
-      activityName:    cur.activityName,
-      description:     cur.description  || null,
-      location:        cur.location     || null,
-      maxParticipants: cur.maxParticipants || null,
-      time:            cur.time,
-      status:          newStatus,
-      imageUrls:       cur.image || [],
+      activityName:         cur.activityName,
+      description:          cur.description         || null,
+      location:             cur.location            || null,
+      maxParticipants:      cur.maxParticipants      || null,
+      time:                 cur.time,
+      registrationOpenDate: cur.registrationOpenDate || null,
+      registrationDeadLine: cur.registrationDeadLine || null,
+      status:               newStatus,
+      imageUrls:            cur.image || [],
     });
     Toast.success(m.success);
     loadActivitiesAdmin();
-    loadStats();
+    if (typeof loadStats === 'function') loadStats();
   } catch (e) {
     Toast.error(e.message);
   }
@@ -259,7 +338,7 @@ async function deleteActivity(activityId) {
     await API.deleteActivity(activityId);
     Toast.success('Đã xóa hoạt động');
     loadActivitiesAdmin();
-    loadStats();
+    if (typeof loadStats === 'function') loadStats();
   } catch (e) {
     Toast.error(e.message);
   }
@@ -268,11 +347,12 @@ async function deleteActivity(activityId) {
 // ── Upload ảnh ────────────────────────────────────────────────────────────────
 function renderPreviewItem(url, index) {
   const src = url.startsWith('http') ? url : `http://localhost:5190${url}`;
+  const uniqueId = `img-wrap-${Date.now()}-${index}`;
   return `
-    <div id="img-wrap-${index}" style="position:relative;width:90px;height:90px;
+    <div id="${uniqueId}" style="position:relative;width:90px;height:90px;
          border-radius:8px;overflow:hidden;border:1px solid rgba(255,255,255,0.1);flex-shrink:0">
       <img src="${src}" style="width:100%;height:100%;object-fit:cover">
-      <button onclick="removeImage('${url}', 'img-wrap-${index}')"
+      <button onclick="removeImage('${url}', '${uniqueId}')"
         style="position:absolute;top:3px;right:3px;width:20px;height:20px;border-radius:50%;
                background:rgba(0,0,0,0.7);border:none;color:white;font-size:11px;
                cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0">✕</button>
@@ -281,20 +361,25 @@ function renderPreviewItem(url, index) {
 
 function removeImage(url, wrapId) {
   window._actImageUrls = (window._actImageUrls || []).filter(u => u !== url);
-  document.getElementById(wrapId)?.remove();
+  const wrap = document.getElementById(wrapId);
+  if (wrap) wrap.remove();
 }
 
 function handleDragOver(e) {
   e.preventDefault();
   const dz = document.getElementById('af-dropzone');
-  dz.style.borderColor = '#ff2d55';
-  dz.style.background  = 'rgba(255,45,85,0.05)';
+  if (dz) {
+    dz.style.borderColor = '#ff2d55';
+    dz.style.background  = 'rgba(255,45,85,0.05)';
+  }
 }
 
-function handleDragLeave() {
+function handleDragLeave(e) {
   const dz = document.getElementById('af-dropzone');
-  dz.style.borderColor = 'rgba(255,255,255,0.12)';
-  dz.style.background  = 'transparent';
+  if (dz) {
+    dz.style.borderColor = 'rgba(255,255,255,0.12)';
+    dz.style.background  = 'transparent';
+  }
 }
 
 function handleDrop(e) {
@@ -318,7 +403,7 @@ async function uploadImages(files) {
   if (files.length > remaining) Toast.info(`Chỉ upload thêm ${remaining} ảnh`);
 
   const status = document.getElementById('af-uploadStatus');
-  status.innerHTML = `<span style="color:#f59e0b">⏳ Đang upload ${toUpload.length} ảnh...</span>`;
+  if (status) status.innerHTML = `<span style="color:#f59e0b">⏳ Đang upload ${toUpload.length} ảnh...</span>`;
 
   let successCount = 0;
 
@@ -347,11 +432,13 @@ async function uploadImages(files) {
       window._actImageUrls = window._actImageUrls || [];
       window._actImageUrls.push(url);
 
-      const idx = Date.now() + Math.random();
       const preview = document.getElementById('af-preview');
-      const div = document.createElement('div');
-      div.innerHTML = renderPreviewItem(url, idx);
-      preview.appendChild(div.firstElementChild);
+      if (preview) {
+        const idx = Date.now() + Math.random();
+        const div = document.createElement('div');
+        div.innerHTML = renderPreviewItem(url, idx);
+        preview.appendChild(div.firstElementChild);
+      }
       successCount++;
 
     } catch (e) {
@@ -359,7 +446,25 @@ async function uploadImages(files) {
     }
   }
 
-  status.innerHTML = successCount > 0
-    ? `<span style="color:#22c55e">✅ Đã upload ${successCount} ảnh</span>`
-    : `<span style="color:#ff2d55">❌ Upload thất bại</span>`;
+  if (status) {
+    status.innerHTML = successCount > 0
+      ? `<span style="color:#22c55e">✅ Đã upload ${successCount} ảnh</span>`
+      : `<span style="color:#ff2d55">❌ Upload thất bại</span>`;
+    setTimeout(() => { if (status) status.innerHTML = ''; }, 3000);
+  }
 }
+
+// ── Export functions ra global ────────────────────────────────────────────────
+window.loadActivitiesAdmin = loadActivitiesAdmin;
+window.openActModal = openActModal;
+window.openActModalForEdit = openActModalForEdit;
+window.saveAct = saveAct;
+window.toggleActivityStatus = toggleActivityStatus;
+window.deleteActivity = deleteActivity;
+window.removeImage = removeImage;
+window.handleDragOver = handleDragOver;
+window.handleDragLeave = handleDragLeave;
+window.handleDrop = handleDrop;
+window.handleFileSelect = handleFileSelect;
+window.uploadImages = uploadImages;
+window.renderPreviewItem = renderPreviewItem;

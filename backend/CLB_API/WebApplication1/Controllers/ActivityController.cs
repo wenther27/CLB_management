@@ -19,7 +19,7 @@ namespace ClubManagement.API.Controllers
             _activityService = activityService;
         }
 
-       
+
         private int GetUserId() =>
             int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "0");
 
@@ -27,13 +27,13 @@ namespace ClubManagement.API.Controllers
             User.FindFirstValue(ClaimTypes.Role) ?? "Member";
         // GET /api/activities
         // Ai cũng xem được, có thể filter theo Status, Keyword, FromDate, ToDate
-     
+
         [HttpGet]
         [AllowAnonymous]
         public async Task<IActionResult> GetAll([FromQuery] ActivityQueryDTO query)
         {
             var result = await _activityService.GetAllAsync(query);
-            return Ok(ApiResponse<PagedResultDTO<ActivityDTO>>.Ok( result, "Lấy danh sách hoạt động thành công"));
+            return Ok(ApiResponse<PagedResultDTO<ActivityDTO>>.Ok(result, "Lấy danh sách hoạt động thành công"));
         }
         // GET /api/activities/{id}/has-registered
         [HttpGet("{id:int}/has-registered")]
@@ -59,7 +59,7 @@ namespace ClubManagement.API.Controllers
 
         // POST /api/activities
         // Chỉ Admin hoặc ExecutiveBoard mới được tạo hoạt động
-     
+
         [HttpPost]
         [Authorize(Roles = "Admin,ExecutiveBoard")]
         public async Task<IActionResult> Create([FromBody] CreateActivityDTO dto)
@@ -92,7 +92,7 @@ namespace ClubManagement.API.Controllers
             return Ok(ApiResponse<ActivityDTO>.Ok(result, "Cập nhật hoạt động thành công"));
         }
 
-     
+
         // PATCH /api/activities/{id}/cancel
         // Admin hoặc người tạo có thể hủy hoạt động (không xóa, chỉ đổi status)
 
@@ -121,7 +121,7 @@ namespace ClubManagement.API.Controllers
             return Ok(ApiResponse<string>.Ok("Deleted", "Xóa hoạt động thành công"));
         }
 
-      
+
         //  ĐĂNG KÝ THAM GIA
         // POST /api/activities/{id}/register
         // Thành viên đăng ký tham gia hoạt động
@@ -150,7 +150,7 @@ namespace ClubManagement.API.Controllers
             return Ok(ApiResponse<string>.Ok("Cancelled", "Hủy đăng ký thành công"));
         }
 
-      
+
         // GET /api/activities/{id}/registrations
         // Admin/Board xem danh sách người đăng ký của một hoạt động
         [HttpGet("{id:int}/registrations")]
@@ -172,6 +172,16 @@ namespace ClubManagement.API.Controllers
             var result = await _activityService.GetMyRegistrationsAsync(GetUserId(), page, pageSize);
             return Ok(ApiResponse<PagedResultDTO<RegistrationResponseDTO>>.Ok(
                 result, "Lấy lịch sử đăng ký thành công"));
+        }
+
+        // POST /api/activities/auto-close
+        // Admin trigger thủ công: khoá tất cả hoạt động đã hết hạn đăng ký
+        [HttpPost("auto-close")]
+        [Authorize(Roles = "Admin,ExecutiveBoard")]
+        public async Task<IActionResult> TriggerAutoClose()
+        {
+            var count = await _activityService.AutoCloseExpiredActivitiesAsync();
+            return Ok(ApiResponse<int>.Ok(count, $"Đã tự động khoá {count} hoạt động hết hạn đăng ký"));
         }
     }
 }

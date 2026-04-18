@@ -20,11 +20,13 @@ async function checkUserRegistrations(activities) {
     }
     
     try {
+        // Sử dụng Promise.allSettled để tránh lỗi 1 activity ảnh hưởng toàn bộ
         const promises = activities.map(async (act) => {
             try {
                 const r = await API.hasRegistered(act.activityID);
-                return { id: act.activityID, registered: r.data };
-            } catch {
+                return { id: act.activityID, registered: r.data === true };
+            } catch (err) {
+                console.warn(`Failed to check registration for activity ${act.activityID}:`, err);
                 return { id: act.activityID, registered: false };
             }
         });
@@ -32,6 +34,8 @@ async function checkUserRegistrations(activities) {
         const results = await Promise.all(promises);
         userRegistrations.clear();
         results.forEach(r => userRegistrations.set(r.id, r.registered));
+        
+        console.log('User registrations map:', Array.from(userRegistrations.entries()));
     } catch (e) {
         console.error('Error checking registrations:', e);
     }
@@ -99,7 +103,22 @@ function renderCard(a) {
     ? Math.min(100, Math.round((a.registeredCount / a.maxParticipants) * 100))
     : 0;
   const isFull = a.maxParticipants && a.registeredCount >= a.maxParticipants;
-  const hasRegistered = userRegistrations.get(a.activityID) || false;
+  
+  // QUAN TRỌNG: Lấy trạng thái đăng ký từ Map
+  const hasRegistered = userRegistrations.get(a.activityID) === true;
+
+  // Tính trạng thái deadline
+  const now = new Date();
+  const deadline = a.registrationDeadline ? new Date(a.registrationDeadline) : null;
+  const openDate = a.registrationOpenDate ? new Date(a.registrationOpenDate) : null;
+  const isDeadlinePassed = deadline && deadline <= now;
+  const isNotOpenYet = openDate && openDate > now;
+  const isDeadlineNear = deadline && !isDeadlinePassed && (deadline - now) < 24 * 60 * 60 * 1000;
+
+  // Debug log
+  if (hasRegistered) {
+    console.log(`Activity ${a.activityID} - ${a.activityName}: hasRegistered = ${hasRegistered}`);
+  }
 
   const firstImage = a.image && a.image.length > 0 ? a.image[0] : null;
   const imageHtml = firstImage 
@@ -113,31 +132,52 @@ function renderCard(a) {
                   display:flex;align-items:center;justify-content:center;font-size:2rem;border-radius:8px 8px 0 0">
        </div>`;
 
+  // Badge deadline với open date
+  let deadlineBadge = '';
+  if (deadline && a.status === 'Open') {
+    if (isDeadlinePassed) {
+      deadlineBadge = `<div style="font-size:11px;color:#ff6b84;margin-top:6px"><i class="fa-solid fa-lock"></i> Hết hạn đăng ký</div>`;
+    } else if (isDeadlineNear) {
+      deadlineBadge = `<div style="font-size:11px;color:#f59e0b;margin-top:6px"><i class="fa-solid fa-triangle-exclamation"></i> Hạn: ${Utils.formatDateTime(a.registrationDeadline)}</div>`;
+    } else {
+      deadlineBadge = `<div style="font-size:11px;color:#64748b;margin-top:6px"><i class="fa-solid fa-calendar-xmark"></i> Hạn: ${Utils.formatDateTime(a.registrationDeadline)}</div>`;
+    }
+  }
+  
+  // Badge open date nếu có
+  let openDateBadge = '';
+  if (openDate && a.status === 'Open' && isNotOpenYet) {
+    openDateBadge = `<div style="font-size:11px;color:#60a5fa;margin-top:4px"><i class="fa-solid fa-clock"></i> Mở: ${Utils.formatDateTime(a.registrationOpenDate)}</div>`;
+  }
+
   // Xác định nút hành động dựa trên trạng thái
   let actionBtn = '';
   
+  // ƯU TIÊN: Nếu đã đăng ký, hiển thị nút hủy
   if (hasRegistered) {
-    // Đã đăng ký - hiển thị nút hủy
-    actionBtn = `<button onclick="cancelRegistration(${a.activityID}, this)" 
+    actionBtn = `<button onclick="event.stopPropagation(); cancelRegistration(${a.activityID}, this)" 
                    class="btn-outline" style="padding:8px 14px;font-size:13px;background:rgba(255,45,85,0.1);border-color:#ff2d55;color:#ff2d55">
                     <i class="fa-solid fa-xmark"></i> Hủy đăng ký
                   </button>`;
-  } else if (a.status === 'Open' && !isFull) {
-    // Chưa đăng ký và hoạt động đang mở
+  } 
+  // Chưa đăng ký, kiểm tra điều kiện đăng ký
+  else if (a.status === 'Open' && !isFull && !isDeadlinePassed && !isNotOpenYet) {
     if (Auth.isLoggedIn()) {
-      actionBtn = `<button onclick="registerActivity(${a.activityID}, this)" 
+      actionBtn = `<button onclick="event.stopPropagation(); registerActivity(${a.activityID}, this)" 
                      class="btn-primary" style="padding:8px 14px;font-size:13px">
                       <i class="fa-solid fa-check"></i> Đăng ký
                     </button>`;
     } else {
-      actionBtn = `<button onclick="AuthModal.open('login')" 
+      actionBtn = `<button onclick="event.stopPropagation(); AuthModal.open('login')" 
                      class="btn-outline" style="padding:8px 14px;font-size:13px">
                       Đăng nhập để đăng ký
                     </button>`;
     }
+  } else if (isNotOpenYet) {
+    actionBtn = `<span class="badge" style="padding:8px 12px;background:rgba(59,130,246,0.1);color:#60a5fa;border-radius:6px;font-size:12px">🕐 Chưa mở đăng ký</span>`;
   } else if (isFull) {
     actionBtn = `<span class="badge badge-inactive" style="padding:8px 12px">Đã đủ chỗ</span>`;
-  } else if (a.status === 'Closed') {
+  } else if (a.status === 'Closed' || isDeadlinePassed) {
     actionBtn = `<span class="badge badge-closed" style="padding:8px 12px">Đã đóng đăng ký</span>`;
   } else if (a.status === 'Cancelled') {
     actionBtn = `<span class="badge badge-inactive" style="padding:8px 12px">Đã hủy</span>`;
@@ -163,6 +203,8 @@ function renderCard(a) {
         <span><i class="fa-solid fa-calendar-days"></i> ${Utils.formatDateTime(a.time)}</span>
         <span><i class="fa-solid fa-location-dot"></i> ${Utils.escapeHtml(a.location || 'TBD')}</span>
       </div>
+      ${openDateBadge}
+      ${deadlineBadge}
       ${hasRegistered ? `<div style="margin-top:8px;font-size:12px;color:#22c55e"><i class="fa-solid fa-check-circle"></i> Bạn đã đăng ký</div>` : ''}
     </div>
     <div class="card-footer" onclick="event.stopPropagation()">
@@ -205,7 +247,7 @@ async function cancelRegistration(activityId, btn) {
     }
 }
 
-// Cập nhật hàm đăng ký
+// Hàm đăng ký
 async function registerActivity(id, btn) {
     if (!Auth.isLoggedIn()) {
         Toast.info('Vui lòng đăng nhập để đăng ký');
@@ -271,7 +313,17 @@ function clearFilter() {
   currentPage = 1;
   renderActivities();
 }
+// Trong activity.js, thay thế các hàm registerActivity và cancelRegistration
+// bằng cách gọi hàm từ shared (hoặc xóa chúng đi vì đã có trong shared)
 
-// Export functions để dùng trong shared.js
+// Nếu muốn giữ trong activity.js, chỉ cần gọi lại hàm từ shared:
+async function registerActivity(id, btn) {
+    await registerActivityFromCard(id, btn);
+}
+
+async function cancelRegistration(id, btn) {
+    await cancelRegistrationFromCard(id, btn);
+}
+// Export functions
 window.cancelRegistration = cancelRegistration;
 window.registerActivity = registerActivity;

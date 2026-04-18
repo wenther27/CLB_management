@@ -47,7 +47,7 @@ namespace ClubManagement.API.Migrations
                 column: "userID",
                 principalTable: "Users",
                 principalColumn: "UserID",
-                onDelete: ReferentialAction.Cascade);
+                onDelete: ReferentialAction.NoAction);
 
             migrationBuilder.AddForeignKey(
                 name: "FK_Posts_ExecutiveBoard_ExecutiveBoardBoardID",
