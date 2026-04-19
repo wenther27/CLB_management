@@ -31,21 +31,26 @@
 
 <!-- Hero -->
 <section class="hero">
+  <!-- Ảnh nền -->
+  <div class="hero-bg">
+    <img src="../assets/images/backgrounds/hero_photo.jpg" alt="" class="hero-bg-img"
+         onerror="this.parentElement.classList.add('no-photo')">
+    <div class="hero-bg-overlay"></div>
+  </div>
+
+  <!-- Nội dung chữ đè lên -->
   <div class="hero-content">
     <span class="tag">★ CLB Công tác xã hội DUT</span>
-
     <h1>
       Kết nối Cộng đồng,<br>
       <span>Lan tỏa Yêu thương</span>
     </h1>
-
     <p>
       Câu lạc bộ Công tác Xã hội DUT – nơi các bạn sinh viên cùng nhau tạo ra
       những giá trị tích cực thông qua các hoạt động thiện nguyện đầy ý nghĩa.
     </p>
-
     <div class="hero-buttons">
-      <button class="btn-primary" onclick="location.href='register.html'">Tham gia ngay</button>
+      <button class="btn-primary" onclick="AuthModal.open('register')">Tham gia ngay</button>
       <button class="btn-outline" onclick="location.href='activities.html'">Xem hoạt động</button>
     </div>
   </div>
@@ -75,6 +80,69 @@
         <h4>Kết nối</h4>
         <p>Gắn kết sinh viên, xây dựng cộng đồng DUT vững mạnh</p>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================================================
+     GIỚI THIỆU CLB
+     ================================================ -->
+<div class="section about-section">
+  <div class="container">
+    <div class="about-wrap">
+
+      <!-- Cột ảnh tròn bên trái -->
+      <div class="about-images" data-aos>
+        <div class="about-circle about-circle-1">
+          <img src="../assets/images/backgrounds/gioithieu2.JPG" alt="Hoạt động CLB"
+               onerror="this.src=''; this.parentElement.classList.add('no-img')">
+        </div>
+        <div class="about-circle about-circle-2">
+          <img src="../assets/images/backgrounds/gioithieu1.jpg" alt="Thành viên CLB"
+               onerror="this.src=''; this.parentElement.classList.add('no-img')">
+        </div>
+      </div>
+
+      <!-- Cột chữ bên phải -->
+      <div class="about-content">
+        <div class="section-label">
+          <i class="fa-solid fa-heart" style="color:#ff2d55"></i> Giới thiệu
+        </div>
+        <div class="about-title">CLB Công Tác Xã Hội <span>DUT</span></div>
+
+        <p class="about-desc">
+          <strong>CLB Công tác Xã hội DUT</strong> được thành lập với mục tiêu tạo ra
+          một sân chơi lành mạnh, ý nghĩa cho sinh viên Đại học Bách Khoa Đà Nẵng.
+          Chúng tôi tin rằng mỗi hành động nhỏ đều có thể tạo ra sự thay đổi lớn
+          trong cộng đồng.
+        </p>
+        <p class="about-desc">
+          Với phương châm <em>"Cho đi là còn mãi"</em>, CLB là nơi các bạn sinh viên
+          cùng nhau lan tỏa yêu thương qua các hoạt động thiện nguyện, giảng dạy
+          và bảo vệ môi trường.
+        </p>
+
+        <div class="about-slogan">
+          <i class="fa-solid fa-quote-left" style="color:#ff2d55;font-size:14px"></i>
+          &nbsp;Slogan: <strong>CTXH DUT – Kết nối trái tim, lan tỏa yêu thương</strong>
+        </div>
+
+        <div class="about-stats">
+          <div class="about-stat">
+            <div class="about-stat-num">200+</div>
+            <div class="about-stat-lbl">Thành viên</div>
+          </div>
+          <div class="about-stat">
+            <div class="about-stat-num">50+</div>
+            <div class="about-stat-lbl">Hoạt động</div>
+          </div>
+          <div class="about-stat">
+            <div class="about-stat-num" id="clubAge"></div>
+            <div class="about-stat-lbl">Năm thành lập</div>
+          </div>
+        </div>
+      </div>
+
     </div>
   </div>
 </div>
@@ -295,9 +363,35 @@ async function loadHome() {
   } catch {}
 }
 
-document.addEventListener('DOMContentLoaded', loadHome);
+//Cho cái giới thiệu
+document.addEventListener('DOMContentLoaded', () => {
+  // Năm thành lập
+  document.getElementById('clubAge').textContent = 
+    (new Date().getFullYear() - 2010) + '+';
 
+  // Scroll animation
+  const aoEls = document.querySelectorAll('[data-aos]');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.05, rootMargin: '0px 0px -30px 0px' });
+
+  aoEls.forEach(el => {
+    const rect = el.getBoundingClientRect();
+    if (rect.top < window.innerHeight) {
+      setTimeout(() => el.classList.add('visible'), 300);
+    } else {
+      observer.observe(el);
+    }
+  });
+});
 </script>
+
+<script src="api.js"></script>
 
 
 
