@@ -1,9 +1,7 @@
 // ================================================
-// admin-activities.js — FIXED VERSION
-// Fixes:
-// 1. saveAct() gửi registrationOpenDate thay vì registrationOpenTime
-// 2. openActModal form khớp đúng khung hình (layout giống ảnh)
-// 3. openActModalForEdit đọc đúng field từ API response
+// admin-activities.js — FIXED VERSION v2
+// Fix 1: Click xem chi tiết hoạt động trong bảng admin
+// Fix 2: Giao diện modal tạo/chỉnh sửa đẹp hơn
 // ================================================
 
 let currentEditId = null;
@@ -11,7 +9,7 @@ let currentEditId = null;
 async function loadActivitiesAdmin() {
   const tbody = document.getElementById('aBody');
   if (!tbody) return;
-  tbody.innerHTML = '<tr><td colspan="9" class="loading"><div class="spinner"></div></td></tr>';
+  tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:40px;color:#475569"><div class="spinner" style="margin:0 auto"></div></td></tr>';
 
   try {
     const r = await API.getActivities();
@@ -47,24 +45,27 @@ async function loadActivitiesAdmin() {
             const isExpired = dl < now;
             const isNear = !isExpired && (dl - now) < 24 * 60 * 60 * 1000;
             const color = isExpired ? '#ff2d55' : isNear ? '#f59e0b' : '#ff0909';
-            return `<span style="color:${color};font-size:12px"> ${Utils.formatDateTime(a.registrationDeadLine)}</span>`;
+            return `<span style="color:${color};font-size:12px">${Utils.formatDateTime(a.registrationDeadLine)}</span>`;
           })()
         : '<span style="color:#475569;font-size:12px">—</span>';
 
       const openDateHtml = a.registrationOpenDate
-        ? `<span style="font-size:12px;color:#60a5fa"> ${Utils.formatDateTime(a.registrationOpenDate)}</span>`
+        ? `<span style="font-size:12px;color:#60a5fa">${Utils.formatDateTime(a.registrationOpenDate)}</span>`
         : '<span style="color:#475569;font-size:12px">Ngay khi tạo</span>';
-      const safeId = a.activityID;
+
+      // FIX: Dùng onclick trực tiếp thay vì data-id + querySelector
+      // Escape tên hoạt động cho title tooltip
+      const safeName = Utils.escapeHtml(a.activityName);
+
       return `
         <tr>
           <td style="color:#475569">${a.activityID}</td>
           <td>
-           <strong
-              class="act-name-link"
-              data-id="${safeId}"
-              style="cursor:pointer;color:#ff2d55;text-decoration:underline;text-underline-offset:2px"
+            <strong
+              onclick="showActivityDetail(${a.activityID})"
+              style="cursor:pointer;color:#ff2d55;text-decoration:underline;text-underline-offset:2px;user-select:none"
               title="Xem chi tiết">
-              ${Utils.escapeHtml(a.activityName)}
+              ${safeName}
             </strong>
           </td>
           <td style="color:#94a3b8">${Utils.formatDateTime(a.time)}</td>
@@ -75,7 +76,7 @@ async function loadActivitiesAdmin() {
           <td>${Utils.statusLabel(a.status)}</td>
           <td>
             <div style="display:flex;gap:6px;flex-wrap:wrap">
-              <button onclick="showRegistrationsList(${a.activityID}, '${Utils.escapeHtml(a.activityName)}')"
+              <button onclick="showRegistrationsList(${a.activityID}, '${safeName}')"
                 class="btn-outline btn-sm" title="Xem danh sách đăng ký">
                 <i class="fa-solid fa-users"></i>
               </button>
@@ -92,109 +93,178 @@ async function loadActivitiesAdmin() {
           </td>
         </tr>`;
     }).join('');
-    attachActivityTableListeners();
 
   } catch (e) {
     tbody.innerHTML = `<tr><td colspan="9" style="color:#ff2d55;padding:20px">${e.message}</td></tr>`;
-  
   }
 }
 
-// ── Modal tạo / sửa hoạt động — layout khớp khung hình ───────────────────────
+// ── Modal tạo / sửa hoạt động — Giao diện đẹp hơn ──────────────────────────
 function openActModal(data = {}) {
   currentEditId = data.activityID || null;
 
-const tv  = toLocalInputValue(data.time);
-const rod = toLocalInputValue(data.registrationOpenDate);
-const rdl = toLocalInputValue(data.registrationDeadLine);
+  const tv  = toLocalInputValue(data.time);
+  const rod = toLocalInputValue(data.registrationOpenDate);
+  const rdl = toLocalInputValue(data.registrationDeadLine);
+
   const existingImages = (data.image || data.images || [])
     .map((url, i) => renderPreviewItem(url, i))
     .join('');
 
-  openModal(data.activityID ? 'Chỉnh sửa hoạt động' : 'Tạo hoạt động mới', `
-    <!-- TÊN HOẠT ĐỘNG -->
-    <div class="form-group">
-      <label class="form-label">Tên hoạt động *</label>
-      <input id="af-name" class="form-control" placeholder="Nhập tên hoạt động..."
-             value="${Utils.escapeHtml(data.activityName || '')}">
+  const isEdit = !!data.activityID;
+
+  openModal(isEdit ? 'Chỉnh sửa hoạt động' : 'Tạo hoạt động mới', `
+    <style>
+      .af-section {
+        background: #0f172a;
+        border: 1px solid rgba(255,255,255,0.07);
+        border-radius: 10px;
+        padding: 16px;
+        margin-bottom: 16px;
+      }
+      .af-section-title {
+        font-size: 11px;
+        font-weight: 700;
+        color: #64748b;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        margin-bottom: 12px;
+        display: flex;
+        align-items: center;
+        gap: 7px;
+      }
+      .af-section-title i { color: #ff2d55; font-size: 12px; }
+      .af-grid-2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+      }
+      .af-field { margin-bottom: 0; }
+      .af-label {
+        display: block;
+        font-size: 11px;
+        font-weight: 700;
+        color: #94a3b8;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        margin-bottom: 5px;
+      }
+      .af-hint {
+        font-size: 11px;
+        color: #475569;
+        margin-top: 4px;
+      }
+      .af-dropzone {
+        border: 2px dashed rgba(255,255,255,0.12);
+        border-radius: 10px;
+        padding: 22px;
+        text-align: center;
+        cursor: pointer;
+        transition: border-color 0.2s, background 0.2s;
+        margin-bottom: 12px;
+      }
+      .af-dropzone:hover {
+        border-color: #ff2d55;
+        background: rgba(255,45,85,0.04);
+      }
+    </style>
+
+    <!-- THÔNG TIN CƠ BẢN -->
+    <div class="af-section">
+      <div class="af-section-title">
+        <i class="fa-solid fa-circle-info"></i> Thông tin cơ bản
+      </div>
+
+      <div class="af-field" style="margin-bottom:12px">
+        <label class="af-label">Tên hoạt động <span style="color:#ff2d55">*</span></label>
+        <input id="af-name" class="form-control" placeholder="Nhập tên hoạt động..."
+               value="${Utils.escapeHtml(data.activityName || '')}">
+      </div>
+
+      <div class="af-field">
+        <label class="af-label">Mô tả</label>
+        <textarea id="af-desc" class="form-control" style="min-height:80px;resize:vertical"
+                  placeholder="Mô tả chi tiết về hoạt động...">${Utils.escapeHtml(data.description || '')}</textarea>
+      </div>
     </div>
 
-    <!-- MÔ TẢ -->
-    <div class="form-group">
-      <label class="form-label">Mô tả</label>
-      <textarea id="af-desc" class="form-control" style="min-height:90px"
-                placeholder="Mô tả hoạt động...">${Utils.escapeHtml(data.description || '')}</textarea>
-    </div>
-
-    <!-- ĐỊA ĐIỂM + THỜI GIAN DIỄN RA (2 cột, khớp với hình) -->
-    <div class="form-row">
-      <div class="form-group">
-        <label class="form-label">Địa điểm</label>
-        <input id="af-loc" class="form-control" placeholder="Địa điểm tổ chức..."
-               value="${Utils.escapeHtml(data.location || '')}">
+    <!-- ĐỊA ĐIỂM & THỜI GIAN -->
+    <div class="af-section">
+      <div class="af-section-title">
+        <i class="fa-solid fa-calendar-days"></i> Địa điểm & thời gian
       </div>
-      <div class="form-group">
-        <label class="form-label">Thời gian diễn ra *</label>
-        <input type="datetime-local" id="af-time" class="form-control" value="${tv}">
+      <div class="af-grid-2">
+        <div class="af-field">
+          <label class="af-label">Địa điểm</label>
+          <input id="af-loc" class="form-control" placeholder="Hội trường lớn, Phòng A101..."
+                 value="${Utils.escapeHtml(data.location || '')}">
+        </div>
+        <div class="af-field">
+          <label class="af-label">Thời gian diễn ra <span style="color:#ff2d55">*</span></label>
+          <input type="datetime-local" id="af-time" class="form-control" value="${tv}">
+        </div>
       </div>
     </div>
 
-    <!-- THỜI GIAN ĐĂNG KÝ (box riêng, khớp khung hình) -->
-    <div style="background:#0f172a;border-radius:10px;padding:14px 16px;margin-bottom:14px;border:1px solid rgba(255,255,255,0.06)">
-      <div style="font-size:12px;font-weight:600;color:#94a3b8;margin-bottom:10px;letter-spacing:0.5px">
-        <i class="fa-solid fa-calendar-check" style="margin-right:6px"></i>THỜI GIAN ĐĂNG KÝ
+    <!-- THỜI GIAN ĐĂNG KÝ -->
+    <div class="af-section">
+      <div class="af-section-title">
+        <i class="fa-solid fa-calendar-check"></i> Thời gian đăng ký
       </div>
-      <div class="form-row" style="margin-bottom:0">
-        <div class="form-group" style="margin-bottom:0">
-          <label class="form-label">Ngày mở đăng ký</label>
+      <div class="af-grid-2">
+        <div class="af-field">
+          <label class="af-label">Ngày mở đăng ký</label>
           <input type="datetime-local" id="af-reg-open" class="form-control" value="${rod}">
-          <div style="font-size:11px;color:#475569;margin-top:4px">Để trống = mở ngay khi tạo</div>
+          <div class="af-hint">Để trống = mở ngay khi tạo</div>
         </div>
-        <div class="form-group" style="margin-bottom:0">
-          <label class="form-label">Hạn chót đăng ký</label>
+        <div class="af-field">
+          <label class="af-label">Hạn chót đăng ký</label>
           <input type="datetime-local" id="af-reg-deadline" class="form-control" value="${rdl}">
-          
         </div>
       </div>
     </div>
 
-    <!-- GIỚI HẠN + TRẠNG THÁI (2 cột, khớp hình) -->
-    <div class="form-row">
-      <div class="form-group">
-        <label class="form-label">Giới hạn người tham gia</label>
-        <input type="number" id="af-max" class="form-control"
-               placeholder="Để trống = không giới hạn" min="1"
-               value="${data.maxParticipants || ''}">
+    <!-- GIỚI HẠN & TRẠNG THÁI -->
+    <div class="af-section">
+      <div class="af-section-title">
+        <i class="fa-solid fa-sliders"></i> Cài đặt khác
       </div>
-      <div class="form-group">
-        <label class="form-label">Trạng thái</label>
-        <select id="af-st" class="form-control">
-          <option value="Open"      ${(!data.status || data.status === 'Open') ? 'selected' : ''}>Đang mở</option>
-          <option value="Closed"    ${data.status === 'Closed' ? 'selected' : ''}>Đã đóng</option>
-          <option value="Cancelled" ${data.status === 'Cancelled' ? 'selected' : ''}>Đã hủy</option>
-        </select>
+      <div class="af-grid-2">
+        <div class="af-field">
+          <label class="af-label">Giới hạn người tham gia</label>
+          <input type="number" id="af-max" class="form-control"
+                 placeholder="Để trống = không giới hạn" min="1"
+                 value="${data.maxParticipants || ''}">
+        </div>
+        <div class="af-field">
+          <label class="af-label">Trạng thái</label>
+          <select id="af-st" class="form-control">
+            <option value="Open"      ${(!data.status || data.status === 'Open') ? 'selected' : ''}>Đang mở</option>
+            <option value="Closed"    ${data.status === 'Closed' ? 'selected' : ''}>Đã đóng</option>
+            <option value="Cancelled" ${data.status === 'Cancelled' ? 'selected' : ''}>Đã hủy</option>
+          </select>
+        </div>
       </div>
     </div>
 
     <!-- ẢNH HOẠT ĐỘNG -->
-    <div class="form-group">
-      <label class="form-label">
-        Ảnh hoạt động
-        <span style="color:#475569;font-weight:400">(tối đa 5 ảnh, mỗi ảnh ≤ 5MB)</span>
-      </label>
+    <div class="af-section">
+      <div class="af-section-title">
+        <i class="fa-solid fa-images"></i> Ảnh hoạt động
+        <span style="font-weight:400;color:#475569;font-size:10px;text-transform:none;letter-spacing:0">
+          (tối đa 5 ảnh, mỗi ảnh ≤ 5MB)
+        </span>
+      </div>
 
-      <div id="af-dropzone"
+      <div id="af-dropzone" class="af-dropzone"
         onclick="document.getElementById('af-fileInput').click()"
         ondragover="handleDragOver(event)"
         ondragleave="handleDragLeave(event)"
-        ondrop="handleDrop(event)"
-        style="border:2px dashed rgba(255,255,255,0.12);border-radius:10px;padding:28px;
-               text-align:center;cursor:pointer;transition:border-color 0.2s,background 0.2s;
-               margin-bottom:12px">
-        <div style="font-size:2rem;margin-bottom:8px">🖼️</div>
+        ondrop="handleDrop(event)">
+        <div style="font-size:28px;margin-bottom:8px;opacity:0.5">🖼️</div>
         <div style="font-size:13px;color:#64748b">
           Kéo thả ảnh vào đây hoặc
-          <span style="color:#ff2d55;font-weight:700">click để chọn</span>
+          <span style="color:#ff2d55;font-weight:700;cursor:pointer">click để chọn</span>
         </div>
         <div style="font-size:11px;color:#334155;margin-top:4px">JPG, PNG, WEBP, GIF</div>
       </div>
@@ -208,11 +278,11 @@ const rdl = toLocalInputValue(data.registrationDeadLine);
       <div id="af-uploadStatus" style="font-size:12px;color:#64748b;margin-top:8px"></div>
     </div>
 
-    <!-- NÚT TẠO / CẬP NHẬT -->
+    <!-- NÚT LƯU -->
     <button type="button" onclick="saveAct(${data.activityID || 0})"
-      class="btn-primary w-100" style="padding:11px;margin-top:4px;font-size:15px">
+      class="btn-primary w-100" style="padding:12px;font-size:15px;border-radius:8px;margin-top:4px">
       <i class="fa-solid fa-floppy-disk"></i>
-      ${data.activityID ? 'Cập nhật hoạt động' : 'Tạo hoạt động'}
+      ${isEdit ? 'Cập nhật hoạt động' : 'Tạo hoạt động mới'}
     </button>
   `, null);
 
@@ -221,7 +291,7 @@ const rdl = toLocalInputValue(data.registrationDeadLine);
     : (data.images ? [...data.images] : []);
 }
 
-// ── openActModalForEdit — đọc đúng field từ API response ─────────────────────
+// ── openActModalForEdit ────────────────────────────────────────────────────────
 function openActModalForEdit(activityData) {
   openActModal({
     activityID:           activityData.activityID,
@@ -237,6 +307,7 @@ function openActModalForEdit(activityData) {
   });
 }
 
+// ── saveAct ───────────────────────────────────────────────────────────────────
 async function saveAct(id) {
   const timeVal     = document.getElementById('af-time')?.value;
   const deadlineVal = document.getElementById('af-reg-deadline')?.value;
@@ -257,14 +328,13 @@ async function saveAct(id) {
     description:          document.getElementById('af-desc')?.value.trim() || null,
     location:             document.getElementById('af-loc')?.value.trim()  || null,
     maxParticipants:      parseInt(document.getElementById('af-max')?.value) || null,
-    time: timeVal ? timeVal + ':00' : null,
+    time:                 timeVal ? timeVal + ':00' : null,
     registrationOpenDate: openVal ? openVal + ':00' : null,
     registrationDeadLine: deadlineVal ? deadlineVal + ':00' : null,
     status:               document.getElementById('af-st')?.value || 'Open',
     imageUrls:            window._actImageUrls || [],
   };
 
-  // Validate frontend
   if (d.registrationDeadLine && new Date(d.registrationDeadLine) >= new Date(d.time)) {
     Toast.error('Hạn chót đăng ký phải trước thời gian diễn ra hoạt động');
     return;
@@ -334,18 +404,19 @@ async function deleteActivity(activityId) {
   }
 }
 
-// ── Upload ảnh (giữ nguyên từ bản gốc) ───────────────────────────────────────
+// ── Upload ảnh ────────────────────────────────────────────────────────────────
 function renderPreviewItem(url, index) {
   const src = url.startsWith('http') ? url : `http://localhost:5190${url}`;
   const uniqueId = `img-wrap-${Date.now()}-${index}`;
   return `
     <div id="${uniqueId}" style="position:relative;width:90px;height:90px;
          border-radius:8px;overflow:hidden;border:1px solid rgba(255,255,255,0.1);flex-shrink:0">
-      <img src="${src}" style="width:100%;height:100%;object-fit:cover">
+      <img src="${src}" style="width:100%;height:100%;object-fit:cover" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 90 90%22><rect fill=%22%231e293b%22 width=%2290%22 height=%2290%22/><text x=%2245%22 y=%2250%22 text-anchor=%22middle%22 fill=%22%23475569%22 font-size=%2220%22>?</text></svg>'">
       <button onclick="removeImage('${url}', '${uniqueId}')"
-        style="position:absolute;top:3px;right:3px;width:20px;height:20px;border-radius:50%;
-               background:rgba(0,0,0,0.7);border:none;color:white;font-size:11px;
-               cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0">✕</button>
+        style="position:absolute;top:4px;right:4px;width:20px;height:20px;border-radius:50%;
+               background:rgba(0,0,0,0.75);border:none;color:white;font-size:11px;
+               cursor:pointer;display:flex;align-items:center;justify-content:center;
+               line-height:1;padding:0;font-family:Arial,sans-serif">✕</button>
     </div>`;
 }
 
@@ -368,7 +439,7 @@ function handleDragLeave(e) {
 
 function handleDrop(e) {
   e.preventDefault();
-  handleDragLeave();
+  handleDragLeave(e);
   const files = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/'));
   if (files.length) uploadImages(files);
 }
@@ -437,25 +508,7 @@ async function uploadImages(files) {
     setTimeout(() => { if (status) status.innerHTML = ''; }, 3000);
   }
 }
-function attachActivityTableListeners() {
-  document.querySelectorAll('.act-name-link').forEach(el => {
-    el.onclick = function() {
-      showActivityDetail(parseInt(this.dataset.id));
-    };
-  });
 
-  document.querySelectorAll('.act-edit-btn').forEach(el => {
-    el.onclick = async function() {
-      const id = parseInt(this.dataset.id);
-      try {
-        const r = await API.getActivity(id);
-        openActModal(r.data);
-      } catch(e) {
-        Toast.error(e.message);
-      }
-    };
-  });
-}
 // Export
 window.loadActivitiesAdmin    = loadActivitiesAdmin;
 window.openActModal           = openActModal;

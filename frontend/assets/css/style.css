@@ -1134,3 +1134,274 @@ footer ul li a:hover { color: #ff2d55; }
   .cta-section { padding: 36px 20px; }
   .form-row { grid-template-columns: 1fr; }
 }
+
+/* ================================================
+   HERO - ẢNH NỀN + CHỮ ĐÈ LÊN
+   ================================================ */
+.hero {
+  position: relative;
+  height: 90vh;
+  display: flex;
+  align-items: center;
+  padding-left: 120px;
+  padding-top: 68px;
+  overflow: hidden;
+}
+
+/* Lớp ảnh nền */
+.hero-bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+
+.hero-bg-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+  animation: heroZoom 12s ease-in-out infinite alternate;
+}
+
+/* Khi ảnh lỗi → fallback về gradient cũ */
+.hero-bg.no-photo {
+  background: radial-gradient(circle at 80% 70%, rgba(255,0,80,0.35), transparent 40%),
+              linear-gradient(120deg, #3b82f6, #0f172a);
+}
+.hero-bg.no-photo .hero-bg-img { display: none; }
+
+/* Lớp overlay tối để chữ dễ đọc */
+.hero-bg-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to right,
+    rgba(5, 8, 20, 0.82) 0%,
+    rgba(5, 8, 20, 0.65) 50%,
+    rgba(5, 8, 20, 0.25) 100%
+  );
+}
+
+/* Chữ nổi lên trên */
+.hero-content {
+  position: relative;
+  z-index: 1;
+  max-width: 600px;
+  animation: heroFadeUp 0.9s ease both;
+}
+
+/* Hiệu ứng zoom nhẹ cho ảnh nền */
+@keyframes heroZoom {
+  from { transform: scale(1); }
+  to   { transform: scale(1.06); }
+}
+
+/* Chữ fade + trượt lên */
+@keyframes heroFadeUp {
+  from { opacity: 0; transform: translateY(28px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 768px) {
+  .hero {
+    padding-left: 24px;
+    padding-right: 24px;
+  }
+  .hero-bg-overlay {
+    background: rgba(5, 8, 20, 0.72);
+  }
+}
+
+/* ================================================
+   ABOUT SECTION
+   ================================================ */
+.about-section {
+  background: #0a0f1c;
+  overflow: hidden;
+}
+
+.about-section .section-label {
+  font-size: 14px;
+}
+
+.about-wrap {
+  display: flex;
+  align-items: center;
+  gap: 80px;
+}
+
+/* ── Cột ảnh tròn ── */
+.about-images {
+  flex-shrink: 0;
+  position: relative;
+  width: 380px;
+  height: 420px;
+  opacity: 0;
+  transform: translateX(-60px);
+  transition: opacity 0.8s ease, transform 0.8s ease;
+}
+
+.about-images.visible {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.about-circle {
+  position: absolute;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 4px solid rgba(255, 45, 85, 0.5);
+  background: #1e293b;
+  box-shadow: 0 16px 48px rgba(0,0,0,0.5);
+  transition: transform 0.4s ease, box-shadow 0.4s ease;
+}
+
+.about-circle:hover {
+  transform: scale(1.04) !important;
+  box-shadow: 0 24px 64px rgba(255,45,85,0.25);
+}
+
+.about-circle img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+}
+
+/* Ảnh lớn trên */
+.about-circle-1 {
+  width: 260px;
+  height: 260px;
+  top: 0;
+  left: 40px;
+  z-index: 2;
+  animation: circleFloat1 7s ease-in-out infinite;
+}
+
+/* Ảnh nhỏ dưới, lệch trái */
+.about-circle-2 {
+  width: 190px;
+  height: 190px;
+  bottom: 0;
+  left: 0;
+  z-index: 3;
+  border-color: rgba(59,130,246,0.5);
+  animation: circleFloat2 8s ease-in-out infinite;
+  animation-delay: 1.5s;
+}
+
+/* Khi ảnh lỗi */
+.about-circle.no-img {
+  background: linear-gradient(135deg, #1e293b, #0f172a);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+}
+.about-circle.no-img::after {
+  content: '📸';
+  font-size: 2.5rem;
+}
+
+/* Float ngược chiều nhau */
+@keyframes circleFloat1 {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-12px); }
+}
+@keyframes circleFloat2 {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(10px); }
+}
+
+/* ── Cột chữ ── */
+.about-content {
+  flex: 1;
+  opacity: 1;
+  transform: none;
+  transition: none;
+}
+
+.about-content.visible {
+  opacity: 1;
+  transform: none;
+}
+
+.about-title {
+  font-size: 32px;
+  font-weight: 700;
+  margin: 8px 0 20px;
+  line-height: 1.2;
+}
+
+.about-title span { color: #ff2d55; }
+
+.about-desc {
+  color: #94a3b8;
+  font-size: 15px;
+  line-height: 1.8;
+  margin-bottom: 14px;
+}
+
+.about-desc strong { color: #e2e8f0; }
+.about-desc em     { color: #ff2d55; font-style: normal; font-weight: 600; }
+
+.about-slogan {
+  background: rgba(255,45,85,0.07);
+  border-left: 3px solid #ff2d55;
+  border-radius: 0 8px 8px 0;
+  padding: 12px 16px;
+  font-size: 14px;
+  color: #94a3b8;
+  margin: 20px 0 28px;
+}
+
+.about-slogan strong { color: #e2e8f0; }
+
+/* Thống kê nhỏ */
+.about-stats {
+  display: flex;
+  gap: 32px;
+}
+
+.about-stat-num {
+  font-size: 28px;
+  font-weight: 700;
+  color: #ff2d55;
+  line-height: 1;
+}
+
+.about-stat-lbl {
+  font-size: 12px;
+  color: #475569;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-top: 4px;
+  font-weight: 700;
+}
+
+/* ── Responsive ── */
+@media (max-width: 1024px) {
+  .about-wrap {
+    flex-direction: column;
+    gap: 48px;
+  }
+  .about-images {
+    width: 320px;
+    height: 360px;
+    margin: 0 auto;
+  }
+  .about-circle-1 { width: 220px; height: 220px; }
+  .about-circle-2 { width: 160px; height: 160px; }
+  .about-content {
+    text-align: center;
+    transform: translateX(0);
+  }
+  .about-images {
+    transform: translateY(40px);
+  }
+  .about-images.visible {
+    transform: translateY(0);
+  }
+  .about-stats { justify-content: center; }
+  .about-slogan { text-align: left; }
+}
