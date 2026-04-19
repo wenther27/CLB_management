@@ -137,7 +137,7 @@ namespace ClubManagement.API.Service
             if (dto.Location != null) activity.Location = dto.Location;
             if (dto.Status != null) activity.Status = dto.Status;
             if (dto.Time.HasValue) activity.time = dto.Time.Value;
-            if (dto.MaxParticipans.HasValue) activity.MaxParticipants = dto.MaxParticipans;
+            if (dto.MaxParticipants.HasValue) activity.MaxParticipants = dto.MaxParticipants;
             if (dto.RegistrationOpenDate.HasValue)
             {
                 activity.RegistrationOpenDate = dto.RegistrationOpenDate == DateTime.MinValue ? null : dto.RegistrationOpenDate;

@@ -10,7 +10,7 @@
         public DateTime ? Time {  get; set; }
         public DateTime ? RegistrationOpenDate { get; set; }
         public DateTime ? RegistrationDeadLine { get; set; }
-        public int ? MaxParticipans { get; set; } // giới hạn 
+        public int ? MaxParticipants { get; set; } // giới hạn 
         public List<string>? ImageUrls { get; set; }
     }
 }
