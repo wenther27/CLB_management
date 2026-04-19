@@ -54,13 +54,16 @@ async function loadActivitiesAdmin() {
       const openDateHtml = a.registrationOpenDate
         ? `<span style="font-size:12px;color:#60a5fa"> ${Utils.formatDateTime(a.registrationOpenDate)}</span>`
         : '<span style="color:#475569;font-size:12px">Ngay khi tạo</span>';
-
+      const safeId = a.activityID;
       return `
         <tr>
           <td style="color:#475569">${a.activityID}</td>
           <td>
-            <strong style="cursor:pointer;color:#ff2d55;text-decoration:underline;text-underline-offset:2px"
-                    onclick="showActivityDetail(${a.activityID})" title="Xem chi tiết">
+           <strong
+              class="act-name-link"
+              data-id="${safeId}"
+              style="cursor:pointer;color:#ff2d55;text-decoration:underline;text-underline-offset:2px"
+              title="Xem chi tiết">
               ${Utils.escapeHtml(a.activityName)}
             </strong>
           </td>
@@ -89,9 +92,11 @@ async function loadActivitiesAdmin() {
           </td>
         </tr>`;
     }).join('');
+    attachActivityTableListeners();
 
   } catch (e) {
     tbody.innerHTML = `<tr><td colspan="9" style="color:#ff2d55;padding:20px">${e.message}</td></tr>`;
+  
   }
 }
 
@@ -99,9 +104,9 @@ async function loadActivitiesAdmin() {
 function openActModal(data = {}) {
   currentEditId = data.activityID || null;
 
-  const tv  = data.time ? new Date(data.time).toISOString().slice(0, 16) : '';
-  const rod = data.registrationOpenDate ? new Date(data.registrationOpenDate).toISOString().slice(0, 16) : '';
-  const rdl = data.registrationDeadLine ? new Date(data.registrationDeadLine).toISOString().slice(0, 16) : '';
+const tv  = toLocalInputValue(data.time);
+const rod = toLocalInputValue(data.registrationOpenDate);
+const rdl = toLocalInputValue(data.registrationDeadLine);
   const existingImages = (data.image || data.images || [])
     .map((url, i) => renderPreviewItem(url, i))
     .join('');
@@ -252,11 +257,9 @@ async function saveAct(id) {
     description:          document.getElementById('af-desc')?.value.trim() || null,
     location:             document.getElementById('af-loc')?.value.trim()  || null,
     maxParticipants:      parseInt(document.getElementById('af-max')?.value) || null,
-    time:                 new Date(timeVal).toISOString(),
-    // FIX KEY: Đổi registrationOpenTime → registrationOpenDate
-    // Backend CreateActivityDTO và UpdateActivityDTO đều nhận registrationOpenDate
-    registrationOpenDate: openVal     ? new Date(openVal).toISOString()     : null,
-    registrationDeadLine: deadlineVal ? new Date(deadlineVal).toISOString() : null,
+    time: timeVal ? timeVal + ':00' : null,
+    registrationOpenDate: openVal ? openVal + ':00' : null,
+    registrationDeadLine: deadlineVal ? deadlineVal + ':00' : null,
     status:               document.getElementById('af-st')?.value || 'Open',
     imageUrls:            window._actImageUrls || [],
   };
@@ -434,7 +437,25 @@ async function uploadImages(files) {
     setTimeout(() => { if (status) status.innerHTML = ''; }, 3000);
   }
 }
+function attachActivityTableListeners() {
+  document.querySelectorAll('.act-name-link').forEach(el => {
+    el.onclick = function() {
+      showActivityDetail(parseInt(this.dataset.id));
+    };
+  });
 
+  document.querySelectorAll('.act-edit-btn').forEach(el => {
+    el.onclick = async function() {
+      const id = parseInt(this.dataset.id);
+      try {
+        const r = await API.getActivity(id);
+        openActModal(r.data);
+      } catch(e) {
+        Toast.error(e.message);
+      }
+    };
+  });
+}
 // Export
 window.loadActivitiesAdmin    = loadActivitiesAdmin;
 window.openActModal           = openActModal;

@@ -156,13 +156,23 @@ const Utils = {
   formatDate(dateStr) {
     if (!dateStr) return '—';
     const d = new Date(dateStr);
-    return d.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    const dd   = String(d.getDate()).padStart(2, '0');
+    const mm   = String(d.getMonth() + 1).padStart(2, '0');
+    const yyyy = d.getFullYear();
+    return `${dd}/${mm}/${yyyy}`;
   },
+
   formatDateTime(dateStr) {
     if (!dateStr) return '—';
-    const d = new Date(dateStr);
-    return d.toLocaleString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+    const d   = new Date(dateStr);
+    const dd   = String(d.getDate()).padStart(2, '0');
+    const mm   = String(d.getMonth() + 1).padStart(2, '0');
+    const yyyy = d.getFullYear();
+    const hh   = String(d.getHours()).padStart(2, '0');
+    const min  = String(d.getMinutes()).padStart(2, '0');
+    return `${dd}/${mm}/${yyyy} ${hh}:${min}`;
   },
+
   truncate(str, n = 120) {
     if (!str) return '';
     return str.length > n ? str.substring(0, n) + '...' : str;
@@ -226,6 +236,14 @@ function updateNavbar() {
     `;
   }
   
+}
+function toLocalInputValue(isoStr) {
+  if (!isoStr) return '';
+  const d = new Date(isoStr);
+  // Bù timezone offset
+  const offset = d.getTimezoneOffset() * 60000;
+  const local = new Date(d.getTime() - offset);
+  return local.toISOString().slice(0, 16);
 }
 
 function logout() {
