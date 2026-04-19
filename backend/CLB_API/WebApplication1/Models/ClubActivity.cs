@@ -12,7 +12,7 @@ namespace ClubManagement.API.Models
         [Required]
         [MaxLength(250)]
         public string ActivityName { get; set; } = string.Empty;
-        [MaxLength(200)]
+        [MaxLength(5000)]
         public string ? Description { get; set; } 
         [MaxLength(200)]
         public string ? Location { get; set; }

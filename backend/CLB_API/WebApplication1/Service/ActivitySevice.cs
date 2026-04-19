@@ -84,11 +84,11 @@ namespace ClubManagement.API.Service
         // Tao hoat dong moi
         public async Task<ActivityDTO?> CreateAsync(CreateActivityDTO dto, int creatorUserId)
         {
-            if(dto.RegistrationOpenTime.HasValue && dto.RegistrationDeadLine.Value >= dto.Time)
+            if(dto.RegistrationOpenDate.HasValue && dto.RegistrationDeadLine.Value >= dto.Time)
             {
                 throw new ArgumentException("Thời hạn đăng ký phải trước thời gian diễn ra hoạt động");
             }
-            if (dto.RegistrationOpenTime.HasValue && dto.RegistrationDeadLine.HasValue && dto.RegistrationOpenTime.Value >= dto.RegistrationDeadLine.Value)
+            if (dto.RegistrationOpenDate.HasValue && dto.RegistrationDeadLine.HasValue && dto.RegistrationOpenDate.Value >= dto.RegistrationDeadLine.Value)
             {
                 throw new ArgumentException("Ngày mở đăng ký phải trước hạn chót đăng ký");
             }
@@ -99,7 +99,7 @@ namespace ClubManagement.API.Service
                 Location = dto.Location,
                 Status = dto.Status,
                 time = dto.Time,
-                RegistrationOpenDate = dto.RegistrationOpenTime,  
+                RegistrationOpenDate = dto.RegistrationOpenDate,  
                 RegistrationDeadLine = dto.RegistrationDeadLine,
                 MaxParticipants = dto.MaxParticipants,
                 CreateBy = creatorUserId,

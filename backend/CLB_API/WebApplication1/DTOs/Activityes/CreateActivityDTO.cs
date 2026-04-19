@@ -11,7 +11,7 @@ namespace ClubManagement.API.DTOs
         public string ? Location { get; set; }
         public string Status { get; set; } = "Open";
         public DateTime Time { get; set; }
-        public DateTime ? RegistrationOpenTime { get; set; }
+        public DateTime ? RegistrationOpenDate { get; set; }
         public DateTime ? RegistrationDeadLine { get; set; }
         public int ? MaxParticipants { get; set; } // giới hạn tham gia
         public List<string>? ImageUrls { get;  set; }

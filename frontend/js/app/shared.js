@@ -83,11 +83,11 @@ async function showActivityDetail(activityId, options = {}) {
     let deadlineBanner = '';
     if (isDeadlinePassed && a.status === 'Open') {
       deadlineBanner = `<div style="background:rgba(255,45,85,0.1);border:1px solid rgba(255,45,85,0.3);border-radius:8px;padding:10px 14px;margin-bottom:14px;font-size:13px;color:#ff6b84">
-        🔒 Đã hết hạn đăng ký — hoạt động sẽ được khoá tự động
+        🔒 Đã hết hạn đăng ký
       </div>`;
     } else if (isDeadlineNear) {
       deadlineBanner = `<div style="background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.3);border-radius:8px;padding:10px 14px;margin-bottom:14px;font-size:13px;color:#f59e0b">
-        ⚠️ Sắp hết hạn đăng ký — còn ít hơn 24 giờ!
+        ⚠️ Sắp hết hạn đăng ký 
       </div>`;
     } else if (isNotOpenYet) {
       deadlineBanner = `<div style="background:rgba(59,130,246,0.1);border:1px solid rgba(59,130,246,0.25);border-radius:8px;padding:10px 14px;margin-bottom:14px;font-size:13px;color:#60a5fa">
