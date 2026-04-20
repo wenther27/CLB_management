@@ -16,7 +16,7 @@ namespace ClubManagement.API.Models
         public DateTime RegisterDate { get; set; } = DateTime.Now;
         [MaxLength(100)]
 
-        public string Status { get; set; }
+        public string? Status { get; set; }
 
         [ForeignKey("MemberID")]
         public Member? Member { get; set; }
