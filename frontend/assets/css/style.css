@@ -1405,3 +1405,185 @@ footer ul li a:hover { color: #ff2d55; }
   .about-stats { justify-content: center; }
   .about-slogan { text-align: left; }
 }
+
+/* ================================================
+   MEMBERS PAGE
+   ================================================ */
+
+/* ── Department Section ── */
+.dept-section {
+  margin-bottom: 72px;
+}
+
+.dept-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 36px;
+}
+
+.dept-line {
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(to right, rgba(255,45,85,0.4), transparent);
+}
+
+.dept-title {
+  font-size: 16px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: #ff2d55;
+  white-space: nowrap;
+}
+
+/* ── Grid layout ── */
+.dept-grid {
+  display: grid;
+  gap: 24px;
+}
+
+/* BCN: 3 cột, căn giữa nếu ít người */
+.dept-grid.grid-bcn {
+  grid-template-columns: repeat(3, 1fr);
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+/* Các ban khác: 4 cột */
+.dept-grid.grid-dept {
+  grid-template-columns: repeat(4, 1fr);
+}
+
+/* ── Member Card ── */
+.member-card {
+  background: #111827;
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 16px;
+  overflow: hidden;
+  cursor: pointer;
+  /* Staggered animation - bắt đầu ẩn */
+  opacity: 0;
+  transform: translateY(24px);
+  transition:
+    opacity 0.5s ease,
+    transform 0.5s ease,
+    box-shadow 0.3s ease,
+    border-color 0.3s ease;
+}
+
+/* Khi hiện ra */
+.member-card.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Hover effect */
+.member-card:hover {
+  transform: translateY(-8px) !important;
+  box-shadow: 0 20px 48px rgba(255,45,85,0.18),
+              0 8px 24px rgba(0,0,0,0.4);
+  border-color: rgba(255,45,85,0.3);
+}
+
+/* Ảnh */
+.member-card-img {
+  width: 100%;
+  aspect-ratio: 3/4;
+  overflow: hidden;
+  background: linear-gradient(135deg, #1e293b, #0f172a);
+  position: relative;
+}
+
+.member-card-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+  transition: transform 0.4s ease;
+}
+
+.member-card:hover .member-card-img img {
+  transform: scale(1.06);
+}
+
+/* Placeholder khi không có ảnh */
+.member-card-img .avatar-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 3rem;
+  font-weight: 700;
+  color: rgba(255,255,255,0.15);
+  background: linear-gradient(135deg,
+    rgba(255,45,85,0.08),
+    rgba(59,130,246,0.08));
+  letter-spacing: -1px;
+}
+
+/* Overlay gradient trên ảnh */
+.member-card-img::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 40%;
+  background: linear-gradient(to top, rgba(10,15,28,0.7), transparent);
+  pointer-events: none;
+}
+
+/* Thông tin bên dưới */
+.member-card-info {
+  padding: 16px 18px 20px;
+}
+
+.member-card-name {
+  font-size: 15px;
+  font-weight: 700;
+  color: white;
+  margin-bottom: 5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.member-card-position {
+  font-size: 12px;
+  color: #ff2d55;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* BCN card: to hơn một chút */
+.dept-grid.grid-bcn .member-card-name {
+  font-size: 16px;
+}
+
+.dept-grid.grid-bcn .member-card-position {
+  font-size: 13px;
+}
+
+/* ── Responsive ── */
+@media (max-width: 1100px) {
+  .dept-grid.grid-dept {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .dept-grid.grid-bcn,
+  .dept-grid.grid-dept {
+    grid-template-columns: repeat(2, 1fr);
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .dept-grid.grid-bcn,
+  .dept-grid.grid-dept {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+  }
+}
