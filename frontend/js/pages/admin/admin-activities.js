@@ -471,4 +471,4 @@ window.handleDrop             = handleDrop;
 window.handleFileSelect       = handleFileSelect;
 window.uploadImages           = uploadImages;
 window.renderPreviewItem      = renderPreviewItem;
-window.showActivityDetail     = showActivityDetail;
+// window.showActivityDetail     = showActivityDetail;

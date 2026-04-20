@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tin tức – CTXH DUT</title>
+<link rel="stylesheet" href="../assets/css/style.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+/* ── Post-specific styles ── */
+.post-hero-img {
+  width: 100%;
+  height: 220px;
+  object-fit: cover;
+  border-radius: 12px 12px 0 0;
+  display: block;
+}
+
+.post-card-featured {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+  background: #111827;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 16px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: border-color 0.2s, transform 0.2s;
+}
+.post-card-featured:hover {
+  border-color: rgba(255,45,85,0.4);
+  transform: translateY(-2px);
+}
+.post-card-featured .feat-img {
+  width: 100%;
+  height: 100%;
+  min-height: 300px;
+  object-fit: cover;
+}
+.post-card-featured .feat-img-placeholder {
+  width: 100%;
+  min-height: 300px;
+  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 4rem;
+}
+.post-card-featured .feat-body {
+  padding: 32px 28px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.pin-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(245,158,11,0.15);
+  color: #f59e0b;
+  border: 1px solid rgba(245,158,11,0.3);
+  padding: 3px 9px;
+  border-radius: 100px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 8px;
+}
+.post-title-lg {
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.35;
+  margin: 8px 0 12px;
+  color: white;
+}
+.post-summary {
+  font-size: 14px;
+  color: #94a3b8;
+  line-height: 1.75;
+  margin-bottom: 16px;
+  flex: 1;
+}
+.post-meta-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  font-size: 12px;
+  color: #475569;
+}
+.post-meta-row span {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Category filter tabs */
+.cat-tabs {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 28px;
+}
+.cat-tab {
+  padding: 7px 16px;
+  border-radius: 100px;
+  border: 1px solid rgba(255,255,255,0.1);
+  background: transparent;
+  color: #64748b;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: Arial, sans-serif;
+}
+.cat-tab:hover {
+  border-color: rgba(255,255,255,0.25);
+  color: white;
+}
+.cat-tab.active {
+  background: rgba(255,45,85,0.15);
+  border-color: #ff2d55;
+  color: #ff2d55;
+}
+
+/* Post content modal */
+#postDetailModal .modal {
+  max-width: 760px;
+  padding: 0;
+  overflow: hidden;
+}
+.post-modal-cover {
+  width: 100%;
+  height: 280px;
+  object-fit: cover;
+  display: block;
+}
+.post-modal-cover-placeholder {
+  width: 100%;
+  height: 180px;
+  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 3rem;
+}
+.post-modal-body {
+  padding: 28px 32px;
+}
+.post-modal-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+.post-modal-title {
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1.3;
+  color: white;
+}
+.post-content-body {
+  font-size: 15px;
+  color: #cbd5e1;
+  line-height: 1.85;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.post-content-body img {
+  max-width: 100%;
+  border-radius: 10px;
+  margin: 16px 0;
+  display: block;
+}
+.post-content-body h1, .post-content-body h2, .post-content-body h3 {
+  color: white;
+  margin: 1.2em 0 0.6em;
+  font-weight: 700;
+  line-height: 1.3;
+}
+.post-content-body h1 { font-size: 22px; }
+.post-content-body h2 { font-size: 18px; }
+.post-content-body h3 { font-size: 15px; }
+.post-content-body strong { color: #e2e8f0; font-weight: 700; }
+.post-content-body a { color: #ff2d55; text-decoration: none; }
+.post-content-body a:hover { text-decoration: underline; }
+.post-content-body blockquote {
+  border-left: 3px solid #ff2d55;
+  background: rgba(255,45,85,0.06);
+  padding: 12px 16px;
+  margin: 16px 0;
+  border-radius: 0 8px 8px 0;
+  color: #94a3b8;
+}
+.post-content-body ul, .post-content-body ol {
+  margin: 8px 0 8px 24px;
+  color: #94a3b8;
+}
+.post-content-body li { margin-bottom: 6px; line-height: 1.7; }
+.post-content-body p { margin-bottom: 1em; }
+.post-content-body hr {
+  border: none;
+  border-top: 1px solid rgba(255,255,255,0.08);
+  margin: 20px 0;
+}
+
+/* Tag badges */
+.tag-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+.tag-item {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1);
+  color: #94a3b8;
+  padding: 2px 10px;
+  border-radius: 100px;
+  font-size: 11px;
+}
+
+/* Gallery images in modal */
+.post-gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 8px;
+  margin-top: 20px;
+}
+.post-gallery img {
+  width: 100%;
+  height: 100px;
+  object-fit: cover;
+  border-radius: 8px;
+  cursor: pointer;
+  border: 1px solid rgba(255,255,255,0.08);
+  transition: transform 0.2s, border-color 0.2s;
+}
+.post-gallery img:hover {
+  transform: scale(1.04);
+  border-color: rgba(255,45,85,0.4);
+}
+
+/* Skeleton loading */
+.skeleton {
+  background: linear-gradient(90deg, #1e293b 25%, #263548 50%, #1e293b 75%);
+  background-size: 400% 100%;
+  animation: shimmer 1.4s infinite;
+  border-radius: 6px;
+}
+@keyframes shimmer {
+  0% { background-position: 100% 0; }
+  100% { background-position: -100% 0; }
+}
+
+/* Read more button hover */
+.read-more-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: #ff2d55;
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+  background: none;
+  border: none;
+  padding: 0;
+  font-family: Arial, sans-serif;
+  transition: gap 0.2s;
+}
+.read-more-btn:hover { gap: 8px; }
+
+/* Lightbox */
+#lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(0,0,0,0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  display: none;
+}
+#lightbox img {
+  max-width: 90vw;
+  max-height: 90vh;
+  border-radius: 8px;
+  object-fit: contain;
+}
+#lightbox .lb-close {
+  position: absolute;
+  top: 20px;
+  right: 24px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.2);
+  color: white;
+  font-size: 18px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@media (max-width: 768px) {
+  .post-card-featured {
+    grid-template-columns: 1fr;
+  }
+  .post-card-featured .feat-img,
+  .post-card-featured .feat-img-placeholder {
+    min-height: 200px;
+  }
+  .post-modal-body { padding: 20px; }
+  .post-modal-title { font-size: 18px; }
+}
+</style>
+</head>
+<body>
+
+<!-- Navbar -->
+<header>
+  <div class="nav-container">
+    <a href="../pages/index.html" class="logo">CTXHDUT</a>
+    <nav class="nav-link">
+      <a href="../pages/index.html">Trang chủ</a>
+      <a href="../pages/activities.html">Hoạt động</a>
+      <a href="../pages/posts.html" class="active">Tin Tức</a>
+      <a href="../pages/member-profile.html">Thành Viên</a>
+    </nav>
+    <div class="nav-right" id="navActions">
+      <button class="login" onclick="AuthModal.open('login')">Đăng Nhập</button>
+      <button class="signup" onclick="AuthModal.open('register')">Đăng Ký</button>
+    </div>
+  </div>
+</header>
+
+<div class="page-body">
+  <!-- Page Hero -->
+  <div class="page-hero">
+    <div class="container">
+      <div class="breadcrumb">
+        <a href="../pages/index.html">Trang chủ</a> › <span>Tin tức</span>
+      </div>
+      <h1>Tin tức <span>CLB</span></h1>
+      <p>Cập nhật thông tin mới nhất về các hoạt động và sự kiện của CLB CTXH DUT</p>
+    </div>
+  </div>
+
+  <!-- Content -->
+  <div class="section" style="padding-top:40px">
+    <div class="container">
+
+      <!-- Search + Filter bar -->
+      <div class="filter-bar" style="margin-bottom:20px">
+        <input id="searchPost" placeholder="🔍 Tìm kiếm bài viết..." oninput="onSearch()" style="flex:2">
+        <select id="sortFilter" onchange="renderPosts()" style="min-width:140px">
+          <option value="newest">Mới nhất</option>
+          <option value="oldest">Cũ nhất</option>
+          <option value="most-viewed">Xem nhiều nhất</option>
+        </select>
+        <span id="postCount" style="font-size:12px;color:#475569;white-space:nowrap;margin-left:4px"></span>
+      </div>
+
+      <!-- Category tabs -->
+      <div class="cat-tabs" id="catTabs">
+        <button class="cat-tab active" data-cat="" onclick="setCat(this, '')">
+          <i class="fa-solid fa-border-all"></i> Tất cả
+        </button>
+        <button class="cat-tab" data-cat="Tin tức" onclick="setCat(this, 'Tin tức')">
+          <i class="fa-solid fa-newspaper"></i> Tin tức
+        </button>
+        <button class="cat-tab" data-cat="Thông báo" onclick="setCat(this, 'Thông báo')">
+          <i class="fa-solid fa-bullhorn"></i> Thông báo
+        </button>
+        <button class="cat-tab" data-cat="Hoạt động" onclick="setCat(this, 'Hoạt động')">
+          <i class="fa-solid fa-heart"></i> Hoạt động
+        </button>
+        <button class="cat-tab" data-cat="Tuyển thành viên" onclick="setCat(this, 'Tuyển thành viên')">
+          <i class="fa-solid fa-user-plus"></i> Tuyển thành viên
+        </button>
+        <button class="cat-tab" data-cat="Chia sẻ" onclick="setCat(this, 'Chia sẻ')">
+          <i class="fa-solid fa-share-nodes"></i> Chia sẻ
+        </button>
+      </div>
+
+      <!-- Posts grid -->
+      <div id="postsGrid" class="grid grid-3" style="min-height:200px">
+        <div class="loading" style="grid-column:1/-1"><div class="spinner"></div></div>
+      </div>
+
+      <!-- Pagination -->
+      <div id="postsPagination" style="display:flex;justify-content:center;gap:8px;margin-top:36px"></div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Post Detail Modal -->
+<div class="modal-overlay" id="postDetailModal">
+  <div class="modal" id="postDetailBody" style="max-width:760px;padding:0;max-height:88vh;overflow-y:auto"></div>
+</div>
+
+<!-- Lightbox -->
+<div id="lightbox">
+  <button class="lb-close" onclick="closeLightbox()">✕</button>
+  <img id="lbImg" src="" alt="">
+</div>
+
+<!-- Footer -->
+<footer>
+  <div class="container">
+    <div class="footer-bottom" style="border:none;padding-top:0">
+      <span>© 2024 CLB Công Tác Xã Hội DUT</span>
+      <a href="../pages/index.html" style="color:#ff2d55">← Trang chủ</a>
+    </div>
+  </div>
+</footer>
+
+<script src="../js/app/api.js"></script>
+<script src="../js/app/auth-modal.js"></script>
+<script src="../js/app/shared.js"></script>
+<script>
+// ── State ─────────────────────────────────────────────────────────────────────
+let allPosts = [];
+let currentPage = 1;
+let currentCat = '';
+let searchDebounce = null;
+const PAGE_SIZE = 9;
+
+const CAT_ICONS = {
+  'Tin tức': 'fa-newspaper',
+  'Thông báo': 'fa-bullhorn',
+  'Hoạt động': 'fa-heart',
+  'Tuyển thành viên': 'fa-user-plus',
+  'Chia sẻ': 'fa-share-nodes',
+};
+const CAT_COLORS = {
+  'Tin tức': 'badge-gold',
+  'Thông báo': 'badge-blue',
+  'Hoạt động': 'badge-open',
+  'Tuyển thành viên': 'badge-red',
+  'Chia sẻ': 'badge-blue',
+};
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', async () => {
+  updateNavbar();
+  await loadPosts();
+  document.getElementById('postDetailModal').addEventListener('click', (e) => {
+    if (e.target === document.getElementById('postDetailModal')) closePostModal();
+  });
+});
+
+async function loadPosts() {
+  try {
+    const r = await API.getPosts('?pageSize=100');
+    allPosts = r.data?.items || r.data || [];
+    renderPosts();
+  } catch (e) {
+    document.getElementById('postsGrid').innerHTML = `
+      <div class="empty" style="grid-column:1/-1">
+        <div class="ico">⚠️</div>
+        <p style="color:#ff2d55">${e.message}</p>
+        <button class="btn-outline" onclick="loadPosts()" style="margin-top:12px">Thử lại</button>
+      </div>`;
+  }
+}
+
+// ── Render ────────────────────────────────────────────────────────────────────
+function renderPosts() {
+  const keyword = (document.getElementById('searchPost')?.value || '').toLowerCase().trim();
+  const sort = document.getElementById('sortFilter')?.value || 'newest';
+
+  let filtered = allPosts.filter(p => {
+    const matchCat = !currentCat || p.category === currentCat;
+    const matchKw = !keyword ||
+      (p.title || '').toLowerCase().includes(keyword) ||
+      (p.content || '').toLowerCase().includes(keyword) ||
+      (p.summary || '').toLowerCase().includes(keyword);
+    return matchCat && matchKw;
+  });
+
+  // Sort
+  if (sort === 'newest') filtered.sort((a, b) => new Date(b.createdDate) - new Date(a.createdDate));
+  else if (sort === 'oldest') filtered.sort((a, b) => new Date(a.createdDate) - new Date(b.createdDate));
+  else if (sort === 'most-viewed') filtered.sort((a, b) => (b.viewCount || 0) - (a.viewCount || 0));
+
+  // Pinned first
+  filtered.sort((a, b) => (b.isPinned ? 1 : 0) - (a.isPinned ? 1 : 0));
+
+  const count = document.getElementById('postCount');
+  if (count) count.textContent = `${filtered.length} bài viết`;
+
+  const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
+  if (currentPage > totalPages) currentPage = 1;
+  const paged = filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+
+  const grid = document.getElementById('postsGrid');
+
+  if (!paged.length) {
+    grid.innerHTML = `<div class="empty" style="grid-column:1/-1">
+      <div class="ico">📭</div>
+      <p>Không tìm thấy bài viết nào</p>
+      <button class="btn-outline" onclick="clearFilters()" style="margin-top:12px">Xóa bộ lọc</button>
+    </div>`;
+    renderPagination(0);
+    return;
+  }
+
+  // First post as featured (if on page 1 and no filter)
+  let firstIsFeature = currentPage === 1 && !keyword && !currentCat && paged[0]?.isPinned;
+  
+  grid.innerHTML = '';
+  paged.forEach((p, i) => {
+    const div = document.createElement('div');
+    if (firstIsFeature && i === 0) {
+      div.innerHTML = renderFeaturedCard(p);
+    } else {
+      div.className = 'card';
+      div.style.cssText = 'cursor:pointer;overflow:hidden';
+      div.onclick = () => openPost(p.postID);
+      div.innerHTML = renderCardInner(p);
+    }
+    grid.appendChild(div.firstElementChild || div);
+  });
+
+  renderPagination(totalPages);
+}
+
+function renderFeaturedCard(p) {
+  const catCls = CAT_COLORS[p.category] || 'badge-gold';
+  const tags = parseTags(p.tags);
+  return `
+  <div class="post-card-featured" onclick="openPost(${p.postID})">
+    <div>
+      ${p.coverImageUrl
+        ? `<img src="${imgSrc(p.coverImageUrl)}" class="feat-img" onerror="this.parentElement.innerHTML='<div class=\\"feat-img-placeholder\\">📰</div>'">`
+        : `<div class="feat-img-placeholder">${catEmoji(p.category)}</div>`}
+    </div>
+    <div class="feat-body">
+      ${p.isPinned ? `<div class="pin-badge"><i class="fa-solid fa-thumbtack"></i> Ghim</div>` : ''}
+      <span class="badge ${catCls}">${Utils.escapeHtml(p.category)}</span>
+      <div class="post-title-lg">${Utils.escapeHtml(p.title || 'Không có tiêu đề')}</div>
+      ${p.summary ? `<div class="post-summary">${Utils.escapeHtml(Utils.truncate(p.summary, 150))}</div>` : 
+                    `<div class="post-summary">${Utils.escapeHtml(Utils.truncate(p.content?.replace(/<[^>]+>/g, ''), 150))}</div>`}
+      <div class="post-meta-row">
+        <span><i class="fa-regular fa-user"></i> ${Utils.escapeHtml(p.authorName || 'BTC')}</span>
+        <span><i class="fa-regular fa-calendar"></i> ${Utils.formatDate(p.createdDate)}</span>
+        ${p.readTime ? `<span><i class="fa-regular fa-clock"></i> ${p.readTime} phút đọc</span>` : ''}
+        ${p.viewCount ? `<span><i class="fa-regular fa-eye"></i> ${p.viewCount}</span>` : ''}
+      </div>
+      ${tags.length ? `<div class="tag-list" style="margin-top:12px">${tags.map(t => `<span class="tag-item">#${t}</span>`).join('')}</div>` : ''}
+      <button class="read-more-btn" style="margin-top:16px" onclick="event.stopPropagation();openPost(${p.postID})">
+        Đọc tiếp <i class="fa-solid fa-arrow-right"></i>
+      </button>
+    </div>
+  </div>`;
+}
+
+function renderCardInner(p) {
+  const catCls = CAT_COLORS[p.category] || 'badge-gold';
+  const tags = parseTags(p.tags);
+  return `
+    ${p.coverImageUrl
+      ? `<img src="${imgSrc(p.coverImageUrl)}" class="post-hero-img" onerror="this.style.display='none'">`
+      : `<div class="card-thumb" style="height:160px;font-size:2.5rem">${catEmoji(p.category)}</div>`}
+    <div class="card-body" style="padding:16px 18px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+        <span class="badge ${catCls}">${Utils.escapeHtml(p.category)}</span>
+        ${p.isPinned ? `<span style="font-size:11px;color:#f59e0b"><i class="fa-solid fa-thumbtack"></i> Ghim</span>` : ''}
+      </div>
+      <div style="font-size:15px;font-weight:700;margin-bottom:8px;line-height:1.4;color:white;
+                  overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical">
+        ${Utils.escapeHtml(p.title || 'Không có tiêu đề')}
+      </div>
+      <div style="font-size:13px;color:#94a3b8;line-height:1.65;margin-bottom:12px;
+                  overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical">
+        ${Utils.escapeHtml(p.summary || Utils.truncate(p.content?.replace(/<[^>]+>/g, ''), 100))}
+      </div>
+      ${tags.length ? `<div class="tag-list" style="margin-bottom:10px">${tags.slice(0,3).map(t => `<span class="tag-item">#${t}</span>`).join('')}</div>` : ''}
+      <div class="post-meta-row">
+        <span><i class="fa-regular fa-user"></i> ${Utils.escapeHtml(p.authorName || 'BTC')}</span>
+        <span><i class="fa-regular fa-calendar"></i> ${Utils.formatDate(p.createdDate)}</span>
+        ${p.readTime ? `<span><i class="fa-regular fa-clock"></i> ${p.readTime}p</span>` : ''}
+        ${p.viewCount ? `<span><i class="fa-regular fa-eye"></i> ${p.viewCount}</span>` : ''}
+      </div>
+    </div>
+    <div class="card-footer" style="padding:0 18px 14px">
+      <button onclick="openPost(${p.postID})" class="btn-primary" style="flex:1;padding:9px;font-size:13px">
+        <i class="fa-solid fa-book-open"></i> Đọc bài viết
+      </button>
+    </div>`;
+}
+
+// ── Open post detail ──────────────────────────────────────────────────────────
+async function openPost(id) {
+  const modal = document.getElementById('postDetailModal');
+  const body = document.getElementById('postDetailBody');
+  body.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;height:300px">
+    <div class="spinner"></div>
+  </div>`;
+  modal.classList.add('open');
+
+  try {
+    const r = await API.getPost(id);
+    const p = r.data;
+    const catCls = CAT_COLORS[p.category] || 'badge-gold';
+    const tags = parseTags(p.tags);
+
+    // Tăng lượt xem
+    fetch(`${API_BASE}/posts/${id}/view`, { method: 'POST' }).catch(() => {});
+
+    const galleryHtml = (p.images && p.images.length > 1)
+      ? `<div class="post-gallery">${p.images.slice(1).map(url =>
+          `<img src="${imgSrc(url)}" onclick="openLightbox('${imgSrc(url)}')" alt="">`
+        ).join('')}</div>`
+      : '';
+
+    body.innerHTML = `
+      ${p.coverImageUrl
+        ? `<img src="${imgSrc(p.coverImageUrl)}" class="post-modal-cover" 
+               onerror="this.style.display='none'">`
+        : `<div class="post-modal-cover-placeholder">${catEmoji(p.category)}</div>`}
+      
+      <div class="post-modal-body">
+        <div class="post-modal-header">
+          <div style="flex:1">
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px">
+              <span class="badge ${catCls}">${Utils.escapeHtml(p.category)}</span>
+              ${p.isPinned ? `<span class="pin-badge"><i class="fa-solid fa-thumbtack"></i> Ghim</span>` : ''}
+            </div>
+            <div class="post-modal-title">${Utils.escapeHtml(p.title || 'Không có tiêu đề')}</div>
+            <div class="post-meta-row" style="margin-top:10px">
+              <span><i class="fa-regular fa-user"></i> ${Utils.escapeHtml(p.authorName || 'BTC')}</span>
+              <span><i class="fa-regular fa-calendar"></i> ${Utils.formatDateTime(p.createdDate)}</span>
+              ${p.readTime ? `<span><i class="fa-regular fa-clock"></i> ${p.readTime} phút đọc</span>` : ''}
+              ${p.viewCount !== undefined ? `<span><i class="fa-regular fa-eye"></i> ${p.viewCount} lượt xem</span>` : ''}
+              ${p.updatedDate ? `<span style="color:#334155"><i class="fa-solid fa-pen"></i> Đã cập nhật ${Utils.formatDate(p.updatedDate)}</span>` : ''}
+            </div>
+          </div>
+          <button onclick="closePostModal()" style="
+            width:32px;height:32px;border-radius:50%;background:#1e293b;
+            border:1px solid rgba(255,255,255,0.08);color:#94a3b8;font-size:15px;
+            cursor:pointer;display:flex;align-items:center;justify-content:center;
+            flex-shrink:0;font-family:Arial,sans-serif;transition:background 0.2s"
+            onmouseover="this.style.background='#ff2d55';this.style.color='white'"
+            onmouseout="this.style.background='#1e293b';this.style.color='#94a3b8'">✕</button>
+        </div>
+
+        ${p.summary ? `<div style="background:rgba(59,130,246,0.06);border-left:3px solid #3b82f6;
+            border-radius:0 8px 8px 0;padding:12px 16px;margin-bottom:20px;
+            font-size:14px;color:#94a3b8;font-style:italic">${Utils.escapeHtml(p.summary)}</div>` : ''}
+
+        <hr style="border:none;border-top:1px solid rgba(255,255,255,0.07);margin:0 0 20px">
+
+        <div class="post-content-body">${renderContent(p.content)}</div>
+
+        ${galleryHtml}
+
+        ${tags.length ? `
+          <div style="margin-top:24px;padding-top:16px;border-top:1px solid rgba(255,255,255,0.07)">
+            <div style="font-size:12px;color:#475569;margin-bottom:8px;text-transform:uppercase;letter-spacing:.05em;font-weight:700">Tags</div>
+            <div class="tag-list">${tags.map(t => `<span class="tag-item">#${t}</span>`).join('')}</div>
+          </div>
+        ` : ''}
+
+        <div style="margin-top:24px;padding-top:16px;border-top:1px solid rgba(255,255,255,0.07);
+                    display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px">
+          <button onclick="closePostModal()" class="btn-outline" style="padding:9px 20px;font-size:13px">
+            <i class="fa-solid fa-arrow-left"></i> Quay lại
+          </button>
+          <div style="display:flex;gap:8px">
+            <a href="../pages/activities.html" class="btn-primary" style="padding:9px 20px;font-size:13px;text-decoration:none">
+              <i class="fa-solid fa-heart"></i> Tham gia hoạt động
+            </a>
+          </div>
+        </div>
+      </div>`;
+
+  } catch (e) {
+    body.innerHTML = `<div style="padding:40px;text-align:center;color:#ff2d55">
+      <i class="fa-solid fa-circle-exclamation" style="font-size:48px;margin-bottom:16px"></i>
+      <p>${e.message}</p>
+    </div>`;
+  }
+}
+
+function closePostModal() {
+  document.getElementById('postDetailModal').classList.remove('open');
+}
+
+// ── Content renderer (HTML-aware) ─────────────────────────────────────────────
+function renderContent(content) {
+  if (!content) return '<p style="color:#64748b">Bài viết này chưa có nội dung.</p>';
+  // Nếu content là HTML (từ rich editor), render trực tiếp (đã sanitize ở trên)
+  // Nếu là text thuần, convert newline → <p>
+  if (content.includes('<p>') || content.includes('<h') || content.includes('<img')) {
+    return content; // Rich HTML
+  }
+  // Plain text — convert
+  return content.split('\n\n')
+    .filter(s => s.trim())
+    .map(s => `<p>${s.replace(/\n/g, '<br>')}</p>`)
+    .join('');
+}
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+function parseTags(tags) {
+  if (!tags) return [];
+  try { return JSON.parse(tags); } catch { return tags.split(',').map(t => t.trim()).filter(Boolean); }
+}
+
+function imgSrc(url) {
+  if (!url) return '';
+  return url.startsWith('http') ? url : 'http://localhost:5190' + url;
+}
+
+function catEmoji(cat) {
+  const map = { 'Tin tức': '📰', 'Thông báo': '📢', 'Hoạt động': '🎯', 'Tuyển thành viên': '🌟', 'Chia sẻ': '💬' };
+  return map[cat] || '📄';
+}
+
+function setCat(btn, cat) {
+  document.querySelectorAll('.cat-tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  currentCat = cat;
+  currentPage = 1;
+  renderPosts();
+}
+
+function onSearch() {
+  clearTimeout(searchDebounce);
+  searchDebounce = setTimeout(() => { currentPage = 1; renderPosts(); }, 300);
+}
+
+function clearFilters() {
+  document.getElementById('searchPost').value = '';
+  document.querySelectorAll('.cat-tab').forEach(b => b.classList.remove('active'));
+  document.querySelector('.cat-tab[data-cat=""]').classList.add('active');
+  currentCat = '';
+  currentPage = 1;
+  renderPosts();
+}
+
+function renderPagination(totalPages) {
+  const pag = document.getElementById('postsPagination');
+  if (!pag) return;
+  if (totalPages <= 1) { pag.innerHTML = ''; return; }
+  pag.innerHTML = Array.from({ length: totalPages }, (_, i) => i + 1).map(p => `
+    <button onclick="currentPage=${p};renderPosts();window.scrollTo({top:300,behavior:'smooth'})" style="
+      padding:7px 13px;border-radius:6px;font-size:13px;cursor:pointer;font-family:Arial,sans-serif;
+      border:1px solid ${p === currentPage ? '#ff2d55' : 'rgba(255,255,255,0.1)'};
+      background:${p === currentPage ? 'rgba(255,45,85,0.15)' : 'transparent'};
+      color:${p === currentPage ? '#ff2d55' : '#64748b'}">${p}</button>
+  `).join('');
+}
+
+// ── Lightbox ──────────────────────────────────────────────────────────────────
+function openLightbox(src) {
+  document.getElementById('lbImg').src = src;
+  document.getElementById('lightbox').style.display = 'flex';
+}
+function closeLightbox() {
+  document.getElementById('lightbox').style.display = 'none';
+}
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') { closeLightbox(); closePostModal(); }
+});
+</script>
+</body>
+</html>
