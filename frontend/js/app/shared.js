@@ -5,7 +5,8 @@
 
 // ── Hiển thị chi tiết hoạt động (dùng cho cả user và admin) ─────────────────
 async function showActivityDetail(activityId, options = {}) {
-  const { showAdminButtons = false, onClose = null } = options;
+  const isAdminPage = window.location.pathname.includes('admin-dashboard.html');
+  const { showAdminButtons = (Auth.isAdmin() && isAdminPage), onClose = null } = options;
   
   // Tìm hoặc tạo modal container
   let modal = document.getElementById('detailModal');
