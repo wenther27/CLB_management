@@ -69,11 +69,11 @@ const API = {
   getAuditLogs: () => request('GET', '/users/audit-logs', null, true),
 
   // Members
-  getMembers: (params = '') => request('GET', `/members${params}`),
-  getMember: (id) => get(`/members/${id}`),
+  getMembers: (params = '') => request('GET', `/members${params}`, null, true),
+  getMember: (id) => request('GET', `/members/${id}`, null, true),
   getMyProfile: () => request('GET', '/members/me', null, true),
   createMember: (data) => post('/members', data),
-  updateMember: (id, data) => put(`/members/${id}`, data),
+  updateMember: (id, data) => request('PUT', `/members/${id}`, data, true),
   deleteMember: (id) => del(`/members/${id}`),
 
   // Activities

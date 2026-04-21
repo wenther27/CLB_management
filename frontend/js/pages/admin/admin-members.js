@@ -150,9 +150,39 @@ async function viewMember(id) {
     Toast.error(e.message);
   }
 }
+// -- Chỉnh sửa thông tin thành viên ───────────────────────────────────────────────
+async function editMember(id) {
+  try {
+    const r = await API.getMember(id);
+    console.log('editMember data:', r);
+    openMemberModal(r.data);
+  } catch (e) {
+    console.error('editMember error:', e);
+    Toast.error(e.message);
+  }
+}
 
-// ── Modal thêm / sửa thành viên ───────────────────────────────────────────────
+const FACULTIES = [
+  'Cơ khí',
+  'Công nghệ thông tin',
+  'Cơ khí giao thông',
+  'Công nghệ Nhiệt - Điện lạnh',
+  'Điện',
+  'Điện tử - Viễn thông',
+  'Hóa',
+  'Xây dựng Cầu - Đường',
+  'Xây dựng Dân dụng & Công nghiệp',
+  'Xây dựng Công trình Thủy',
+  'Môi trường',
+  'Quản lý dự án',
+  'Khoa học Công nghệ tiên tiến',
+];
+
 function openMemberModal(data = {}) {
+  const facultyOptions = FACULTIES.map(f => `
+    <option value="${f}" ${data.faculty === f ? 'selected' : ''}>${f}</option>
+  `).join('');
+
   openModal(data.memberID ? 'Chỉnh sửa thành viên' : 'Thêm thành viên mới', `
     <div class="form-row">
       <div class="form-group">
@@ -161,11 +191,12 @@ function openMemberModal(data = {}) {
                value="${Utils.escapeHtml(data.fullName || '')}">
       </div>
       <div class="form-group">
-        <label class="form-label">Điện thoại</label>
+        <label class="form-label">Số điện thoại</label>
         <input id="mf-phone" class="form-control" placeholder="0901234567"
                value="${Utils.escapeHtml(data.phone || '')}">
       </div>
     </div>
+
     <div class="form-row">
       <div class="form-group">
         <label class="form-label">Lớp</label>
@@ -174,42 +205,90 @@ function openMemberModal(data = {}) {
       </div>
       <div class="form-group">
         <label class="form-label">Khoa</label>
-        <input id="mf-fac" class="form-control" placeholder="Điện tử - Viễn thông"
-               value="${Utils.escapeHtml(data.faculty || '')}">
+        <select id="mf-fac" class="form-control">
+          <option value="" ${!data.faculty ? 'selected' : ''}>-- Chọn Khoa --</option>
+          ${facultyOptions}
+        </select>
       </div>
     </div>
+
     <div class="form-row">
       <div class="form-group">
         <label class="form-label">Chức vụ</label>
-        <input id="mf-pos" class="form-control" placeholder="Trưởng nhóm..."
+        <input id="mf-pos" class="form-control"
+               placeholder="Chủ nhiệm, Trưởng ban..."
                value="${Utils.escapeHtml(data.position || '')}">
       </div>
       <div class="form-group">
         <label class="form-label">Trạng thái</label>
         <select id="mf-st" class="form-control">
           <option value="Active"    ${(data.status === 'Active' || !data.status) ? 'selected' : ''}>Hoạt động</option>
-          <option value="Inactive"  ${data.status === 'Inactive'   ? 'selected' : ''}>Ngừng hoạt động</option>
-          <option value="Suspended" ${data.status === 'Suspended'  ? 'selected' : ''}>Tạm đình chỉ</option>
+          <option value="Inactive"  ${data.status === 'Inactive'  ? 'selected' : ''}>Ngừng hoạt động</option>
+          <option value="Suspended" ${data.status === 'Suspended' ? 'selected' : ''}>Tạm đình chỉ</option>
         </select>
       </div>
     </div>
+
+    <div class="form-group">
+      <label class="form-label">
+        Ban
+        <span style="color:#475569;font-weight:400;text-transform:none;font-size:11px">
+          (để trống = không hiện trên trang Thành Viên)
+        </span>
+      </label>
+      <select id="mf-dept" class="form-control">
+        <option value="" ${!data.department ? 'selected' : ''}>-- Thành viên thường --</option>
+        <option value="BCN" ${data.department === 'BCN' ? 'selected' : ''}>Ban Chủ Nhiệm (BCN)</option>
+        <option value="BTT" ${data.department === 'BTT' ? 'selected' : ''}>Ban Truyền Thông (BTT)</option>
+        <option value="BPT" ${data.department === 'BPT' ? 'selected' : ''}>Ban Phong Trào (BPT)</option>
+      </select>
+    </div>
+
+    <div id="mf-board-fields" style="${data.department ? '' : 'display:none'}">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Thứ tự hiển thị</label>
+          <input type="number" id="mf-order" class="form-control"
+                 placeholder="1, 2, 3..." min="1"
+                 value="${data.displayOrder || ''}">
+        </div>
+        <div class="form-group">
+          <label class="form-label">URL ảnh đại diện</label>
+          <input id="mf-avatar" class="form-control"
+                 placeholder="/uploads/members/bcn-1.webp"
+                 value="${Utils.escapeHtml(data.avatarUrl || '')}">
+        </div>
+      </div>
+    </div>
+
     <button type="button" onclick="saveMember(${data.memberID || 0})"
-      class="btn-primary w-100" style="padding:11px;margin-top:4px">
-      <i class="fa-solid fa-floppy-disk"></i> ${data.memberID ? 'Cập nhật' : 'Lưu thành viên'}
+      class="btn-primary w-100" style="padding:11px;margin-top:8px">
+      <i class="fa-solid fa-floppy-disk"></i>
+      ${data.memberID ? 'Cập nhật thành viên' : 'Lưu thành viên'}
     </button>
   `, null);
+
+  // Hiện/ẩn board fields khi đổi Ban
+  document.getElementById('mf-dept').addEventListener('change', function() {
+    document.getElementById('mf-board-fields').style.display =
+      this.value ? '' : 'none';
+  });
 }
 
 // ── Lưu thành viên (tạo mới / cập nhật) ─────────────────────────────────────
 async function saveMember(id) {
   const d = {
-    fullName:  document.getElementById('mf-name').value.trim(),
-    phone:     document.getElementById('mf-phone').value.trim() || null,
-    className: document.getElementById('mf-class').value.trim() || null,
-    faculty:   document.getElementById('mf-fac').value.trim()   || null,
-    position:  document.getElementById('mf-pos').value.trim()   || null,
-    status:    document.getElementById('mf-st').value,
+    fullName:     document.getElementById('mf-name').value.trim(),
+    phone:        document.getElementById('mf-phone').value.trim()   || null,
+    className:    document.getElementById('mf-class').value.trim()   || null,
+    faculty:      document.getElementById('mf-fac').value            || null,
+    position:     document.getElementById('mf-pos').value.trim()     || null,
+    status:       document.getElementById('mf-st').value,
+    department:   document.getElementById('mf-dept').value           || null,
+    displayOrder: parseInt(document.getElementById('mf-order')?.value) || 0,
+    avatarUrl:    document.getElementById('mf-avatar')?.value.trim() || null,
   };
+
   if (!d.fullName) { Toast.error('Vui lòng nhập họ tên'); return; }
 
   try {
@@ -227,17 +306,6 @@ async function saveMember(id) {
     Toast.error(e.message);
   }
 }
-
-// ── Sửa thành viên (load data → mở modal) ────────────────────────────────────
-async function editMember(id) {
-  try {
-    const r = await API.getMember(id);
-    openMemberModal(r.data);
-  } catch (e) {
-    Toast.error(e.message);
-  }
-}
-
 // ── Vô hiệu hóa tài khoản ────────────────────────────────────────────────────
 async function deactivateMember(id, name) {
   if (!confirm(`Vô hiệu hóa tài khoản của "${name}"?\nThành viên sẽ không thể đăng nhập.`)) return;

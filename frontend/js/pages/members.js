@@ -67,14 +67,123 @@ function renderDepartment(dept) {
     </div>`;
 }
 
-// Render 1 member card
+// ── Mở modal chi tiết thành viên ──
+function openMemberModal(member) {
+  // Tạo modal nếu chưa có
+  let overlay = document.getElementById('memberModalOverlay');
+  if (!overlay) {
+    overlay = document.createElement('div');
+    overlay.id = 'memberModalOverlay';
+    overlay.className = 'member-modal-overlay';
+    overlay.innerHTML = `<div class="member-modal" id="memberModal"></div>`;
+    document.body.appendChild(overlay);
+
+    // Đóng khi click nền
+    overlay.addEventListener('click', (e) => {
+      if (e.target === overlay) closeMemberModal();
+    });
+
+    // Đóng khi nhấn Escape
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeMemberModal();
+    });
+  }
+
+  const initials = (member.fullName || '?')
+    .split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
+
+  const imgHtml = member.avatarUrl
+    ? `<img class="member-modal-img"
+            src="${member.avatarUrl.startsWith('http')
+              ? member.avatarUrl
+              : 'http://localhost:5190' + member.avatarUrl}"
+            alt="${escapeHtml(member.fullName)}"
+            onerror="this.style.display='none';
+                     this.nextSibling.style.display='flex'">`
+    : '';
+
+  // Format ngày tham gia
+  const joinDate = member.joinDate
+    ? new Date(member.joinDate).toLocaleDateString('vi-VN', {
+        day: '2-digit', month: '2-digit', year: 'numeric'
+      })
+    : 'Chưa cập nhật';
+
+  document.getElementById('memberModal').innerHTML = `
+    <button class="member-modal-close" onclick="closeMemberModal()">✕</button>
+
+    <div class="member-modal-img-wrap">
+      ${imgHtml}
+      <div class="member-modal-img-placeholder"
+           style="${member.avatarUrl ? 'display:none' : ''}">
+        ${initials}
+      </div>
+    </div>
+
+    <div class="member-modal-body">
+      <div class="member-modal-name">${escapeHtml(member.fullName)}</div>
+      <div class="member-modal-position">
+        ${escapeHtml(member.position || 'Thành viên')}
+      </div>
+
+      <div class="member-modal-info">
+        <div class="member-modal-row">
+          <div class="member-modal-row-icon">
+            <i class="fa-solid fa-building-columns"></i>
+          </div>
+          <div>
+            <div class="member-modal-row-label">Khoa</div>
+            <div class="member-modal-row-value">
+              ${escapeHtml(member.faculty || 'Chưa cập nhật')}
+            </div>
+          </div>
+        </div>
+
+        <div class="member-modal-row">
+          <div class="member-modal-row-icon">
+            <i class="fa-solid fa-calendar-plus"></i>
+          </div>
+          <div>
+            <div class="member-modal-row-label">Ngày tham gia</div>
+            <div class="member-modal-row-value">${joinDate}</div>
+          </div>
+        </div>
+
+        <div class="member-modal-row">
+          <div class="member-modal-row-icon">
+            <i class="fa-solid fa-envelope"></i>
+          </div>
+          <div>
+            <div class="member-modal-row-label">Liên hệ</div>
+            <div class="member-modal-row-value">
+              ${member.email
+                ? `<a href="mailto:${escapeHtml(member.email)}"
+                      style="color:#60a5fa;text-decoration:none">
+                     ${escapeHtml(member.email)}
+                   </a>`
+                : 'Chưa cập nhật'}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>`;
+
+  // Mở modal
+  requestAnimationFrame(() => overlay.classList.add('open'));
+  document.body.style.overflow = 'hidden';
+}
+
+function closeMemberModal() {
+  const overlay = document.getElementById('memberModalOverlay');
+  if (!overlay) return;
+  overlay.classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+// ── Cập nhật renderCard — thêm onclick ──
 function renderCard(member, index) {
   const initials = (member.fullName || '?')
-    .split(' ')
-    .map(w => w[0])
-    .join('')
-    .toUpperCase()
-    .slice(0, 2);
+    .split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
 
   const imgHtml = member.avatarUrl
     ? `<img src="${member.avatarUrl.startsWith('http')
@@ -85,11 +194,15 @@ function renderCard(member, index) {
                     this.nextSibling.style.display='flex'">`
     : '';
 
+  // Lưu data vào attribute để dùng khi click
+  const memberData = encodeURIComponent(JSON.stringify(member));
+
   return `
-    <div class="member-card" data-index="${index}">
+    <div class="member-card" data-index="${index}"
+         onclick="openMemberModal(JSON.parse(decodeURIComponent('${memberData}')))">
       <div class="member-card-img">
         ${imgHtml}
-        <div class="avatar-placeholder" 
+        <div class="avatar-placeholder"
              style="${member.avatarUrl ? 'display:none' : ''}">
           ${initials}
         </div>

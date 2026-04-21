@@ -285,27 +285,27 @@
   
   // Hàm load thống kê
   async function loadStats() {
-    try {
-      const [members, activities, posts] = await Promise.all([
-        API.getMembers(),
-        API.getActivities(),
-        API.getPosts()
-      ]);
-      
-      const memberList = members.data?.items || members.data || [];
-      const activityList = activities.data?.items || activities.data || [];
-      const postList = posts.data?.items || posts.data || [];
-      
-      const openActs = activityList.filter(a => a.status === 'Open').length;
-      
-      document.getElementById('sMembers').textContent = memberList.length;
-      document.getElementById('sOpenActs').textContent = openActs;
-      document.getElementById('sPosts').textContent = postList.length;
-      document.getElementById('sAllActs').textContent = activityList.length;
-    } catch (e) {
-      console.error('Error loading stats:', e);
-    }
+  try {
+    const [members, activities, posts] = await Promise.all([
+      request('GET', '/members', null, true),        // ← thêm null, true
+      request('GET', '/activities', null, true),      // ← thêm null, true  
+      request('GET', '/posts', null, true),            // ← thêm null, true
+    ]);
+
+    const memberList   = members.data?.items   || members.data   || [];
+    const activityList = activities.data?.items || activities.data || [];
+    const postList     = posts.data?.items      || posts.data     || [];
+
+    const openActs = activityList.filter(a => a.status === 'Open').length;
+
+    document.getElementById('sMembers').textContent  = memberList.length;
+    document.getElementById('sOpenActs').textContent = openActs;
+    document.getElementById('sPosts').textContent    = postList.length;
+    document.getElementById('sAllActs').textContent  = activityList.length;
+  } catch(e) {
+    console.error('loadStats error:', e);
   }
+}
   
   // Export functions
   window.loadStats = loadStats;
