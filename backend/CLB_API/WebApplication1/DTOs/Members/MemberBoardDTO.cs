@@ -9,6 +9,9 @@ namespace ClubManagement.API.DTOs.Members
         public string? Department { get; set; }
         public string? AvatarUrl { get; set; }
         public int DisplayOrder { get; set; }
+        public string? Faculty { get; set; }
+        public string? Email { get; set; }
+        public DateTime? JoinDate { get; set; }
     }
 
     public class DepartmentGroupDTO

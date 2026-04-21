@@ -16,5 +16,8 @@
         public string ? Email { get; set; }
         public string ? Phone { get; set; }
         public string ? RoleName { get; set; }
+        public string? Department { get; set; }
+        public int DisplayOrder { get; set; }
+        public string? AvatarUrl { get; set; }
     }
 }

@@ -22,6 +22,7 @@ namespace ClubManagement.API.Controllers
         public async Task<IActionResult> GetMemberBoard()
         {
             var members = await _context.Members
+                .Include(m => m.User)
                 .Where(m => m.Status == "Active"
                          && m.Department != null
                          && m.Department != "")
@@ -34,7 +35,10 @@ namespace ClubManagement.API.Controllers
                     Position = m.Position,
                     Department = m.Department,
                     AvatarUrl = m.AvatarUrl,
-                    DisplayOrder = m.DisplayOrder
+                    DisplayOrder = m.DisplayOrder,
+                    Faculty = m.Faculty,
+                    JoinDate = m.JoinDate,
+                    Email = m.User != null ? m.User.Email : null
                 })
                 .ToListAsync();
 
