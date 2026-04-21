@@ -26,6 +26,14 @@ public class Member
     
     public DateTime JoinDate { get; set; } = DateTime.Now;
 
+    [MaxLength(100)]
+    public string? Department { get; set; }  // "BCN", "Truyền thông", "Phong trào"...
+
+    public int DisplayOrder { get; set; } = 0;
+
+    [MaxLength(500)]
+    public string? AvatarUrl { get; set; }
+
     [ForeignKey ("UserID")]
     public User ? User {  get; set; }
 

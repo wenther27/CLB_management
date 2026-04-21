@@ -52,9 +52,9 @@ function showP(name) {
 async function loadStats() {
   try {
     const [mr, ar, pr] = await Promise.all([
-      API.getMembers(),
-      API.getActivities(),
-      API.getPosts(),
+      request('GET', '/members', null, true),
+      request('GET', '/activities', null, true),
+      request('GET', '/posts', null, true),
     ]);
 
     const set = (id, v) => {
@@ -66,12 +66,12 @@ async function loadStats() {
     const acts    = ar.data?.items || ar.data || [];
     const posts   = pr.data?.items || pr.data || [];
 
-    set('sMembers',  members.filter(m => m.status === 'Active').length);
+    set('sMembers',  members.length);
     set('sOpenActs', acts.filter(a => a.status === 'Open').length);
     set('sPosts',    posts.length);
     set('sAllActs',  acts.length);
-  } catch {
-    // Thống kê không bắt buộc, bỏ qua lỗi
+  } catch(e) {
+    console.error('loadStats error:', e);
   }
 }
 

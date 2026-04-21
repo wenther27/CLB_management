@@ -40,7 +40,11 @@ namespace ClubManagement.API.Service
             Username = m.User?.Username,
             Email = m.User?.Email,
             Phone = m.User?.Phone,
-            RoleName = m.User?.Role?.RoleName
+            RoleName = m.User?.Role?.RoleName,
+            // Thêm mới
+            Department = m.Department,
+            DisplayOrder = m.DisplayOrder,
+            AvatarUrl = m.AvatarUrl,
         };
         public async Task<PagedResultDTO<MemberDTO>> GetAllAsync(MemberQueryDTO query)
         {
@@ -111,35 +115,42 @@ namespace ClubManagement.API.Service
 
         }
 
-        public async Task <MemberDTO?> AdminUpdateAsync (int memberId, UpdateMemberDTO dto)
+        public async Task<MemberDTO?> AdminUpdateAsync(int memberId, UpdateMemberDTO dto)
         {
             var member = await _context.Members
                 .Include(m => m.User).ThenInclude(u => u!.Role)
-                .FirstAsync(m => m.MemberID == memberId);
+                .FirstOrDefaultAsync(m => m.MemberID == memberId);
+
             if (member == null) return null;
+
             if (dto.FullName != null) member.FullName = dto.FullName;
             if (dto.ClassName != null) member.ClassName = dto.ClassName;
-            if (dto.Faculty != null) member.ClassName = dto.ClassName;
-            if (dto.Position != null) member.Position = dto.Faculty;
+            if (dto.Faculty != null) member.Faculty = dto.Faculty;
+            if (dto.Position != null) member.Position = dto.Position;
             if (dto.Status != null)
             {
                 member.Status = dto.Status;
                 if (member.User != null)
-                {
-                    member.User.IsActive = dto.Status == "Activite";
-                }
+                    member.User.IsActive = dto.Status == "Active";
             }
-                if (dto.Phone != null && member.User !=null)
-                {
-                    member.User.Phone = dto.Phone;
-                    member.User.UpdatedAt = DateTime.UtcNow;
-                }
-                await _context.SaveChangesAsync();
-                return MapToDTO(member);
-            
+            if (dto.Phone != null && member.User != null)
+            {
+                member.User.Phone = dto.Phone;
+                member.User.UpdatedAt = DateTime.UtcNow;
+            }
+            // Trường mới
+            if (dto.Department != null)
+                member.Department = dto.Department == "" ? null : dto.Department;
+            if (dto.DisplayOrder.HasValue)
+                member.DisplayOrder = dto.DisplayOrder.Value;
+            if (dto.AvatarUrl != null)
+                member.AvatarUrl = dto.AvatarUrl == "" ? null : dto.AvatarUrl;
+
+            await _context.SaveChangesAsync();
+            return MapToDTO(member);
         }
-       
-       public async Task<bool> DeactivateAsync (int memberId)
+
+        public async Task<bool> DeactivateAsync (int memberId)
         {
             var member = await _context.Members.Include(m => m.User)
                 .FirstAsync(m => m.MemberID == memberId);
@@ -180,6 +191,5 @@ namespace ClubManagement.API.Service
             };
 
         }
-        
     }
 }
