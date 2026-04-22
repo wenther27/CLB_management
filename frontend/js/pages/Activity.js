@@ -98,7 +98,6 @@ function renderCard(a) {
   const hasRegistered = userRegistrations.get(a.activityID) === true;
 
   const now = new Date();
-  // FIX: a.registrationDeadLine (chữ L HOA) — đây là lỗi trong bản gốc dùng lowercase
   const deadline = a.registrationDeadLine ? new Date(a.registrationDeadLine) : null;
   const openDate = a.registrationOpenDate ? new Date(a.registrationOpenDate) : null;
   const isDeadlinePassed = deadline && deadline <= now;
@@ -242,9 +241,9 @@ function renderCard(a) {
 
       ${regInfoHtml}
 
-      <div class="card-meta" style="margin-top:8px">
-        <span><i class="fa-solid fa-calendar-days"></i> ${Utils.formatDateTime(a.time)}</span>
-        <span><i class="fa-solid fa-location-dot"></i> ${Utils.escapeHtml(a.location || 'TBD')}</span>
+      <div class="card-meta" style="margin-top:8px"  >
+        <span style = "color:rgb(255, 255, 255);" ><i class="fa-solid fa-calendar-days"  ></i>  ${Utils.formatDateTime(a.time)} </span>
+        <span style = "color:rgb(255, 255, 255);" ><i class="fa-solid fa-location-dot" style="color: rgb(255, 0, 0);"></i> ${Utils.escapeHtml(a.location || 'TBD')}</span>
       </div>
     </div>
     <div class="card-footer" onclick="event.stopPropagation()">

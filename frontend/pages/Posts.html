@@ -5,321 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Tin tức – CTXH DUT</title>
 <link rel="stylesheet" href="../assets/css/style.css">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-<style>
-/* ── Post-specific styles ── */
-.post-hero-img {
-  width: 100%;
-  height: 220px;
-  object-fit: cover;
-  border-radius: 12px 12px 0 0;
-  display: block;
-}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 
-.post-card-featured {
-  grid-column: 1 / -1;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0;
-  background: #111827;
-  border: 1px solid rgba(255,255,255,0.08);
-  border-radius: 16px;
-  overflow: hidden;
-  cursor: pointer;
-  transition: border-color 0.2s, transform 0.2s;
-}
-.post-card-featured:hover {
-  border-color: rgba(255,45,85,0.4);
-  transform: translateY(-2px);
-}
-.post-card-featured .feat-img {
-  width: 100%;
-  height: 100%;
-  min-height: 300px;
-  object-fit: cover;
-}
-.post-card-featured .feat-img-placeholder {
-  width: 100%;
-  min-height: 300px;
-  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 4rem;
-}
-.post-card-featured .feat-body {
-  padding: 32px 28px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-}
-.pin-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  background: rgba(245,158,11,0.15);
-  color: #f59e0b;
-  border: 1px solid rgba(245,158,11,0.3);
-  padding: 3px 9px;
-  border-radius: 100px;
-  font-size: 11px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  margin-bottom: 8px;
-}
-.post-title-lg {
-  font-size: 22px;
-  font-weight: 700;
-  line-height: 1.35;
-  margin: 8px 0 12px;
-  color: white;
-}
-.post-summary {
-  font-size: 14px;
-  color: #94a3b8;
-  line-height: 1.75;
-  margin-bottom: 16px;
-  flex: 1;
-}
-.post-meta-row {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  flex-wrap: wrap;
-  font-size: 12px;
-  color: #475569;
-}
-.post-meta-row span {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
-/* Category filter tabs */
-.cat-tabs {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-  margin-bottom: 28px;
-}
-.cat-tab {
-  padding: 7px 16px;
-  border-radius: 100px;
-  border: 1px solid rgba(255,255,255,0.1);
-  background: transparent;
-  color: #64748b;
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s;
-  font-family: Arial, sans-serif;
-}
-.cat-tab:hover {
-  border-color: rgba(255,255,255,0.25);
-  color: white;
-}
-.cat-tab.active {
-  background: rgba(255,45,85,0.15);
-  border-color: #ff2d55;
-  color: #ff2d55;
-}
-
-/* Post content modal */
-#postDetailModal .modal {
-  max-width: 760px;
-  padding: 0;
-  overflow: hidden;
-}
-.post-modal-cover {
-  width: 100%;
-  height: 280px;
-  object-fit: cover;
-  display: block;
-}
-.post-modal-cover-placeholder {
-  width: 100%;
-  height: 180px;
-  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 3rem;
-}
-.post-modal-body {
-  padding: 28px 32px;
-}
-.post-modal-header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 16px;
-  margin-bottom: 20px;
-}
-.post-modal-title {
-  font-size: 24px;
-  font-weight: 700;
-  line-height: 1.3;
-  color: white;
-}
-.post-content-body {
-  font-size: 15px;
-  color: #cbd5e1;
-  line-height: 1.85;
-  white-space: pre-wrap;
-  word-break: break-word;
-}
-.post-content-body img {
-  max-width: 100%;
-  border-radius: 10px;
-  margin: 16px 0;
-  display: block;
-}
-.post-content-body h1, .post-content-body h2, .post-content-body h3 {
-  color: white;
-  margin: 1.2em 0 0.6em;
-  font-weight: 700;
-  line-height: 1.3;
-}
-.post-content-body h1 { font-size: 22px; }
-.post-content-body h2 { font-size: 18px; }
-.post-content-body h3 { font-size: 15px; }
-.post-content-body strong { color: #e2e8f0; font-weight: 700; }
-.post-content-body a { color: #ff2d55; text-decoration: none; }
-.post-content-body a:hover { text-decoration: underline; }
-.post-content-body blockquote {
-  border-left: 3px solid #ff2d55;
-  background: rgba(255,45,85,0.06);
-  padding: 12px 16px;
-  margin: 16px 0;
-  border-radius: 0 8px 8px 0;
-  color: #94a3b8;
-}
-.post-content-body ul, .post-content-body ol {
-  margin: 8px 0 8px 24px;
-  color: #94a3b8;
-}
-.post-content-body li { margin-bottom: 6px; line-height: 1.7; }
-.post-content-body p { margin-bottom: 1em; }
-.post-content-body hr {
-  border: none;
-  border-top: 1px solid rgba(255,255,255,0.08);
-  margin: 20px 0;
-}
-
-/* Tag badges */
-.tag-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin-top: 8px;
-}
-.tag-item {
-  background: rgba(255,255,255,0.06);
-  border: 1px solid rgba(255,255,255,0.1);
-  color: #94a3b8;
-  padding: 2px 10px;
-  border-radius: 100px;
-  font-size: 11px;
-}
-
-/* Gallery images in modal */
-.post-gallery {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-  gap: 8px;
-  margin-top: 20px;
-}
-.post-gallery img {
-  width: 100%;
-  height: 100px;
-  object-fit: cover;
-  border-radius: 8px;
-  cursor: pointer;
-  border: 1px solid rgba(255,255,255,0.08);
-  transition: transform 0.2s, border-color 0.2s;
-}
-.post-gallery img:hover {
-  transform: scale(1.04);
-  border-color: rgba(255,45,85,0.4);
-}
-
-/* Skeleton loading */
-.skeleton {
-  background: linear-gradient(90deg, #1e293b 25%, #263548 50%, #1e293b 75%);
-  background-size: 400% 100%;
-  animation: shimmer 1.4s infinite;
-  border-radius: 6px;
-}
-@keyframes shimmer {
-  0% { background-position: 100% 0; }
-  100% { background-position: -100% 0; }
-}
-
-/* Read more button hover */
-.read-more-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  color: #ff2d55;
-  font-size: 13px;
-  font-weight: 700;
-  text-decoration: none;
-  cursor: pointer;
-  background: none;
-  border: none;
-  padding: 0;
-  font-family: Arial, sans-serif;
-  transition: gap 0.2s;
-}
-.read-more-btn:hover { gap: 8px; }
-
-/* Lightbox */
-#lightbox {
-  position: fixed;
-  inset: 0;
-  z-index: 9999;
-  background: rgba(0,0,0,0.9);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  display: none;
-}
-#lightbox img {
-  max-width: 90vw;
-  max-height: 90vh;
-  border-radius: 8px;
-  object-fit: contain;
-}
-#lightbox .lb-close {
-  position: absolute;
-  top: 20px;
-  right: 24px;
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  background: rgba(255,255,255,0.1);
-  border: 1px solid rgba(255,255,255,0.2);
-  color: white;
-  font-size: 18px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-@media (max-width: 768px) {
-  .post-card-featured {
-    grid-template-columns: 1fr;
-  }
-  .post-card-featured .feat-img,
-  .post-card-featured .feat-img-placeholder {
-    min-height: 200px;
-  }
-  .post-modal-body { padding: 20px; }
-  .post-modal-title { font-size: 18px; }
-}
-</style>
 </head>
 <body>
 
@@ -341,6 +28,7 @@
 </header>
 
 <div class="page-body">
+
   <!-- Page Hero -->
   <div class="page-hero">
     <div class="container">
@@ -348,7 +36,7 @@
         <a href="../pages/index.html">Trang chủ</a> › <span>Tin tức</span>
       </div>
       <h1>Tin tức <span>CLB</span></h1>
-      <p>Cập nhật thông tin mới nhất về các hoạt động và sự kiện của CLB CTXH DUT</p>
+      <p>Cập nhật thông tin hoạt động, thông báo và sự kiện mới nhất từ CLB CTXH DUT</p>
     </div>
   </div>
 
@@ -356,60 +44,70 @@
   <div class="section" style="padding-top:40px">
     <div class="container">
 
-      <!-- Search + Filter bar -->
-      <div class="filter-bar" style="margin-bottom:20px">
-        <input id="searchPost" placeholder="🔍 Tìm kiếm bài viết..." oninput="onSearch()" style="flex:2">
-        <select id="sortFilter" onchange="renderPosts()" style="min-width:140px">
-          <option value="newest">Mới nhất</option>
-          <option value="oldest">Cũ nhất</option>
-          <option value="most-viewed">Xem nhiều nhất</option>
-        </select>
-        <span id="postCount" style="font-size:12px;color:#475569;white-space:nowrap;margin-left:4px"></span>
+      <!-- Search bar -->
+      <div class="posts-filter">
+        <input id="searchPost" placeholder="🔍 Tìm kiếm bài viết..." oninput="filterPosts()">
+        <span class="posts-count" id="postsCount"></span>
       </div>
 
-      <!-- Category tabs -->
-      <div class="cat-tabs" id="catTabs">
-        <button class="cat-tab active" data-cat="" onclick="setCat(this, '')">
-          <i class="fa-solid fa-border-all"></i> Tất cả
-        </button>
-        <button class="cat-tab" data-cat="Tin tức" onclick="setCat(this, 'Tin tức')">
-          <i class="fa-solid fa-newspaper"></i> Tin tức
-        </button>
-        <button class="cat-tab" data-cat="Thông báo" onclick="setCat(this, 'Thông báo')">
-          <i class="fa-solid fa-bullhorn"></i> Thông báo
-        </button>
-        <button class="cat-tab" data-cat="Hoạt động" onclick="setCat(this, 'Hoạt động')">
-          <i class="fa-solid fa-heart"></i> Hoạt động
-        </button>
-        <button class="cat-tab" data-cat="Tuyển thành viên" onclick="setCat(this, 'Tuyển thành viên')">
-          <i class="fa-solid fa-user-plus"></i> Tuyển thành viên
-        </button>
-        <button class="cat-tab" data-cat="Chia sẻ" onclick="setCat(this, 'Chia sẻ')">
-          <i class="fa-solid fa-share-nodes"></i> Chia sẻ
-        </button>
-      </div>
+      <div class="posts-layout">
 
-      <!-- Posts grid -->
-      <div id="postsGrid" class="grid grid-3" style="min-height:200px">
-        <div class="loading" style="grid-column:1/-1"><div class="spinner"></div></div>
-      </div>
+        <!-- Feed chính -->
+        <div>
+          <!-- Category tags -->
+          <div style="margin-bottom:20px;display:flex;flex-wrap:wrap">
+            <span class="category-tag all active" onclick="filterByCategory('', this)">🗂 Tất cả</span>
+            <span class="category-tag news"   onclick="filterByCategory('Tin tức', this)">📰 Tin tức</span>
+            <span class="category-tag notice" onclick="filterByCategory('Thông báo', this)">📢 Thông báo</span>
+            <span class="category-tag event"  onclick="filterByCategory('Hoạt động', this)">🎯 Hoạt động</span>
+            <span class="category-tag recruit" onclick="filterByCategory('Tuyển thành viên', this)">⭐ Tuyển thành viên</span>
+          </div>
 
-      <!-- Pagination -->
-      <div id="postsPagination" style="display:flex;justify-content:center;gap:8px;margin-top:36px"></div>
+          <div id="postsFeed">
+            <div class="posts-loading"><div class="spinner"></div></div>
+          </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="posts-sidebar">
+          <!-- Danh mục -->
+          <div class="sidebar-card">
+            <div class="sidebar-title">📂 Danh mục</div>
+            <div id="sidebarCategories">
+              <div style="font-size:13px;color:#334155">Đang tải...</div>
+            </div>
+          </div>
+
+          <!-- Bài viết nổi bật -->
+          <div class="sidebar-card">
+            <div class="sidebar-title">🔥 Nổi bật</div>
+            <div id="trendingPosts">
+              <div style="font-size:13px;color:#334155">Đang tải...</div>
+            </div>
+          </div>
+
+          <!-- Giới thiệu -->
+          <div class="sidebar-card" style="background:linear-gradient(135deg,rgba(255,45,85,0.08),rgba(59,130,246,0.06));border-color:rgba(255,45,85,0.2)">
+            <div style="font-size:20px;margin-bottom:10px">❤️</div>
+            <div style="font-size:14px;font-weight:700;margin-bottom:6px">CLB CTXH DUT</div>
+            <div style="font-size:12px;color:#64748b;line-height:1.7">
+              Câu lạc bộ Công tác Xã hội Trường Đại học Bách Khoa Đà Nẵng — nơi lan tỏa yêu thương.
+            </div>
+            <button onclick="AuthModal.open('register')" class="btn-primary" style="width:100%;padding:9px;margin-top:14px;font-size:13px">
+              Gia nhập CLB →
+            </button>
+          </div>
+        </div>
+      </div>
 
     </div>
   </div>
 </div>
 
-<!-- Post Detail Modal -->
-<div class="modal-overlay" id="postDetailModal">
-  <div class="modal" id="postDetailBody" style="max-width:760px;padding:0;max-height:88vh;overflow-y:auto"></div>
-</div>
-
-<!-- Lightbox -->
-<div id="lightbox">
-  <button class="lb-close" onclick="closeLightbox()">✕</button>
-  <img id="lbImg" src="" alt="">
+<!-- Image Lightbox -->
+<div class="lightbox-overlay" id="lightbox" onclick="closeLightbox()">
+  <img id="lightboxImg" src="" alt="">
+  <button class="lightbox-close" onclick="closeLightbox()">✕</button>
 </div>
 
 <!-- Footer -->
@@ -423,355 +121,382 @@
 </footer>
 
 <script src="../js/app/api.js"></script>
-<script src="../js/app/auth-modal.js"></script>
 <script src="../js/app/shared.js"></script>
+<script src="../js/app/auth-modal.js"></script>
 <script>
-// ── State ─────────────────────────────────────────────────────────────────────
+// ── State ──────────────────────────────────────────────────────────────────────
 let allPosts = [];
-let currentPage = 1;
-let currentCat = '';
-let searchDebounce = null;
-const PAGE_SIZE = 9;
+let currentCategory = '';
+let likedPosts = new Set(JSON.parse(localStorage.getItem('ctxh_liked_posts') || '[]'));
+let likeCounts  = JSON.parse(localStorage.getItem('ctxh_like_counts') || '{}');
 
-const CAT_ICONS = {
-  'Tin tức': 'fa-newspaper',
-  'Thông báo': 'fa-bullhorn',
-  'Hoạt động': 'fa-heart',
-  'Tuyển thành viên': 'fa-user-plus',
-  'Chia sẻ': 'fa-share-nodes',
-};
-const CAT_COLORS = {
-  'Tin tức': 'badge-gold',
-  'Thông báo': 'badge-blue',
-  'Hoạt động': 'badge-open',
-  'Tuyển thành viên': 'badge-red',
-  'Chia sẻ': 'badge-blue',
-};
-
-// ── Init ──────────────────────────────────────────────────────────────────────
+// ── Bootstrap ─────────────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', async () => {
   updateNavbar();
   await loadPosts();
-  document.getElementById('postDetailModal').addEventListener('click', (e) => {
-    if (e.target === document.getElementById('postDetailModal')) closePostModal();
-  });
 });
 
+// ── Load posts from API ────────────────────────────────────────────────────────
 async function loadPosts() {
   try {
-    const r = await API.getPosts('?pageSize=100');
+    const r = await API.getPosts('?status=Published');
     allPosts = r.data?.items || r.data || [];
-    renderPosts();
+    renderFeed();
+    renderSidebar();
   } catch (e) {
-    document.getElementById('postsGrid').innerHTML = `
-      <div class="empty" style="grid-column:1/-1">
-        <div class="ico">⚠️</div>
-        <p style="color:#ff2d55">${e.message}</p>
-        <button class="btn-outline" onclick="loadPosts()" style="margin-top:12px">Thử lại</button>
+    document.getElementById('postsFeed').innerHTML = `
+      <div class="empty" style="text-align:center;padding:60px 20px">
+        <div style="font-size:3rem;margin-bottom:14px">📭</div>
+        <p style="color:#ff2d55;margin-bottom:14px">${e.message}</p>
+        <button class="btn-outline" onclick="loadPosts()">🔄 Thử lại</button>
       </div>`;
   }
 }
 
-// ── Render ────────────────────────────────────────────────────────────────────
-function renderPosts() {
+// ── Render full post feed ─────────────────────────────────────────────────────
+function renderFeed() {
   const keyword = (document.getElementById('searchPost')?.value || '').toLowerCase().trim();
-  const sort = document.getElementById('sortFilter')?.value || 'newest';
 
   let filtered = allPosts.filter(p => {
-    const matchCat = !currentCat || p.category === currentCat;
-    const matchKw = !keyword ||
-      (p.title || '').toLowerCase().includes(keyword) ||
-      (p.content || '').toLowerCase().includes(keyword) ||
-      (p.summary || '').toLowerCase().includes(keyword);
-    return matchCat && matchKw;
+    const matchKw = !keyword
+      || (p.title || '').toLowerCase().includes(keyword)
+      || (p.content || '').toLowerCase().includes(keyword)
+      || (p.authorName || '').toLowerCase().includes(keyword);
+    const matchCat = !currentCategory || p.category === currentCategory;
+    return matchKw && matchCat;
   });
 
-  // Sort
-  if (sort === 'newest') filtered.sort((a, b) => new Date(b.createdDate) - new Date(a.createdDate));
-  else if (sort === 'oldest') filtered.sort((a, b) => new Date(a.createdDate) - new Date(b.createdDate));
-  else if (sort === 'most-viewed') filtered.sort((a, b) => (b.viewCount || 0) - (a.viewCount || 0));
+  const countEl = document.getElementById('postsCount');
+  if (countEl) countEl.textContent = `${filtered.length} bài viết`;
 
-  // Pinned first
-  filtered.sort((a, b) => (b.isPinned ? 1 : 0) - (a.isPinned ? 1 : 0));
+  const feed = document.getElementById('postsFeed');
 
-  const count = document.getElementById('postCount');
-  if (count) count.textContent = `${filtered.length} bài viết`;
-
-  const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
-  if (currentPage > totalPages) currentPage = 1;
-  const paged = filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
-
-  const grid = document.getElementById('postsGrid');
-
-  if (!paged.length) {
-    grid.innerHTML = `<div class="empty" style="grid-column:1/-1">
-      <div class="ico">📭</div>
-      <p>Không tìm thấy bài viết nào</p>
-      <button class="btn-outline" onclick="clearFilters()" style="margin-top:12px">Xóa bộ lọc</button>
-    </div>`;
-    renderPagination(0);
+  if (!filtered.length) {
+    feed.innerHTML = `
+      <div class="empty" style="text-align:center;padding:60px 20px">
+        <div style="font-size:3rem;margin-bottom:14px">🔍</div>
+        <p>Không tìm thấy bài viết phù hợp</p>
+        <button class="btn-outline" style="margin-top:12px" onclick="clearFilters()">Xóa bộ lọc</button>
+      </div>`;
     return;
   }
 
-  // First post as featured (if on page 1 and no filter)
-  let firstIsFeature = currentPage === 1 && !keyword && !currentCat && paged[0]?.isPinned;
-  
-  grid.innerHTML = '';
-  paged.forEach((p, i) => {
-    const div = document.createElement('div');
-    if (firstIsFeature && i === 0) {
-      div.innerHTML = renderFeaturedCard(p);
-    } else {
-      div.className = 'card';
-      div.style.cssText = 'cursor:pointer;overflow:hidden';
-      div.onclick = () => openPost(p.postID);
-      div.innerHTML = renderCardInner(p);
-    }
-    grid.appendChild(div.firstElementChild || div);
-  });
-
-  renderPagination(totalPages);
+  feed.innerHTML = filtered.map(p => renderPostCard(p)).join('');
 }
 
-function renderFeaturedCard(p) {
-  const catCls = CAT_COLORS[p.category] || 'badge-gold';
-  const tags = parseTags(p.tags);
-  return `
-  <div class="post-card-featured" onclick="openPost(${p.postID})">
-    <div>
-      ${p.coverImageUrl
-        ? `<img src="${imgSrc(p.coverImageUrl)}" class="feat-img" onerror="this.parentElement.innerHTML='<div class=\\"feat-img-placeholder\\">📰</div>'">`
-        : `<div class="feat-img-placeholder">${catEmoji(p.category)}</div>`}
-    </div>
-    <div class="feat-body">
-      ${p.isPinned ? `<div class="pin-badge"><i class="fa-solid fa-thumbtack"></i> Ghim</div>` : ''}
-      <span class="badge ${catCls}">${Utils.escapeHtml(p.category)}</span>
-      <div class="post-title-lg">${Utils.escapeHtml(p.title || 'Không có tiêu đề')}</div>
-      ${p.summary ? `<div class="post-summary">${Utils.escapeHtml(Utils.truncate(p.summary, 150))}</div>` : 
-                    `<div class="post-summary">${Utils.escapeHtml(Utils.truncate(p.content?.replace(/<[^>]+>/g, ''), 150))}</div>`}
-      <div class="post-meta-row">
-        <span><i class="fa-regular fa-user"></i> ${Utils.escapeHtml(p.authorName || 'BTC')}</span>
-        <span><i class="fa-regular fa-calendar"></i> ${Utils.formatDate(p.createdDate)}</span>
-        ${p.readTime ? `<span><i class="fa-regular fa-clock"></i> ${p.readTime} phút đọc</span>` : ''}
-        ${p.viewCount ? `<span><i class="fa-regular fa-eye"></i> ${p.viewCount}</span>` : ''}
-      </div>
-      ${tags.length ? `<div class="tag-list" style="margin-top:12px">${tags.map(t => `<span class="tag-item">#${t}</span>`).join('')}</div>` : ''}
-      <button class="read-more-btn" style="margin-top:16px" onclick="event.stopPropagation();openPost(${p.postID})">
-        Đọc tiếp <i class="fa-solid fa-arrow-right"></i>
-      </button>
-    </div>
-  </div>`;
-}
+// ── Render a single post card (Facebook-style) ────────────────────────────────
+function renderPostCard(p) {
+  const catCfg = getCatConfig(p.category);
+  const initials = getInitials(p.authorName || 'CLB');
+  const likeCount = likeCounts[p.postID] || 0;
+  const isLiked = likedPosts.has(p.postID);
 
-function renderCardInner(p) {
-  const catCls = CAT_COLORS[p.category] || 'badge-gold';
-  const tags = parseTags(p.tags);
-  return `
-    ${p.coverImageUrl
-      ? `<img src="${imgSrc(p.coverImageUrl)}" class="post-hero-img" onerror="this.style.display='none'">`
-      : `<div class="card-thumb" style="height:160px;font-size:2.5rem">${catEmoji(p.category)}</div>`}
-    <div class="card-body" style="padding:16px 18px">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-        <span class="badge ${catCls}">${Utils.escapeHtml(p.category)}</span>
-        ${p.isPinned ? `<span style="font-size:11px;color:#f59e0b"><i class="fa-solid fa-thumbtack"></i> Ghim</span>` : ''}
-      </div>
-      <div style="font-size:15px;font-weight:700;margin-bottom:8px;line-height:1.4;color:white;
-                  overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical">
-        ${Utils.escapeHtml(p.title || 'Không có tiêu đề')}
-      </div>
-      <div style="font-size:13px;color:#94a3b8;line-height:1.65;margin-bottom:12px;
-                  overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical">
-        ${Utils.escapeHtml(p.summary || Utils.truncate(p.content?.replace(/<[^>]+>/g, ''), 100))}
-      </div>
-      ${tags.length ? `<div class="tag-list" style="margin-bottom:10px">${tags.slice(0,3).map(t => `<span class="tag-item">#${t}</span>`).join('')}</div>` : ''}
-      <div class="post-meta-row">
-        <span><i class="fa-regular fa-user"></i> ${Utils.escapeHtml(p.authorName || 'BTC')}</span>
-        <span><i class="fa-regular fa-calendar"></i> ${Utils.formatDate(p.createdDate)}</span>
-        ${p.readTime ? `<span><i class="fa-regular fa-clock"></i> ${p.readTime}p</span>` : ''}
-        ${p.viewCount ? `<span><i class="fa-regular fa-eye"></i> ${p.viewCount}</span>` : ''}
-      </div>
-    </div>
-    <div class="card-footer" style="padding:0 18px 14px">
-      <button onclick="openPost(${p.postID})" class="btn-primary" style="flex:1;padding:9px;font-size:13px">
-        <i class="fa-solid fa-book-open"></i> Đọc bài viết
-      </button>
-    </div>`;
-}
+  // Xử lý nội dung — hiển thị đầy đủ, "xem thêm" nếu quá dài
+  const CONTENT_LIMIT = 400;
+  const fullContent = p.content || '';
+  const isLong = fullContent.length > CONTENT_LIMIT;
+  const shortContent = isLong ? fullContent.slice(0, CONTENT_LIMIT) + '...' : fullContent;
 
-// ── Open post detail ──────────────────────────────────────────────────────────
-async function openPost(id) {
-  const modal = document.getElementById('postDetailModal');
-  const body = document.getElementById('postDetailBody');
-  body.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;height:300px">
-    <div class="spinner"></div>
-  </div>`;
-  modal.classList.add('open');
+  const contentHtml = isLong
+    ? `<div class="post-content-text" id="content-${p.postID}-short">${escHtml(shortContent)}</div>
+       <div class="post-content-text" id="content-${p.postID}-full" style="display:none">${escHtml(fullContent)}</div>
+       <button class="read-more-btn" id="readmore-${p.postID}" onclick="toggleReadMore(${p.postID})">Xem thêm</button>`
+    : `<div class="post-content-text">${escHtml(fullContent)}</div>`;
 
-  try {
-    const r = await API.getPost(id);
-    const p = r.data;
-    const catCls = CAT_COLORS[p.category] || 'badge-gold';
-    const tags = parseTags(p.tags);
+  // Ảnh đính kèm
+  const images = p.images || [];
+  const imagesHtml = images.length > 0 ? buildImagesGrid(images) : '';
 
-    // Tăng lượt xem
-    fetch(`${API_BASE}/posts/${id}/view`, { method: 'POST' }).catch(() => {});
-
-    const galleryHtml = (p.images && p.images.length > 1)
-      ? `<div class="post-gallery">${p.images.slice(1).map(url =>
-          `<img src="${imgSrc(url)}" onclick="openLightbox('${imgSrc(url)}')" alt="">`
-        ).join('')}</div>`
-      : '';
-
-    body.innerHTML = `
-      ${p.coverImageUrl
-        ? `<img src="${imgSrc(p.coverImageUrl)}" class="post-modal-cover" 
-               onerror="this.style.display='none'">`
-        : `<div class="post-modal-cover-placeholder">${catEmoji(p.category)}</div>`}
-      
-      <div class="post-modal-body">
-        <div class="post-modal-header">
-          <div style="flex:1">
-            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px">
-              <span class="badge ${catCls}">${Utils.escapeHtml(p.category)}</span>
-              ${p.isPinned ? `<span class="pin-badge"><i class="fa-solid fa-thumbtack"></i> Ghim</span>` : ''}
-            </div>
-            <div class="post-modal-title">${Utils.escapeHtml(p.title || 'Không có tiêu đề')}</div>
-            <div class="post-meta-row" style="margin-top:10px">
-              <span><i class="fa-regular fa-user"></i> ${Utils.escapeHtml(p.authorName || 'BTC')}</span>
-              <span><i class="fa-regular fa-calendar"></i> ${Utils.formatDateTime(p.createdDate)}</span>
-              ${p.readTime ? `<span><i class="fa-regular fa-clock"></i> ${p.readTime} phút đọc</span>` : ''}
-              ${p.viewCount !== undefined ? `<span><i class="fa-regular fa-eye"></i> ${p.viewCount} lượt xem</span>` : ''}
-              ${p.updatedDate ? `<span style="color:#334155"><i class="fa-solid fa-pen"></i> Đã cập nhật ${Utils.formatDate(p.updatedDate)}</span>` : ''}
-            </div>
-          </div>
-          <button onclick="closePostModal()" style="
-            width:32px;height:32px;border-radius:50%;background:#1e293b;
-            border:1px solid rgba(255,255,255,0.08);color:#94a3b8;font-size:15px;
-            cursor:pointer;display:flex;align-items:center;justify-content:center;
-            flex-shrink:0;font-family:Arial,sans-serif;transition:background 0.2s"
-            onmouseover="this.style.background='#ff2d55';this.style.color='white'"
-            onmouseout="this.style.background='#1e293b';this.style.color='#94a3b8'">✕</button>
+  // Like section
+  const likeSection = likeCount > 0 ? `
+    <div class="post-reactions-summary">
+      <div class="reactions-left" onclick="toggleLike(${p.postID})">
+        <div class="reaction-emoji-stack">
+          <div class="reaction-emoji" style="background:#ff2d55;font-size:11px">❤️</div>
         </div>
+        <span class="reactions-count" style="margin-left:8px">${likeCount} người thích</span>
+      </div>
+    </div>
+    <div class="post-divider"></div>
+  ` : '';
 
-        ${p.summary ? `<div style="background:rgba(59,130,246,0.06);border-left:3px solid #3b82f6;
-            border-radius:0 8px 8px 0;padding:12px 16px;margin-bottom:20px;
-            font-size:14px;color:#94a3b8;font-style:italic">${Utils.escapeHtml(p.summary)}</div>` : ''}
+  return `
+  <article class="post-card" id="post-${p.postID}">
+    <!-- Header -->
+    <div class="post-header">
+      <div class="post-avatar">${initials}</div>
+      <div class="post-author-info">
+        <div class="post-author-name">${escHtml(p.authorName || 'CLB CTXH DUT')}</div>
+        <div class="post-meta-row">
+          <span class="post-date">${Utils.formatDateTime(p.createdDate)}</span>
+          <div class="post-dot"></div>
+          <span class="badge ${catCfg.cls}" style="font-size:10px;padding:2px 7px">${escHtml(p.category)}</span>
+        </div>
+      </div>
+    </div>
 
-        <hr style="border:none;border-top:1px solid rgba(255,255,255,0.07);margin:0 0 20px">
+    <!-- Body -->
+    <div class="post-body">
+      ${p.title ? `<div class="post-title-text">${escHtml(p.title)}</div>` : ''}
+      ${contentHtml}
+      ${imagesHtml}
+    </div>
 
-        <div class="post-content-body">${renderContent(p.content)}</div>
+    <div class="post-divider"></div>
 
-        ${galleryHtml}
+    ${likeSection}
 
-        ${tags.length ? `
-          <div style="margin-top:24px;padding-top:16px;border-top:1px solid rgba(255,255,255,0.07)">
-            <div style="font-size:12px;color:#475569;margin-bottom:8px;text-transform:uppercase;letter-spacing:.05em;font-weight:700">Tags</div>
-            <div class="tag-list">${tags.map(t => `<span class="tag-item">#${t}</span>`).join('')}</div>
+    <!-- Actions -->
+    <div class="post-actions">
+      <button class="post-action-btn ${isLiked ? 'liked' : ''}" id="like-btn-${p.postID}" onclick="toggleLike(${p.postID})">
+        <span class="btn-icon">
+          ${isLiked ? '<i class="fa-solid fa-heart"></i>' : '<i class="fa-regular fa-heart"></i>'}
+        </span>
+        <span id="like-label-${p.postID}">${isLiked ? 'Đã thích' : 'Thích'}</span>
+      </button>
+      <button class="post-action-btn" onclick="sharePost(${p.postID}, '${escHtml(p.title || p.content.slice(0,40))}')">
+        <span class="btn-icon"><i class="fa-solid fa-share-nodes"></i></span>
+        <span>Chia sẻ</span>
+      </button>
+    </div>
+  </article>`;
+}
+
+// ── Build images grid ──────────────────────────────────────────────────────────
+function buildImagesGrid(images) {
+  const count = Math.min(images.length, 3);
+  const cls = `post-images-grid count-${count}`;
+  const imgs = images.slice(0, count).map(url => {
+    const src = url.startsWith('http') ? url : `http://localhost:5190${url}`;
+    return `<img src="${src}" alt="" onclick="openLightbox('${src}')" loading="lazy" onerror="this.style.display='none'">`;
+  }).join('');
+  return `<div class="${cls}">${imgs}</div>`;
+}
+
+// ── Toggle read more / collapse ────────────────────────────────────────────────
+function toggleReadMore(postId) {
+  const shortEl = document.getElementById(`content-${postId}-short`);
+  const fullEl  = document.getElementById(`content-${postId}-full`);
+  const btn     = document.getElementById(`readmore-${postId}`);
+  const isExpanded = fullEl.style.display !== 'none';
+
+  if (isExpanded) {
+    fullEl.style.display = 'none';
+    shortEl.style.display = 'block';
+    btn.textContent = 'Xem thêm';
+  } else {
+    shortEl.style.display = 'none';
+    fullEl.style.display = 'block';
+    btn.textContent = 'Thu gọn';
+  }
+}
+
+// ── Like / Unlike ─────────────────────────────────────────────────────────────
+function toggleLike(postId) {
+  const btn = document.getElementById(`like-btn-${postId}`);
+  const lbl = document.getElementById(`like-label-${postId}`);
+
+  if (!Auth.isLoggedIn()) {
+    Toast.info('Đăng nhập để thả ❤️ bài viết');
+    setTimeout(() => AuthModal.open('login'), 600);
+    return;
+  }
+
+  const wasLiked = likedPosts.has(postId);
+
+  if (wasLiked) {
+    likedPosts.delete(postId);
+    likeCounts[postId] = Math.max(0, (likeCounts[postId] || 1) - 1);
+    btn.classList.remove('liked');
+    btn.querySelector('.btn-icon').innerHTML = '<i class="fa-regular fa-heart"></i>';
+    if (lbl) lbl.textContent = 'Thích';
+    Toast.info('Đã bỏ thích bài viết');
+  } else {
+    likedPosts.add(postId);
+    likeCounts[postId] = (likeCounts[postId] || 0) + 1;
+    btn.classList.add('liked');
+    btn.querySelector('.btn-icon').innerHTML = '<i class="fa-solid fa-heart"></i>';
+    if (lbl) lbl.textContent = 'Đã thích';
+    Toast.success('❤️ Đã thích bài viết!');
+  }
+
+  // Lưu vào localStorage
+  localStorage.setItem('ctxh_liked_posts', JSON.stringify([...likedPosts]));
+  localStorage.setItem('ctxh_like_counts', JSON.stringify(likeCounts));
+
+  // Cập nhật lại phần reactions summary
+  updateReactionsSummary(postId);
+}
+
+// ── Cập nhật reactions summary sau khi like ───────────────────────────────────
+function updateReactionsSummary(postId) {
+  // Re-render toàn bộ post card đơn giản nhất
+  const postData = allPosts.find(p => p.postID === postId);
+  if (!postData) return;
+
+  const articleEl = document.getElementById(`post-${postId}`);
+  if (!articleEl) return;
+
+  // Chỉ update phần reactions (không re-render cả card để tránh mất state "xem thêm")
+  const count = likeCounts[postId] || 0;
+  const isLiked = likedPosts.has(postId);
+
+  // Xóa reactions summary cũ
+  const existingSummary = articleEl.querySelector('.post-reactions-summary');
+  if (existingSummary) {
+    const dividerBefore = existingSummary.previousElementSibling;
+    existingSummary.remove();
+    if (dividerBefore && dividerBefore.classList.contains('post-divider')) {
+      const nextDivider = dividerBefore.nextElementSibling;
+      if (nextDivider && nextDivider.classList.contains('post-divider')) {
+        // duplicate divider
+      }
+    }
+  }
+
+  // Chèn reactions summary mới nếu count > 0
+  if (count > 0) {
+    const actionsDiv = articleEl.querySelector('.post-actions');
+    const dividerBefore = actionsDiv?.previousElementSibling;
+
+    const reactionHtml = `
+      <div class="post-reactions-summary">
+        <div class="reactions-left" onclick="toggleLike(${postId})">
+          <div class="reaction-emoji-stack">
+            <div class="reaction-emoji">❤️</div>
           </div>
-        ` : ''}
-
-        <div style="margin-top:24px;padding-top:16px;border-top:1px solid rgba(255,255,255,0.07);
-                    display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px">
-          <button onclick="closePostModal()" class="btn-outline" style="padding:9px 20px;font-size:13px">
-            <i class="fa-solid fa-arrow-left"></i> Quay lại
-          </button>
-          <div style="display:flex;gap:8px">
-            <a href="../pages/activities.html" class="btn-primary" style="padding:9px 20px;font-size:13px;text-decoration:none">
-              <i class="fa-solid fa-heart"></i> Tham gia hoạt động
-            </a>
-          </div>
+          <span class="reactions-count" style="margin-left:8px">${count} người thích</span>
         </div>
       </div>`;
 
-  } catch (e) {
-    body.innerHTML = `<div style="padding:40px;text-align:center;color:#ff2d55">
-      <i class="fa-solid fa-circle-exclamation" style="font-size:48px;margin-bottom:16px"></i>
-      <p>${e.message}</p>
-    </div>`;
+    if (dividerBefore && dividerBefore.classList.contains('post-divider')) {
+      dividerBefore.insertAdjacentHTML('afterend', reactionHtml);
+    } else if (actionsDiv) {
+      actionsDiv.insertAdjacentHTML('beforebegin', reactionHtml);
+    }
   }
 }
 
-function closePostModal() {
-  document.getElementById('postDetailModal').classList.remove('open');
-}
-
-// ── Content renderer (HTML-aware) ─────────────────────────────────────────────
-function renderContent(content) {
-  if (!content) return '<p style="color:#64748b">Bài viết này chưa có nội dung.</p>';
-  // Nếu content là HTML (từ rich editor), render trực tiếp (đã sanitize ở trên)
-  // Nếu là text thuần, convert newline → <p>
-  if (content.includes('<p>') || content.includes('<h') || content.includes('<img')) {
-    return content; // Rich HTML
+// ── Share post ────────────────────────────────────────────────────────────────
+function sharePost(postId, title) {
+  if (navigator.share) {
+    navigator.share({
+      title: title || 'CLB CTXH DUT',
+      url: window.location.href
+    });
+  } else {
+    // Fallback: copy link
+    navigator.clipboard?.writeText(window.location.href).then(() => {
+      Toast.success('Đã sao chép liên kết!');
+    }).catch(() => {
+      Toast.info('Chia sẻ: ' + window.location.href);
+    });
   }
-  // Plain text — convert
-  return content.split('\n\n')
-    .filter(s => s.trim())
-    .map(s => `<p>${s.replace(/\n/g, '<br>')}</p>`)
-    .join('');
 }
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
-function parseTags(tags) {
-  if (!tags) return [];
-  try { return JSON.parse(tags); } catch { return tags.split(',').map(t => t.trim()).filter(Boolean); }
+// ── Sidebar ───────────────────────────────────────────────────────────────────
+function renderSidebar() {
+  // Category counts
+  const cats = {};
+  allPosts.forEach(p => { cats[p.category] = (cats[p.category] || 0) + 1; });
+
+  const catCfg = { 'Tin tức':'news', 'Thông báo':'notice', 'Hoạt động':'event', 'Tuyển thành viên':'recruit' };
+  const catIco  = { 'Tin tức':'📰', 'Thông báo':'📢', 'Hoạt động':'🎯', 'Tuyển thành viên':'⭐' };
+
+  const catHtml = Object.entries(cats).map(([name, cnt]) => `
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.05);cursor:pointer"
+         onclick="filterByCategory('${name}', null)">
+      <span style="font-size:13px;color:#94a3b8">${catIco[name] || '📁'} ${name}</span>
+      <span class="badge ${catCfg[name] ? 'badge-' + (catCfg[name] === 'news' ? 'gold' : catCfg[name] === 'notice' ? 'blue' : catCfg[name] === 'event' ? 'open' : 'red') : ''}" style="font-size:11px">${cnt}</span>
+    </div>`).join('');
+
+  document.getElementById('sidebarCategories').innerHTML = catHtml || '<div style="color:#334155;font-size:13px">Chưa có danh mục</div>';
+
+  // Trending (most liked or newest)
+  const trending = [...allPosts].slice(0, 5);
+  const trendHtml = trending.map((p, i) => `
+    <div class="trending-item" onclick="scrollToPost(${p.postID})">
+      <div class="trending-num">${String(i + 1).padStart(2, '0')}</div>
+      <div>
+        <div class="trending-title">${escHtml((p.title || p.content || '').slice(0, 60))}${(p.title || p.content || '').length > 60 ? '...' : ''}</div>
+        <div class="trending-cat">${p.category || ''} · ${Utils.formatDate(p.createdDate)}</div>
+      </div>
+    </div>`).join('');
+
+  document.getElementById('trendingPosts').innerHTML = trendHtml || '<div style="color:#334155;font-size:13px">Chưa có bài viết</div>';
 }
 
-function imgSrc(url) {
-  if (!url) return '';
-  return url.startsWith('http') ? url : 'http://localhost:5190' + url;
+// ── Scroll to post ────────────────────────────────────────────────────────────
+function scrollToPost(postId) {
+  const el = document.getElementById(`post-${postId}`);
+  if (el) {
+    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    el.style.boxShadow = '0 0 0 2px rgba(255,45,85,0.5)';
+    setTimeout(() => el.style.boxShadow = '', 1500);
+  }
 }
 
-function catEmoji(cat) {
-  const map = { 'Tin tức': '📰', 'Thông báo': '📢', 'Hoạt động': '🎯', 'Tuyển thành viên': '🌟', 'Chia sẻ': '💬' };
-  return map[cat] || '📄';
+// ── Filters ───────────────────────────────────────────────────────────────────
+function filterByCategory(cat, clickedEl) {
+  currentCategory = cat;
+
+  // Update active tag
+  document.querySelectorAll('.category-tag').forEach(t => t.classList.remove('active'));
+  if (clickedEl) clickedEl.classList.add('active');
+
+  renderFeed();
 }
 
-function setCat(btn, cat) {
-  document.querySelectorAll('.cat-tab').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  currentCat = cat;
-  currentPage = 1;
-  renderPosts();
-}
-
-function onSearch() {
-  clearTimeout(searchDebounce);
-  searchDebounce = setTimeout(() => { currentPage = 1; renderPosts(); }, 300);
+function filterPosts() {
+  renderFeed();
 }
 
 function clearFilters() {
+  currentCategory = '';
   document.getElementById('searchPost').value = '';
-  document.querySelectorAll('.cat-tab').forEach(b => b.classList.remove('active'));
-  document.querySelector('.cat-tab[data-cat=""]').classList.add('active');
-  currentCat = '';
-  currentPage = 1;
-  renderPosts();
-}
-
-function renderPagination(totalPages) {
-  const pag = document.getElementById('postsPagination');
-  if (!pag) return;
-  if (totalPages <= 1) { pag.innerHTML = ''; return; }
-  pag.innerHTML = Array.from({ length: totalPages }, (_, i) => i + 1).map(p => `
-    <button onclick="currentPage=${p};renderPosts();window.scrollTo({top:300,behavior:'smooth'})" style="
-      padding:7px 13px;border-radius:6px;font-size:13px;cursor:pointer;font-family:Arial,sans-serif;
-      border:1px solid ${p === currentPage ? '#ff2d55' : 'rgba(255,255,255,0.1)'};
-      background:${p === currentPage ? 'rgba(255,45,85,0.15)' : 'transparent'};
-      color:${p === currentPage ? '#ff2d55' : '#64748b'}">${p}</button>
-  `).join('');
+  document.querySelectorAll('.category-tag').forEach((t, i) => {
+    if (i === 0) t.classList.add('active');
+    else t.classList.remove('active');
+  });
+  renderFeed();
 }
 
 // ── Lightbox ──────────────────────────────────────────────────────────────────
 function openLightbox(src) {
-  document.getElementById('lbImg').src = src;
-  document.getElementById('lightbox').style.display = 'flex';
+  document.getElementById('lightboxImg').src = src;
+  document.getElementById('lightbox').classList.add('open');
 }
+
 function closeLightbox() {
-  document.getElementById('lightbox').style.display = 'none';
+  document.getElementById('lightbox').classList.remove('open');
+  document.getElementById('lightboxImg').src = '';
 }
-document.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape') { closeLightbox(); closePostModal(); }
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeLightbox();
 });
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+function escHtml(str) {
+  const d = document.createElement('div');
+  d.appendChild(document.createTextNode(str || ''));
+  return d.innerHTML;
+}
+
+function getInitials(name) {
+  return (name || 'C').split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
+}
+
+function getCatConfig(cat) {
+  const map = {
+    'Tin tức':          { cls: 'badge-gold',  ico: '📰' },
+    'Thông báo':        { cls: 'badge-blue',  ico: '📢' },
+    'Hoạt động':        { cls: 'badge-open',  ico: '🎯' },
+    'Tuyển thành viên': { cls: 'badge-red',   ico: '⭐' },
+  };
+  return map[cat] || { cls: 'badge-closed', ico: '📁' };
+}
 </script>
+
 </body>
 </html>

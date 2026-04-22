@@ -1,6 +1,4 @@
-﻿
-
-using ClubManagement.API.Data;
+﻿using ClubManagement.API.Data;
 using ClubManagement.API.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -52,7 +50,11 @@ namespace ClubManagement.API.Service
             var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
             try
             {
-                var now = DateTime.UtcNow;
+                // FIX TIMEZONE: Dùng DateTime.Now (giờ local = giờ HN)
+                // vì DB lưu DateTimeKind.Unspecified (= giờ HN từ FE gửi lên).
+                // DateTime.UtcNow sẽ lệch 7 tiếng → đóng sớm/muộn sai.
+                var now = DateTime.Now;
+
                 int closedCount = await AutoCloseExpiredAsync(db, now, ct);
                 int openedCount = EnableAutoOpen
                     ? await AutoOpenScheduledAsync(db, now, ct) : 0;
@@ -60,7 +62,7 @@ namespace ClubManagement.API.Service
                 if (closedCount > 0 || openedCount > 0)
                 {
                     _logger.LogInformation(
-                        "[AutoClose] {Time:yyyy-MM-dd HH:mm} UTC - Đã khoá: {Closed}, Đã mở: {Opened}",
+                        "[AutoClose] {Time:yyyy-MM-dd HH:mm} (local) — Đã khoá: {Closed}, Đã mở: {Opened}",
                         now, closedCount, openedCount);
                 }
             }
@@ -73,6 +75,8 @@ namespace ClubManagement.API.Service
         private static async Task<int> AutoCloseExpiredAsync(
             ApplicationDbContext db, DateTime now, CancellationToken ct)
         {
+            // now = DateTime.Now (local HN), RegistrationDeadLine = Unspecified (local HN)
+            // So sánh đúng, không lệch múi giờ
             var expired = await db.Activities
                 .Where(a => a.Status == "Open"
                     && a.RegistrationDeadLine.HasValue
@@ -88,7 +92,7 @@ namespace ClubManagement.API.Service
                 logs.Add(new AuditLog
                 {
                     UserID = null,
-                    Action = $"Auto-close: Hết hạn đăng ký ({activity.RegistrationDeadLine:yyyy-MM-dd HH:mm} UTC)",
+                    Action = $"Auto-close: Hết hạn đăng ký ({activity.RegistrationDeadLine:yyyy-MM-dd HH:mm})",
                     TableName = "Activities",
                     RecordID = activity.ActivityID,
                     CreatedAt = now,
@@ -103,13 +107,13 @@ namespace ClubManagement.API.Service
         private static async Task<int> AutoOpenScheduledAsync(
             ApplicationDbContext db, DateTime now, CancellationToken ct)
         {
+            // now = DateTime.Now (local HN), các field = Unspecified (local HN)
             var toOpen = await db.Activities
-                .Where(a => a.Status == "Closed"                          // Đang closed
-                    && a.RegistrationOpenDate.HasValue                    // Có ngày mở
-                    && a.RegistrationOpenDate.Value <= now                // Đã đến ngày mở                                                                 
-                    && (!a.RegistrationDeadLine.HasValue                  // Không có deadline
-                        || a.RegistrationDeadLine.Value > now)            // Hoặc deadline chưa qua
-                    && a.time > now)                                      
+                .Where(a => a.Status == "Closed"
+                    && a.RegistrationOpenDate.HasValue
+                    && a.RegistrationOpenDate.Value <= now
+                    && (!a.RegistrationDeadLine.HasValue || a.RegistrationDeadLine.Value > now)
+                    && a.time > now)
                 .ToArrayAsync(ct);
 
             if (!toOpen.Any()) return 0;
@@ -121,7 +125,7 @@ namespace ClubManagement.API.Service
                 logs.Add(new AuditLog
                 {
                     UserID = null,
-                    Action = $"Auto-opened: đến ngày mở đăng ký ({activity.RegistrationOpenDate:yyyy-MM-dd HH:mm} UTC)",
+                    Action = $"Auto-opened: đến ngày mở đăng ký ({activity.RegistrationOpenDate:yyyy-MM-dd HH:mm})",
                     TableName = "Activities",
                     RecordID = activity.ActivityID,
                     CreatedAt = now,
