@@ -10,7 +10,7 @@ namespace ClubManagement.API.DTOs.Members
         public string? AvatarUrl { get; set; }
         public int DisplayOrder { get; set; }
         public string? Faculty { get; set; }
-        public string? Email { get; set; }
+        public string? ContactEmail { get; set; }
         public DateTime? JoinDate { get; set; }
     }
 

@@ -38,7 +38,7 @@ namespace ClubManagement.API.Controllers
                     DisplayOrder = m.DisplayOrder,
                     Faculty = m.Faculty,
                     JoinDate = m.JoinDate,
-                    Email = m.User != null ? m.User.Email : null
+                    ContactEmail = m.ContactEmail,
                 })
                 .ToListAsync();
 

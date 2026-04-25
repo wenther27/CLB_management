@@ -38,13 +38,13 @@ namespace ClubManagement.API.Service
             Status = m.Status,
             JoinDate = m.JoinDate,
             Username = m.User?.Username,
-            Email = m.User?.Email,
             Phone = m.User?.Phone,
             RoleName = m.User?.Role?.RoleName,
             // Thêm mới
             Department = m.Department,
             DisplayOrder = m.DisplayOrder,
             AvatarUrl = m.AvatarUrl,
+            ContactEmail = m.ContactEmail,
         };
         public async Task<PagedResultDTO<MemberDTO>> GetAllAsync(MemberQueryDTO query)
         {
@@ -139,12 +139,13 @@ namespace ClubManagement.API.Service
                 member.User.UpdatedAt = DateTime.UtcNow;
             }
             // Trường mới
-            if (dto.Department != null)
-                member.Department = dto.Department == "" ? null : dto.Department;
+            member.Department = string.IsNullOrEmpty(dto.Department) ? null : dto.Department;
             if (dto.DisplayOrder.HasValue)
                 member.DisplayOrder = dto.DisplayOrder.Value;
             if (dto.AvatarUrl != null)
                 member.AvatarUrl = dto.AvatarUrl == "" ? null : dto.AvatarUrl;
+            if (dto.ContactEmail != null)
+                member.ContactEmail = dto.ContactEmail == "" ? null : dto.ContactEmail;
 
             await _context.SaveChangesAsync();
             return MapToDTO(member);

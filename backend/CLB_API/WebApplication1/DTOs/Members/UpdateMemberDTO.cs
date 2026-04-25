@@ -11,5 +11,6 @@
         public string? Department { get; set; }
         public int? DisplayOrder { get; set; }
         public string? AvatarUrl { get; set; }
+        public string? ContactEmail { get; set; }
     }
 }

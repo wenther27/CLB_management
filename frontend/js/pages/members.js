@@ -156,12 +156,17 @@ function openMemberModal(member) {
           <div>
             <div class="member-modal-row-label">Liên hệ</div>
             <div class="member-modal-row-value">
-              ${member.email
-                ? `<a href="mailto:${escapeHtml(member.email)}"
+              ${member.contactEmail
+                ? `<a href="mailto:${escapeHtml(member.contactEmail)}"
                       style="color:#60a5fa;text-decoration:none">
-                     ${escapeHtml(member.email)}
-                   </a>`
-                : 'Chưa cập nhật'}
+                    ${escapeHtml(member.contactEmail)}
+                  </a>`
+                : (member.email
+                  ? `<a href="mailto:${escapeHtml(member.email)}"
+                        style="color:#60a5fa;text-decoration:none">
+                      ${escapeHtml(member.email)}
+                    </a>`
+                  : 'Chưa cập nhật')}
             </div>
           </div>
         </div>

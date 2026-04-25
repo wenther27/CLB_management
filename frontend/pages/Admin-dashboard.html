@@ -267,102 +267,82 @@
 <script src="../js/pages/admin/admin-posts.js"></script>
 <script src="../js/pages/admin/admin-users-logs.js"></script>
 
-<<<<<<< HEAD
-=======
 <script>
-  // Khởi tạo dashboard
-  document.addEventListener('DOMContentLoaded', async () => {
-    updateNavbar();
-    
-    // Hiển thị ngày hiện tại
-    const dateLabel = document.getElementById('dateLabel');
-    if (dateLabel) {
-      const now = new Date();
-      dateLabel.textContent = now.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' });
-    }
-    
-    // Kiểm tra quyền admin
-    if (!Auth.isAdmin() && !Auth.isExecutive()) {
-      Toast.error('Bạn không có quyền truy cập trang quản trị');
-      setTimeout(() => {
-        window.location.href = '../pages/index.html';
-      }, 2000);
-      return;
-    }
-    
-    // Ẩn các mục admin nếu không phải Admin
-    if (!Auth.isAdmin()) {
-      const adminGrpLbl = document.getElementById('adminGrpLbl');
-      const usersBtn = document.getElementById('usersBtn');
-      const logsBtn = document.getElementById('logsBtn');
-      if (adminGrpLbl) adminGrpLbl.style.display = 'none';
-      if (usersBtn) usersBtn.style.display = 'none';
-      if (logsBtn) logsBtn.style.display = 'none';
-    }
-    
-    // Load dữ liệu ban đầu
-    await loadStats();
-    await loadMembers();
-    await loadActivitiesAdmin();
-    await loadPosts();
-    if (Auth.isAdmin()) {
-      await loadUsers();
-      await loadLogs();
-    }
-  });
-  
-  // Hàm load thống kê
-  async function loadStats() {
+document.addEventListener('DOMContentLoaded', async () => {
+  updateNavbar();
+
+  if (!Auth.isLoggedIn() || (!Auth.isExecutive() && !Auth.isAdmin())) {
+    Toast.error('Không có quyền truy cập');
+    setTimeout(() => location.href = '../pages/index.html', 800);
+    return;
+  }
+
+  if (!Auth.isAdmin()) {
+    ['adminGrpLbl', 'usersBtn', 'logsBtn'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.style.display = 'none';
+    });
+  }
+
+  // Hiển thị ngày
+  const dateLabel = document.getElementById('dateLabel');
+  if (dateLabel) {
+    dateLabel.textContent = new Date().toLocaleDateString('vi-VN', {
+      day: '2-digit', month: '2-digit', year: 'numeric'
+    });
+  }
+
+  await loadStats();
+});
+
+async function loadStats() {
   try {
-    const [members, activities, posts] = await Promise.all([
-      request('GET', '/members', null, true),        // ← thêm null, true
-      request('GET', '/activities', null, true),      // ← thêm null, true  
-      request('GET', '/posts', null, true),            // ← thêm null, true
+    // Members cần auth, activities không cần
+    const [members, activities] = await Promise.all([
+      request('GET', '/members?page=1&pageSize=200', null, true),
+      request('GET', '/activities', null, false),
     ]);
 
-    const memberList   = members.data?.items   || members.data   || [];
-    const activityList = activities.data?.items || activities.data || [];
-    const postList     = posts.data?.items      || posts.data     || [];
+    const memberList   = members.data?.items   || [];
+    const activityList = activities.data?.items || [];
 
-    const openActs = activityList.filter(a => a.status === 'Open').length;
+    const set = (id, v) => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = v;
+    };
 
-    document.getElementById('sMembers').textContent  = memberList.length;
-    document.getElementById('sOpenActs').textContent = openActs;
-    document.getElementById('sPosts').textContent    = postList.length;
-    document.getElementById('sAllActs').textContent  = activityList.length;
+    set('sMembers',  memberList.length);
+    set('sOpenActs', activityList.filter(a => a.status === 'Open').length);
+    set('sPosts',    '—');
+    set('sAllActs',  activityList.length);
+
   } catch(e) {
-    console.error('loadStats error:', e);
+    console.error('loadStats lỗi:', e);
   }
 }
-  
-  // Export functions
-  window.loadStats = loadStats;
-  window.showP = function(panelId) {
-    // Ẩn tất cả panels
-    document.querySelectorAll('.adm-panel').forEach(panel => {
-      panel.classList.remove('active');
-    });
-    
-    // Hiển thị panel được chọn
-    const target = document.getElementById(`p-${panelId}`);
-    if (target) target.classList.add('active');
-    
-    // Cập nhật active state cho sidebar
-    document.querySelectorAll('.adm-item').forEach(item => {
-      item.classList.remove('active');
-      if (item.getAttribute('data-p') === panelId) {
-        item.classList.add('active');
-      }
-    });
-    
-    // Load dữ liệu tương ứng
-    if (panelId === 'members') loadMembers();
-    else if (panelId === 'activities') loadActivitiesAdmin();
-    else if (panelId === 'posts') loadPosts();
-    else if (panelId === 'users' && Auth.isAdmin()) loadUsers();
-    else if (panelId === 'logs' && Auth.isAdmin()) loadLogs();
+
+window.loadStats = loadStats;
+
+window.showP = function(panelId) {
+  document.querySelectorAll('.adm-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.adm-item').forEach(i => i.classList.remove('active'));
+
+  const target = document.getElementById(`p-${panelId}`);
+  if (target) target.classList.add('active');
+
+  const btn = document.querySelector(`[data-p="${panelId}"]`);
+  if (btn) btn.classList.add('active');
+
+  const handlers = {
+    members:    () => loadMembers(),
+    activities: () => loadActivitiesAdmin(),
+    posts:      () => Toast.info('Tính năng Tin tức đang phát triển'),
+    users:      () => Auth.isAdmin() && loadUsers(),
+    logs:       () => Auth.isAdmin() && loadLogs(),
   };
+
+  handlers[panelId]?.();
+};
 </script>
->>>>>>> main
 </body>
 </html>
