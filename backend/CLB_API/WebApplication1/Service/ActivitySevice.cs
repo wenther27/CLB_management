@@ -32,19 +32,7 @@ namespace ClubManagement.API.Service
             _context = context;
         }
 
-        // ─────────────────────────────────────────────────────────────────────
-        // ROOT CAUSE của lỗi múi giờ:
-        //
-        //   FE gửi datetime-local string "2026-04-22T10:00:00" (KHÔNG có offset).
-        //   .NET parse thành DateTimeKind.Unspecified → DB lưu "10:00:00" (giờ HN).
-        //
-        //   Code cũ dùng DateTime.UtcNow = 03:00 UTC để so sánh với "10:00 HN":
-        //     03:00 < 10:00 → C# nghĩ chưa đến giờ mở → CHẶN đăng ký!
-        //   Dù thực tế người dùng đang dùng lúc 11:00 sáng (đã qua giờ mở).
-        //
-        //   FIX: Dùng DateTime.Now (giờ local server = giờ HN) thay cho UtcNow.
-        //   Cả hai vế đều là giờ HN → so sánh đúng, hết lệch 7 tiếng.
-        // ─────────────────────────────────────────────────────────────────────
+       
 
         public async Task<PagedResultDTO<ActivityDTO>> GetAllAsync(ActivityQueryDTO query)
         {
@@ -198,7 +186,7 @@ namespace ClubManagement.API.Service
 
         public async Task<int> AutoCloseExpiredActivitiesAsync()
         {
-            var now = DateTime.Now;  // FIX: local time
+            var now = DateTime.Now;  
 
             var expired = await _context.Activities
                 .Where(a => a.Status == "Open"
@@ -220,11 +208,9 @@ namespace ClubManagement.API.Service
                 .AnyAsync(r => r.ActivityID == activityId && r.MemberID == member.MemberID);
         }
 
-        // ── ĐĂNG KÝ ──────────────────────────────────────────────────────────
+        // Dang ky hoat dong
         public async Task<RegistrationResponseDTO?> RegisterAsync(int activityId, int userId)
         {
-            // KEY FIX: DateTime.Now (giờ HN) thay vì DateTime.UtcNow
-            // DB lưu Unspecified = giờ HN → phải so sánh với giờ HN
             var now = DateTime.Now;
 
             var activity = await _context.Activities
@@ -233,11 +219,11 @@ namespace ClubManagement.API.Service
 
             if (activity == null || activity.Status != "Open") return null;
 
-            // Chưa đến giờ mở đăng ký?
+            // Kiem den gio mo dang ky chưa
             if (activity.RegistrationOpenDate.HasValue && now < activity.RegistrationOpenDate.Value)
                 return null;
 
-            // Đã hết hạn đăng ký?
+            // Xem het han dang ky chuwa
             if (activity.RegistrationDeadLine.HasValue && now > activity.RegistrationDeadLine.Value)
             {
                 activity.Status = "Closed";
@@ -247,7 +233,7 @@ namespace ClubManagement.API.Service
 
             var member = await _context.Members.FirstOrDefaultAsync(m => m.UserID == userId);
             if (member == null) return null;
-
+            // 
             bool alreadyRegistered = await _context.Registrations
                 .AnyAsync(r => r.ActivityID == activityId && r.MemberID == member.MemberID);
             if (alreadyRegistered) return null;
@@ -255,7 +241,7 @@ namespace ClubManagement.API.Service
             if (activity.MaxParticipants.HasValue)
             {
                 var count = await _context.Registrations
-                    .CountAsync(r => r.ActivityID == activityId && r.Status == "Confirmed");
+                    .CountAsync(r => r.ActivityID == activityId && r.Status == "Đã đang ký");
                 if (count >= activity.MaxParticipants.Value) return null;
             }
 
@@ -263,7 +249,7 @@ namespace ClubManagement.API.Service
             {
                 ActivityID = activityId,
                 MemberID = member.MemberID,
-                RegisterDate = DateTime.Now,   // FIX: local time
+                RegisterDate = DateTime.Now,   
                 Status = "Confirmed"
             };
 
@@ -282,7 +268,7 @@ namespace ClubManagement.API.Service
             };
         }
 
-        // ── HỦY ĐĂNG KÝ ──────────────────────────────────────────────────────
+        // Huy dang kys
         public async Task<(bool Success, string? ErrorMessage)> CancelRegistrationAsync(
             int activityId, int userId)
         {
@@ -312,7 +298,7 @@ namespace ClubManagement.API.Service
             await _context.SaveChangesAsync();
             return (true, null);
         }
-
+        // Nhan tin dang ky
         public async Task<PagedResultDTO<RegistrationResponseDTO>> GetRegistrationsAsync(
             int activityId, int page, int pageSize)
         {
@@ -338,7 +324,7 @@ namespace ClubManagement.API.Service
             return new PagedResultDTO<RegistrationResponseDTO>
             { Items = items, TotalCount = total, Page = page, PageSize = pageSize };
         }
-
+        // Lay thong tin dang ky cua toi
         public async Task<PagedResultDTO<RegistrationResponseDTO>> GetMyRegistrationsAsync(
             int userId, int page, int pageSize)
         {

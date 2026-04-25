@@ -110,9 +110,9 @@ function renderCard(a) {
     ? `<img src="${firstImage.startsWith('http') ? firstImage : 'http://localhost:5190' + firstImage}"
            style="width:100%;height:140px;object-fit:cover;border-radius:8px 8px 0 0"
            onerror="this.style.display='none';this.nextSibling.style.display='flex'">
-       <div style="display:none;width:100%;height:140px;background:linear-gradient(135deg,#1e293b,#0f172a);
+       <div style="display:none;width:100%;height:140px;background:#f1f3f8;
                    align-items:center;justify-content:center;font-size:2rem;border-radius:8px 8px 0 0">🎯</div>`
-    : `<div style="width:100%;height:140px;background:linear-gradient(135deg,#1e293b,#0f172a);
+    : `<div style="width:100%;height:140px;background:#f1f3f8;
                   display:flex;align-items:center;justify-content:center;font-size:2rem;border-radius:8px 8px 0 0">🎯</div>`;
 
   // ── Khối thông tin đăng ký (NEW) ──────────────────────────────────────────
@@ -124,16 +124,16 @@ function renderCard(a) {
     if (openDate) {
       if (isNotOpenYet) {
         openRow = `<div style="display:flex;align-items:center;gap:6px;font-size:11px">
-          <span style="color:#64748b"><i class="fa-solid fa-clipboard-check" style="color: rgb(5, 237, 166);"></i></span>
+          <span style="color:#64748b"><i class="fa-solid fa-clipboard-check" style="color:#16a34a"></i></span>
           <span style="min-width:70px">Mở đăng ký: </span>
-          <span style="color:  rgb(116, 192, 252)";font-weight:600">${Utils.formatDateTime(a.registrationOpenDate)}</span>
-          <span style="font-size:10px;color:#60a5fa;background:rgba(59,130,246,.1);padding:1px 5px;border-radius:4px">chưa mở</span>
+          <span style="color:#1d4ed8;font-weight:600>${Utils.formatDateTime(a.registrationOpenDate)}</span>
+          <span style="font-size:10px;color:#1d4ed8;background:#dbeafe;padding:1px 5px;border-radius:4px">chưa mở</span>
         </div>`;
       } else {
         openRow = `<div style="display:flex;align-items:center;gap:6px;font-size:11px">
-          <span style="color:#22c55e"><i class="fa-solid fa-clipboard-check" style="color: rgb(5, 237, 166);"></i></span>
+          <span style="color:#22c55e"><i class="fa-solid fa-clipboard-check" style="color:#16a34a"></i></span>
           <span style="min-width:70px">Mở đăng ký: </span>
-          <span style="color:#4ade80">${Utils.formatDateTime(a.registrationOpenDate)}</span>
+          <span style="color:#16a34a">${Utils.formatDateTime(a.registrationOpenDate)}</span>
         </div>`;
       }
     }
@@ -142,21 +142,21 @@ function renderCard(a) {
     if (deadline) {
       if (isDeadlinePassed) {
         deadlineRow = `<div style="display:flex;align-items:center;gap:6px;font-size:11px">
-          <span style="color:#ff6b84"><i class="fa-solid fa-calendar-xmark" style="color: rgb(243, 0, 15);"></i></span>
+          <span style="color:#dc2626"><i class="fa-solid fa-calendar-xmark" style="color:#dc2626"></i></span>
           <span style=";min-width:70px">Hạn đăng ký</span>
-          <span style="color:#ff6b84;font-weight:600">${Utils.formatDateTime(a.registrationDeadLine)}</span>
+          <span style="color:#dc2626;font-weight:600">${Utils.formatDateTime(a.registrationDeadLine)}</span>
           <span style="font-size:10px;color:#ff6b84;background:rgba(255,45,85,.1);padding:1px 5px;border-radius:4px">Quá hạn đăng ký</span>
         </div>`;
       } else if (isDeadlineNear) {
         deadlineRow = `<div style="display:flex;align-items:center;gap:6px;font-size:11px">
-          <span style="color:#f59e0b"><i class="fa-solid fa-calendar-xmark" style="color: rgb(243, 0, 15);"></i></span>
+          <span style="color:#b45309"><i class="fa-solid fa-calendar-xmark" style="color:#dc2626"></i></span>
           <span style="min-width:70px">Hạn đăng ký: </span>
-          <span style="color:#f59e0b;font-weight:600">${Utils.formatDateTime(a.registrationDeadLine)}</span>
-          <span style="font-size:10px;color:#f59e0b;background:rgba(245,158,11,.1);padding:1px 5px;border-radius:4px">sắp hết hạn </span>
+          <span style="color:#b45309;font-weight:600">${Utils.formatDateTime(a.registrationDeadLine)}</span>
+          <span style="font-size:10px;color:#b45309;background:#fef3c7;padding:1px 5px;border-radius:4px">sắp hết hạn </span>
         </div>`;
       } else {
         deadlineRow = `<div style="display:flex;align-items:center;gap:6px;font-size:11px">
-          <span style="color:#ff6b84"><i class="fa-solid fa-calendar-xmark" style="color: rgb(243, 0, 15);"></i></span>
+          <span style="color:#dc2626"><i class="fa-solid fa-calendar-xmark" style="color:#dc2626"></i></span>
           <span style="min-width:70px">Hạn đăng ký: </span>
           <span style="">${Utils.formatDateTime(a.registrationDeadLine)}</span>
         </div>`;
@@ -172,7 +172,7 @@ function renderCard(a) {
           <span><i class="fa-solid fa-user-group"></i> ${a.registeredCount} / ${a.maxParticipants} người</span>
           <span style="color:${pctColor}">${pct}%</span>
         </div>
-        <div style="height:3px;background:rgba(255,255,255,.08);border-radius:2px;overflow:hidden;margin-top:3px">
+        <div style="height:3px;background:#e2e8f0;border-radius:2px;overflow:hidden;margin-top:3px">
           <div style="height:100%;width:${pct}%;background:${pctColor};border-radius:2px"></div>
         </div>`;
     } else {
@@ -183,8 +183,8 @@ function renderCard(a) {
 
     if (openRow || deadlineRow) {
       regInfoHtml = `
-        <div style="background:#0f172a;border-radius:8px;padding:8px 10px;display:flex;flex-direction:column;
-                    gap:5px;border:1px solid rgba(255,255,255,0.05);margin-top:4px">
+        <div style="background:#ffffff;border-radius:8px;padding:8px 10px;display:flex;flex-direction:column;
+                    gap:5px;border:1px solid #e2e8f0;margin-top:4px">
           ${openRow}${deadlineRow}
           ${countRow}
         </div>`;
@@ -201,7 +201,7 @@ function renderCard(a) {
   let actionBtn = '';
   if (hasRegistered) {
     actionBtn = `<button onclick="event.stopPropagation(); cancelRegistration(${a.activityID}, this)"
-                   class="btn-outline" style="padding:8px 14px;font-size:13px;background:rgba(255,45,85,.1);border-color:#ff2d55;color:#ff2d55">
+                   class="btn-outline" style="padding:8px 14px;font-size:13px;background:#fff0f3;border-color:#e8213a;color:#e8213a">
                   <i class="fa-solid fa-xmark"></i> Hủy đăng ký
                 </button>`;
   } else if (a.status === 'Open' && !isFull && !isDeadlinePassed && !isNotOpenYet) {
@@ -217,7 +217,7 @@ function renderCard(a) {
                   </button>`;
     }
   } else if (isNotOpenYet) {
-    actionBtn = `<span style="padding:7px 10px;font-size:13px;color:#60a5fa;background:rgba(59,130,246,.1);border-radius:6px;border:1px solid rgba(59,130,246,.2)"><i class="fa-solid fa-hourglass-start" style="color: rgb(116, 192, 252);"></i> Chưa mở đăng ký</span>`;
+    actionBtn = `<span style="padding:7px 10px;font-size:13px;color:#1d4ed8;background:#dbeafe;border-radius:6px;border:1px solid #bfdbfe"><i class="fa-solid fa-hourglass-start" style="color:#1d4ed8"></i> Chưa mở đăng ký</span>`;
   } else if (isFull) {
     actionBtn = `<span class="badge badge-inactive" style="padding:7px 10px">Đủ chỗ</span>`;
   } else if (a.status === 'Closed' || isDeadlinePassed) {
@@ -242,8 +242,8 @@ function renderCard(a) {
       ${regInfoHtml}
 
       <div class="card-meta" style="margin-top:8px"  >
-        <span style = "color:rgb(255, 255, 255);" ><i class="fa-solid fa-calendar-days"  ></i>  ${Utils.formatDateTime(a.time)} </span>
-        <span style = "color:rgb(255, 255, 255);" ><i class="fa-solid fa-location-dot" style="color: rgb(255, 0, 0);"></i> ${Utils.escapeHtml(a.location || 'TBD')}</span>
+        <span style="color:#111827"><i class="fa-solid fa-calendar-days"></i> ${Utils.formatDateTime(a.time)}</span>
+        <span style="color:#111827"><i class="fa-solid fa-location-dot" style="color:#e8213a"></i> ${Utils.escapeHtml(a.location || 'TBD')}</span>
       </div>
     </div>
     <div class="card-footer" onclick="event.stopPropagation()">
@@ -310,9 +310,9 @@ function renderPagination(totalPages) {
   for (let i = 1; i <= totalPages; i++) {
     const btn = document.createElement('button');
     btn.textContent = i;
-    btn.style.cssText = `padding:7px 13px;border-radius:6px;border:1px solid ${i === currentPage ? '#ff2d55' : 'rgba(255,255,255,0.1)'};
-      background:${i === currentPage ? 'rgba(255,45,85,0.15)' : 'transparent'};
-      color:${i === currentPage ? '#ff2d55' : '#64748b'};cursor:pointer;font-size:13px`;
+    btn.style.cssText = `padding:7px 13px;border-radius:6px;border:1px solid ${i === currentPage ? '#e8213a' : '#e2e8f0'};
+      background:${i === currentPage ? '#fef2f4' : '#ffffff'};
+      color:${i === currentPage ? '#e8213a' : '#111827'};cursor:pointer;font-size:13px`;
     btn.onclick = () => { currentPage = i; renderActivities(); window.scrollTo({ top: 400, behavior: 'smooth' }); };
     wrap.appendChild(btn);
   }

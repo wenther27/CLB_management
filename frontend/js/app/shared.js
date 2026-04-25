@@ -39,23 +39,7 @@ async function showActivityDetail(activityId, options = {}) {
       : 0;
     const isFull = a.maxParticipants && a.registeredCount >= a.maxParticipants;
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // FIX TIMEZONE:
-    //
-    // Backend (sau khi sửa) dùng DateTime.Now (giờ HN) để so sánh.
-    // API trả về string như "2026-04-22T10:00:00" KHÔNG có timezone suffix.
-    //
-    // Vấn đề cũ: new Date("2026-04-22T10:00:00") → Chrome tự hiểu là LOCAL
-    //   → ở VN: 10:00 HN ✓  (đúng)
-    //   → nhưng một số trình duyệt/OS có thể parse khác nhau
-    //
-    // KHÔNG nên thêm "Z" vì sẽ bị hiểu là 10:00 UTC = 17:00 HN → SAI hoàn toàn.
-    //
-    // Giải pháp: Parse string mà KHÔNG thêm suffix.
-    // new Date("2026-04-22T10:00:00") → local time → giờ HN → đúng với backend.
-    //
-    // So sánh với new Date() (= local now = giờ HN) → nhất quán với backend.
-    // ─────────────────────────────────────────────────────────────────────────
+
     const parseLocalDate = (str) => {
       if (!str) return null;
       // Nếu đã có timezone info → parse thẳng (trường hợp backend trả về đúng)
@@ -85,15 +69,15 @@ async function showActivityDetail(activityId, options = {}) {
     // Banner cảnh báo
     let deadlineBanner = '';
     if (isDeadlinePassed && a.status === 'Open') {
-      deadlineBanner = `<div style="background:rgba(255,45,85,0.1);border:1px solid rgba(255,45,85,0.3);border-radius:8px;padding:10px 14px;margin-bottom:14px;font-size:13px;color:#ff6b84">
+      deadlineBanner = `<div style="background:#fee2e2;border:1px solid #fca5a5;border-radius:8px;padding:10px 14px;margin-bottom:14px;font-size:13px;color:#dc2626">
         🔒 Đã hết hạn đăng ký
       </div>`;
     } else if (isDeadlineNear) {
-      deadlineBanner = `<div style="background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.3);border-radius:8px;padding:10px 14px;margin-bottom:14px;font-size:13px;color:#f59e0b">
+      deadlineBanner = `<div style="background:#fef3c7;border:1px solid #fcd34d;border-radius:8px;padding:10px 14px;margin-bottom:14px;font-size:13px;color:#b45309">
         ⚠️ Sắp hết hạn đăng ký
       </div>`;
     } else if (isNotOpenYet) {
-      deadlineBanner = `<div style="background:rgba(59,130,246,0.1);border:1px solid rgba(59,130,246,0.25);border-radius:8px;padding:10px 14px;margin-bottom:14px;font-size:13px;color:#60a5fa">
+      deadlineBanner = `<div style="background:#dbeafe;border:1px solid #93c5fd;border-radius:8px;padding:10px 14px;margin-bottom:14px;font-size:13px;color:#1d4ed8">
         🕐 Chưa đến thời gian nhận đăng ký (mở lúc ${Utils.formatDateTime(a.registrationOpenDate)})
       </div>`;
     }
@@ -109,11 +93,11 @@ async function showActivityDetail(activityId, options = {}) {
     if (hasRegistered) {
       if (canCancel) {
         regSection = `
-          <div style="margin-bottom:10px;padding:8px 12px;background:rgba(34,197,94,0.1);border-radius:8px;font-size:13px;color:#22c55e;text-align:center">
+          <div style="margin-bottom:10px;padding:8px 12px;background:#dcfce7;border:1px solid #86efac;border-radius:8px;font-size:13px;color:#16a34a;text-align:center">
             <i class="fa-solid fa-check-circle"></i> Bạn đã đăng ký tham gia hoạt động này
           </div>
           <button onclick="cancelRegistrationFromModal(${a.activityID}, this)"
-            class="btn-outline w-100" style="padding:12px;font-size:15px;background:rgba(255,45,85,0.1);border-color:#ff2d55;color:#ff2d55">
+            class="btn-outline w-100" style="padding:12px;font-size:15px;background:#fff0f3;border-color:#dc2626;color:#dc2626">
             <i class="fa-solid fa-xmark"></i> Hủy đăng ký
           </button>`;
       } else {
@@ -121,10 +105,10 @@ async function showActivityDetail(activityId, options = {}) {
           ? 'Hoạt động đã bị hủy'
           : 'Đã hết hạn đăng ký — không thể hủy';
         regSection = `
-          <div style="margin-bottom:10px;padding:8px 12px;background:rgba(34,197,94,0.1);border-radius:8px;font-size:13px;color:#22c55e;text-align:center">
+          <div style="margin-bottom:10px;padding:8px 12px;background:#dcfce7;border:1px solid #86efac;border-radius:8px;font-size:13px;color:#16a34a;text-align:center">
             <i class="fa-solid fa-check-circle"></i> Bạn đã đăng ký tham gia hoạt động này
           </div>
-          <div style="text-align:center;padding:10px;background:rgba(100,116,139,0.1);border-radius:8px;border:1px solid rgba(100,116,139,0.2);color:#64748b;font-size:13px">
+          <div style="text-align:center;padding:10px;background:rgba(100,116,139,0.1);border-radius:8px;border:1px solid rgba(100,116,139,0.2);color:#000000;font-size:13px">
             <i class="fa-solid fa-lock"></i> ${lockMsg}
           </div>`;
       }
@@ -136,25 +120,25 @@ async function showActivityDetail(activityId, options = {}) {
         </button>`;
       } else {
         regSection = `
-          <div style="background:#111827;border:1px solid rgba(255,255,255,0.06);border-radius:10px;padding:14px;text-align:center;margin-top:8px">
-            <p style="color:#94a3b8;font-size:13px;margin-bottom:10px">Đăng nhập để đăng ký tham gia hoạt động</p>
+          <div style="background:#f8f9fc;border:1px solid #e2e8f0;border-radius:10px;padding:14px;text-align:center;margin-top:8px">
+            <p style="color:#111827;font-size:13px;margin-bottom:10px">Đăng nhập để đăng ký tham gia hoạt động</p>
             <button onclick="AuthModal.open('login')" class="btn-primary" style="padding:9px 20px">Đăng nhập ngay</button>
           </div>`;
       }
     } else if (isFull) {
-      regSection = `<div style="text-align:center;padding:12px;background:rgba(255,45,85,0.07);border-radius:8px;border:1px solid rgba(255,45,85,0.15);color:#ff6b84;font-size:13px;margin-top:8px">
+      regSection = `<div style="text-align:center;padding:12px;background:#fee2e2;border-radius:8px;border:1px solid #fca5a5;color:#dc2626;font-size:13px;margin-top:8px">
         ⛔ Hoạt động đã đủ số lượng người tham gia
       </div>`;
     } else if (a.status === 'Cancelled') {
-      regSection = `<div style="text-align:center;padding:12px;background:rgba(100,116,139,0.1);border-radius:8px;border:1px solid rgba(100,116,139,0.2);color:#64748b;font-size:13px;margin-top:8px">
+      regSection = `<div style="text-align:center;padding:12px;background:rgba(100,116,139,0.1);border-radius:8px;border:1px solid rgba(100,116,139,0.2);color:#000000;font-size:13px;margin-top:8px">
         🚫 Hoạt động đã bị hủy
       </div>`;
     } else if (a.status === 'Closed' || isDeadlinePassed) {
-      regSection = `<div style="text-align:center;padding:12px;background:rgba(100,116,139,0.1);border-radius:8px;border:1px solid rgba(100,116,139,0.2);color:#64748b;font-size:13px;margin-top:8px">
+      regSection = `<div style="text-align:center;padding:12px;background:rgba(100,116,139,0.1);border-radius:8px;border:1px solid rgba(100,116,139,0.2);color:#000000;font-size:13px;margin-top:8px">
         <i class="fa-solid fa-lock"></i> Đã đóng đăng ký
       </div>`;
     } else if (isNotOpenYet) {
-      regSection = `<div style="text-align:center;padding:12px;background:rgba(59,130,246,0.07);border-radius:8px;border:1px solid rgba(59,130,246,0.2);color:#60a5fa;font-size:13px;margin-top:8px">
+      regSection = `<div style="text-align:center;padding:12px;background:#dbeafe;border-radius:8px;border:1px solid #93c5fd;color:#1d4ed8;font-size:13px;margin-top:8px">
         🕐 Chưa đến thời gian mở đăng ký (${Utils.formatDateTime(a.registrationOpenDate)})
       </div>`;
     }
@@ -192,33 +176,33 @@ async function showActivityDetail(activityId, options = {}) {
       ${deadlineBanner}
 
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px">
-        <div style="background:#111827;border-radius:8px;padding:12px">
-          <div style="font-size:11px;color:#475569;margin-bottom:4px"><i class="fa-solid fa-calendar-days"></i> Thời gian</div>
-          <div style="font-size:13px;color:#e2e8f0">${Utils.formatDateTime(a.time)}</div>
+        <div style="background:#f8f9fc;border:1px solid #e2e8f0;border-radius:8px;padding:12px">
+          <div style="font-size:11px;color:#111827;margin-bottom:4px"><i class="fa-solid fa-calendar-days"></i> Thời gian</div>
+          <div style="font-size:13px;color:#111827">${Utils.formatDateTime(a.time)}</div>
         </div>
-        <div style="background:#111827;border-radius:8px;padding:12px">
-          <div style="font-size:11px;color:#475569;margin-bottom:4px"><i class="fa-solid fa-location-dot"></i> Địa điểm</div>
-          <div style="font-size:13px;color:#e2e8f0">${Utils.escapeHtml(a.location || 'Chưa xác định')}</div>
+        <div style="background:#f8f9fc;border:1px solid #e2e8f0;border-radius:8px;padding:12px">
+          <div style="font-size:11px;color:#111827;margin-bottom:4px"><i class="fa-solid fa-location-dot"></i> Địa điểm</div>
+          <div style="font-size:13px;color:#111827">${Utils.escapeHtml(a.location || 'Chưa xác định')}</div>
         </div>
-        <div style="background:#111827;border-radius:8px;padding:12px">
-          <div style="font-size:11px;color:#475569;margin-bottom:4px"><i class="fa-solid fa-calendar-plus"></i> Mở đăng ký</div>
-          <div style="font-size:13px;color:${isNotOpenYet ? '#60a5fa' : '#e2e8f0'}">
+        <div style="background:#f8f9fc;border:1px solid #e2e8f0;border-radius:8px;padding:12px">
+          <div style="font-size:11px;color:#111827;margin-bottom:4px"><i class="fa-solid fa-calendar-plus"></i> Mở đăng ký</div>
+          <div style="font-size:13px;color:${isNotOpenYet ? '#1d4ed8' : '#111827'}">
             ${a.registrationOpenDate ? Utils.formatDateTime(a.registrationOpenDate) : 'Ngay khi tạo'}
           </div>
         </div>
-        <div style="background:#111827;border-radius:8px;padding:12px">
-          <div style="font-size:11px;color:#475569;margin-bottom:4px"><i class="fa-solid fa-calendar-xmark"></i> Hạn đăng ký</div>
-          <div style="font-size:13px;color:${isDeadlinePassed ? '#ff6b84' : isDeadlineNear ? '#f59e0b' : '#e2e8f0'}">
+        <div style="background:#f8f9fc;border:1px solid #e2e8f0;border-radius:8px;padding:12px">
+          <div style="font-size:11px;color:#111827;margin-bottom:4px"><i class="fa-solid fa-calendar-xmark"></i> Hạn đăng ký</div>
+          <div style="font-size:13px;color:${isDeadlinePassed ? '#dc2626' : isDeadlineNear ? '#b45309' : '#111827'}">
             ${a.registrationDeadLine ? Utils.formatDateTime(a.registrationDeadLine) : 'Không giới hạn'}
           </div>
         </div>
-        <div style="background:#111827;border-radius:8px;padding:12px">
-          <div style="font-size:11px;color:#475569;margin-bottom:4px"><i class="fa-solid fa-user"></i> Người tổ chức</div>
-          <div style="font-size:13px;color:#e2e8f0">${Utils.escapeHtml(a.creatorName || 'BTC')}</div>
+        <div style="background:#f8f9fc;border:1px solid #e2e8f0;border-radius:8px;padding:12px">
+          <div style="font-size:11px;color:#111827;margin-bottom:4px"><i class="fa-solid fa-user"></i> Người tổ chức</div>
+          <div style="font-size:13px;color:#111827">${Utils.escapeHtml(a.creatorName || 'BTC')}</div>
         </div>
-        <div style="background:#111827;border-radius:8px;padding:12px">
-          <div style="font-size:11px;color:#475569;margin-bottom:4px"><i class="fa-solid fa-user-group"></i> Đăng ký</div>
-          <div style="font-size:13px;color:#e2e8f0">
+        <div style="background:#f8f9fc;border:1px solid #e2e8f0;border-radius:8px;padding:12px">
+          <div style="font-size:11px;color:#111827;margin-bottom:4px"><i class="fa-solid fa-user-group"></i> Đăng ký</div>
+          <div style="font-size:13px;color:#111827">
             ${a.registeredCount}${a.maxParticipants ? ' / ' + a.maxParticipants + ' người' : ' người'}
           </div>
         </div>
@@ -226,9 +210,9 @@ async function showActivityDetail(activityId, options = {}) {
 
       ${a.maxParticipants ? `
         <div style="margin-bottom:18px">
-          <div style="display:flex;justify-content:space-between;font-size:12px;color:#64748b;margin-bottom:6px">
+          <div style="display:flex;justify-content:space-between;font-size:12px;color:#000000;margin-bottom:6px">
             <span>Mức độ đăng ký</span>
-            <span style="color:${pct >= 80 ? '#ff2d55' : '#64748b'}">${pct}%</span>
+            <span style="color:${pct >= 80 ? '#ff2d55' : '#000000'}">${pct}%</span>
           </div>
           <div class="progress-bar">
             <div class="progress-fill" style="width:${pct}%;background:${pct >= 80 ? '#ff2d55' : '#3b82f6'}"></div>
@@ -238,8 +222,8 @@ async function showActivityDetail(activityId, options = {}) {
 
       ${a.description ? `
         <div style="margin-bottom:20px">
-          <div style="font-size:11px;color:#475569;margin-bottom:8px"><i class="fa-solid fa-clipboard-list"></i> Mô tả</div>
-          <div style="font-size:14px;color:#94a3b8;line-height:1.75;white-space:pre-wrap">${Utils.escapeHtml(a.description)}</div>
+          <div style="font-size:11px;color:#000000;margin-bottom:8px"><i class="fa-solid fa-clipboard-list"></i> Mô tả</div>
+          <div style="font-size:14px;color:#000000;line-height:1.75;white-space:pre-wrap">${Utils.escapeHtml(a.description)}</div>
         </div>
       ` : ''}
 
@@ -405,23 +389,23 @@ async function showRegistrationsList(activityId, activityName) {
   try {
     const r = await API.getActivityRegistrations(activityId, 1, 100);
     const list = r.data?.items || [];
-    if (!list.length) { body.innerHTML = '<div style="padding:40px;text-align:center;color:#64748b">Chưa có ai đăng ký</div>'; return; }
+    if (!list.length) { body.innerHTML = '<div style="padding:40px;text-align:center;color:#000000">Chưa có ai đăng ký</div>'; return; }
     body.innerHTML = `
       <div style="padding:4px 0">
-        <div style="margin-bottom:16px;padding:8px 12px;background:#111827;border-radius:8px">
+        <div style="margin-bottom:16px;padding:8px 12px;background:#f8f9fc;border:1px solid #e2e8f0;border-radius:8px;color:#111827">
           <strong>${Utils.escapeHtml(activityName)}</strong> — ${list.length} người đăng ký
         </div>
         <table style="width:100%;border-collapse:collapse">
-          <thead><tr style="border-bottom:1px solid rgba(255,255,255,0.1)">
+          <thead><tr style="border-bottom:1px solid #e2e8f0">
             <th style="text-align:left;padding:10px 8px">Họ tên</th>
             <th style="text-align:left;padding:10px 8px">Ngày đăng ký</th>
             <th style="text-align:left;padding:10px 8px">Trạng thái</th>
           </tr></thead>
           <tbody>
             ${list.map(reg => `
-              <tr style="border-bottom:1px solid rgba(255,255,255,0.05)">
+              <tr style="border-bottom:1px solid #f1f3f8">
                 <td style="padding:10px 8px">${Utils.escapeHtml(reg.memberName)}</td>
-                <td style="padding:10px 8px;font-size:13px;color:#94a3b8">${Utils.formatDateTime(reg.registerDate)}</td>
+                <td style="padding:10px 8px;font-size:13px;color:#111827">${Utils.formatDateTime(reg.registerDate)}</td>
                 <td style="padding:10px 8px">${Utils.statusLabel(reg.status)}</td>
               </tr>`).join('')}
           </tbody>
@@ -460,18 +444,18 @@ async function showMyRegistrations() {
   try {
     const r = await API.getMyRegistrations(1, 50);
     const list = r.data?.items || [];
-    if (!list.length) { body.innerHTML = '<div style="padding:40px;text-align:center;color:#64748b">Bạn chưa đăng ký hoạt động nào</div>'; return; }
+    if (!list.length) { body.innerHTML = '<div style="padding:40px;text-align:center;color:#000000">Bạn chưa đăng ký hoạt động nào</div>'; return; }
     body.innerHTML = `
       <div style="padding:4px 0">
-        <div style="margin-bottom:16px;padding:8px 12px;background:#111827;border-radius:8px">📊 Tổng: ${list.length} hoạt động</div>
+        <div style="margin-bottom:16px;padding:8px 12px;background:#f8f9fc;border:1px solid #e2e8f0;border-radius:8px;color:#111827">📊 Tổng: ${list.length} hoạt động</div>
         <div style="display:flex;flex-direction:column;gap:12px">
           ${list.map(reg => `
-            <div style="background:#0f172a;border-radius:10px;padding:14px;border:1px solid rgba(255,255,255,0.06);cursor:pointer"
+            <div style="background:#ffffff;border-radius:10px;padding:14px;border:1px solid #e2e8f0;cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,0.05)"
                  onclick="showActivityDetail(${reg.activityID})">
               <div style="display:flex;justify-content:space-between;align-items:flex-start">
                 <div>
                   <div style="font-weight:600;margin-bottom:4px">${Utils.escapeHtml(reg.activityName)}</div>
-                  <div style="font-size:12px;color:#64748b"><i class="fa-solid fa-calendar-days"></i> ${Utils.formatDateTime(reg.registerDate)}</div>
+                  <div style="font-size:12px;color:#111827"><i class="fa-solid fa-calendar-days"></i> ${Utils.formatDateTime(reg.registerDate)}</div>
                 </div>
                 ${Utils.statusLabel(reg.status)}
               </div>
@@ -501,7 +485,5 @@ window.showRegistrationsList       = showRegistrationsList;
 window.closeRegistrationsModal     = closeRegistrationsModal;
 window.showMyRegistrations         = showMyRegistrations;
 window.closeMyRegistrationsModal   = closeMyRegistrationsModal;
-
-// Alias cho code cũ
 window.registerActivity   = registerActivityFromCard;
 window.cancelRegistration = cancelRegistrationFromCard;

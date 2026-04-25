@@ -18,7 +18,7 @@ async function loadActivitiesAdmin() {
     const list = r.data?.items || r.data || [];
 
     if (!list.length) {
-      tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:30px;color:#475569">Chưa có hoạt động nào</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:30px;color:#111827">Chưa có hoạt động nào</td></tr>';
       return;
     }
 
@@ -46,18 +46,18 @@ async function loadActivitiesAdmin() {
             const now = new Date();
             const isExpired = dl < now;
             const isNear = !isExpired && (dl - now) < 24 * 60 * 60 * 1000;
-            const color = isExpired ? '#ff2d55' : isNear ? '#f59e0b' : '#ff0909';
+            const color = isExpired ? '#dc2626' : isNear ? '#b45309' : '#111827';
             return `<span style="color:${color};font-size:12px"> ${Utils.formatDateTime(a.registrationDeadLine)}</span>`;
           })()
-        : '<span style="color:#475569;font-size:12px">—</span>';
+        : '<span style="color:#111827;font-size:12px">—</span>';
 
       const openDateHtml = a.registrationOpenDate
-        ? `<span style="font-size:12px;color:#60a5fa"> ${Utils.formatDateTime(a.registrationOpenDate)}</span>`
-        : '<span style="color:#475569;font-size:12px">Ngay khi tạo</span>';
+        ? `<span style="font-size:12px;color:#1d4ed8"> ${Utils.formatDateTime(a.registrationOpenDate)}</span>`
+        : '<span style="color:#111827;font-size:12px">Ngay khi tạo</span>';
       const safeId = a.activityID;
       return `
         <tr>
-          <td style="color:#475569">${a.activityID}</td>
+          <td style="color:#111827">${a.activityID}</td>
           <td>
   <strong
     class="act-name-link"
@@ -68,11 +68,11 @@ async function loadActivitiesAdmin() {
     ${Utils.escapeHtml(a.activityName)}
   </strong>
 </td>
-          <td style="color:#94a3b8">${Utils.formatDateTime(a.time)}</td>
+          <td style="color:#111827">${Utils.formatDateTime(a.time)}</td>
           <td style="font-size:12px">${openDateHtml}</td>
           <td style="font-size:12px">${deadlineHtml}</td>
-          <td style="color:#94a3b8">${Utils.escapeHtml(a.location || '—')}</td>
-          <td style="color:#94a3b8">${a.registeredCount}${a.maxParticipants ? ' / ' + a.maxParticipants : ''}</td>
+          <td style="color:#111827">${Utils.escapeHtml(a.location || '—')}</td>
+          <td style="color:#111827">${a.registeredCount}${a.maxParticipants ? ' / ' + a.maxParticipants : ''}</td>
           <td>${Utils.statusLabel(a.status)}</td>
           <td>
             <div style="display:flex;gap:6px;flex-wrap:wrap">
@@ -140,22 +140,15 @@ const rdl = toLocalInputValue(data.registrationDeadLine);
       </div>
     </div>
 
-    <!-- THỜI GIAN ĐĂNG KÝ (box riêng, khớp khung hình) -->
-    <div style="background:#0f172a;border-radius:10px;padding:14px 16px;margin-bottom:14px;border:1px solid rgba(255,255,255,0.06)">
-      <div style="font-size:12px;font-weight:600;color:#94a3b8;margin-bottom:10px;letter-spacing:0.5px">
-        <i class="fa-solid fa-calendar-check" style="margin-right:6px"></i>THỜI GIAN ĐĂNG KÝ
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Ngày mở đăng ký</label>
+        <input type="datetime-local" id="af-reg-open" class="form-control" value="${rod}">
+        <div style="font-size:11px;color:#111827;margin-top:4px">Để trống = mở ngay khi tạo</div>
       </div>
-      <div class="form-row" style="margin-bottom:0">
-        <div class="form-group" style="margin-bottom:0">
-          <label class="form-label">Ngày mở đăng ký</label>
-          <input type="datetime-local" id="af-reg-open" class="form-control" value="${rod}">
-          <div style="font-size:11px;color:#475569;margin-top:4px">Để trống = mở ngay khi tạo</div>
-        </div>
-        <div class="form-group" style="margin-bottom:0">
-          <label class="form-label">Hạn chót đăng ký</label>
-          <input type="datetime-local" id="af-reg-deadline" class="form-control" value="${rdl}">
-          
-        </div>
+      <div class="form-group">
+        <label class="form-label">Hạn chót đăng ký</label>
+        <input type="datetime-local" id="af-reg-deadline" class="form-control" value="${rdl}">
       </div>
     </div>
 
@@ -181,7 +174,7 @@ const rdl = toLocalInputValue(data.registrationDeadLine);
     <div class="form-group">
       <label class="form-label">
         Ảnh hoạt động
-        <span style="color:#475569;font-weight:400">(tối đa 5 ảnh, mỗi ảnh ≤ 5MB)</span>
+        <span style="color:#111827;font-weight:400">(tối đa 5 ảnh, mỗi ảnh ≤ 5MB)</span>
       </label>
 
       <div id="af-dropzone"
@@ -189,15 +182,15 @@ const rdl = toLocalInputValue(data.registrationDeadLine);
         ondragover="handleDragOver(event)"
         ondragleave="handleDragLeave(event)"
         ondrop="handleDrop(event)"
-        style="border:2px dashed rgba(255,255,255,0.12);border-radius:10px;padding:28px;
+        style="border:2px dashed #e2e8f0;border-radius:10px;padding:28px;
                text-align:center;cursor:pointer;transition:border-color 0.2s,background 0.2s;
                margin-bottom:12px">
         <div style="font-size:2rem;margin-bottom:8px">🖼️</div>
-        <div style="font-size:13px;color:#64748b">
+        <div style="font-size:13px;color:#111827">
           Kéo thả ảnh vào đây hoặc
           <span style="color:#ff2d55;font-weight:700">click để chọn</span>
         </div>
-        <div style="font-size:11px;color:#334155;margin-top:4px">JPG, PNG, WEBP, GIF</div>
+        <div style="font-size:11px;color:#111827;margin-top:4px">JPG, PNG, WEBP, GIF</div>
       </div>
 
       <input type="file" id="af-fileInput" accept="image/*" multiple
@@ -206,7 +199,7 @@ const rdl = toLocalInputValue(data.registrationDeadLine);
       <div id="af-preview" style="display:flex;flex-wrap:wrap;gap:10px;min-height:0">
         ${existingImages}
       </div>
-      <div id="af-uploadStatus" style="font-size:12px;color:#64748b;margin-top:8px"></div>
+      <div id="af-uploadStatus" style="font-size:12px;color:#111827;margin-top:8px"></div>
     </div>
 
     <!-- NÚT TẠO / CẬP NHẬT -->
@@ -341,7 +334,7 @@ function renderPreviewItem(url, index) {
   const uniqueId = `img-wrap-${Date.now()}-${index}`;
   return `
     <div id="${uniqueId}" style="position:relative;width:90px;height:90px;
-         border-radius:8px;overflow:hidden;border:1px solid rgba(255,255,255,0.1);flex-shrink:0">
+         border-radius:8px;overflow:hidden;border:1px solid #e2e8f0;flex-shrink:0">
       <img src="${src}" style="width:100%;height:100%;object-fit:cover">
       <button onclick="removeImage('${url}', '${uniqueId}')"
         style="position:absolute;top:3px;right:3px;width:20px;height:20px;border-radius:50%;
@@ -364,7 +357,7 @@ function handleDragOver(e) {
 
 function handleDragLeave(e) {
   const dz = document.getElementById('af-dropzone');
-  if (dz) { dz.style.borderColor = 'rgba(255,255,255,0.12)'; dz.style.background = 'transparent'; }
+  if (dz) { dz.style.borderColor = '#e2e8f0'; dz.style.background = 'transparent'; }
 }
 
 function handleDrop(e) {
@@ -471,4 +464,3 @@ window.handleDrop             = handleDrop;
 window.handleFileSelect       = handleFileSelect;
 window.uploadImages           = uploadImages;
 window.renderPreviewItem      = renderPreviewItem;
-// window.showActivityDetail     = showActivityDetail;
