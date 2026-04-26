@@ -164,23 +164,23 @@
 </div>
 
 <!-- Tin tức -->
+<!-- Tin tức -->
 <div style="background:#0d1424;border-top:1px solid rgba(255,255,255,0.05);border-bottom:1px solid rgba(255,255,255,0.05)">
   <div class="section">
     <div class="container">
       <div class="section-header">
         <div>
-          <div class="section-label"><i class="fa-solid fa-envelopes-bulk fa-bounce" style="color: rgb(239, 239, 239);"></i> Tin tức CLB</div>
+          <div class="section-label"><i class="fa-solid fa-envelopes-bulk"></i> Tin tức CLB</div>
           <div class="section-title">Thông tin <span>mới nhất</span></div>
         </div>
-        <a href=".posts.html" class="btn-outline" style="padding:8px 18px;font-size:13px">Xem tất cả →</a>
+        <a href="./Posts.html" class="btn-outline" style="padding:8px 18px;font-size:13px">Xem tất cả →</a>
       </div>
       <div class="grid grid-4" id="homePosts">
-        <div class="loading" style="grid-column:1/-1"><div class="spinner"></div></div>
+        <!-- JS sẽ load dữ liệu vào đây -->
       </div>
     </div>
   </div>
 </div>
-
 <!-- CTA -->
 <div class="section">
   <div class="container">
@@ -208,7 +208,7 @@
         <ul>
           <li><a href="../pages/index.html">Trang chủ</a></li>
           <li><a href="../pages/activities.html">Hoạt động</a></li>
-          <li><a href="../pages/posts.html">Tin tức</a></li>
+          <li><a href="../pages/Posts.html">Tin tức</a></li>
           <li><a href="../pages/register.html">Đăng ký thành viên</a></li>
         </ul>
       </div>
@@ -239,138 +239,242 @@
 
 
 <script>
-// Render activity cards
-function renderActCard(a) {
-  const pct = a.maxParticipants ? Math.min(100, Math.round(a.registeredCount / a.maxParticipants * 100)) : 0;
-  const emojis = ['🎯','🌟','🏠','📚','🌿','🤝','❤️','🎗️'];
-  const em = emojis[a.activityID % emojis.length];
+// ================================================
+// INDEX PAGE - DYNAMIC DATA LOADER
+// Lấy dữ liệu động từ API cho trang chủ
+// ================================================
+
+// Hàm render card hoạt động cho trang chủ
+function renderHomeActivityCard(a) {
+  const pct = a.maxParticipants ? Math.min(100, Math.round((a.registeredCount / a.maxParticipants) * 100)) : 0;
+  
+  // Ảnh đại diện hoạt động
+  const firstImage = a.image && a.image.length > 0 ? a.image[0] : null;
+  const thumbHtml = firstImage
+    ? `<img src="${firstImage.startsWith('http') ? firstImage : 'http://localhost:5190' + firstImage}" 
+           style="width:100%;height:160px;object-fit:cover;border-radius:12px 12px 0 0"
+           onerror="this.style.display='none';this.parentElement.innerHTML='<div style=\'height:160px;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#fef2f4,#eef4fb);font-size:2rem;border-radius:12px 12px 0 0\'><i class=\'fa-solid fa-heart\'></i></div>'">`
+    : `<div style="height:160px;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#fef2f4,#eef4fb);font-size:2rem;border-radius:12px 12px 0 0">
+        <i class="fa-solid fa-hand-holding-heart"></i>
+      </div>`;
+  
   return `
-  <div class="card">
-    <div class="card-thumb">${em}</div>
+  <div class="card" style="cursor:pointer;overflow:hidden" onclick="showActivityDetail(${a.activityID})">
+    ${thumbHtml}
     <div class="card-body">
-      ${Utils.statusLabel(a.status)}
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+        ${Utils.statusLabel(a.status)}
+      </div>
       <div class="card-title">${Utils.escapeHtml(a.activityName)}</div>
-      <div class="card-desc">${Utils.truncate(a.description || 'Không có mô tả', 100)}</div>
+      <div class="card-desc">${Utils.truncate(a.description || 'Không có mô tả', 80)}</div>
       ${a.maxParticipants ? `
         <div style="display:flex;justify-content:space-between;font-size:12px;color:#64748b;margin-bottom:6px">
-          <span><i class="fa-solid fa-user-group" style="color: rgb(249, 249, 249);"></i> ${a.registeredCount} / ${a.maxParticipants} người</span>
-          <span style="color:#ff2d55">${pct}%</span>
+          <span><i class="fa-solid fa-user-group"></i> ${a.registeredCount} / ${a.maxParticipants}</span>
+          <span style="color:#e8213a">${pct}%</span>
         </div>
-        <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
-      ` : `<div style="font-size:12px;color:#64748b"><i class="fa-solid fa-user-group" style="color: rgb(249, 249, 249);"></i> ${a.registeredCount} người đăng ký</div>`}
+        <div class="progress-bar"><div class="progress-fill" style="width:${pct}%;background:#e8213a"></div></div>
+      ` : `<div style="font-size:12px;color:#64748b"><i class="fa-solid fa-user-group"></i> ${a.registeredCount} người đăng ký</div>`}
       <div class="card-meta" style="margin-top:10px">
-        <span><i class="fa-solid fa-clock" style="color: rgb(249, 249, 249);"></i> ${Utils.formatDateTime(a.time)}</span>
-        <span><i class="fa-solid fa-location-dot" style="color: rgb(248, 117, 117);"></i> ${Utils.escapeHtml(a.location || 'TBD')}</span>
+        <span><i class="fa-solid fa-calendar-days"></i> ${Utils.formatDateTime(a.time)}</span>
+        <span><i class="fa-solid fa-location-dot"></i> ${Utils.escapeHtml(a.location || 'TBD')}</span>
       </div>
     </div>
     <div class="card-footer">
-      <a href="activities.html" class="btn-outline" style="flex:1;padding:8px;font-size:13px;text-align:center">Chi tiết</a>
-      ${a.status === 'Open' && Auth.isLoggedIn()
-        ? `<button onclick="regActivity(${a.activityID}, this)" class="btn-primary" style="padding:8px 14px;font-size:13px">Đăng ký</button>`
-        : (!Auth.isLoggedIn() && a.status === 'Open'
-            ? `<button onclick="AuthModal.open('login')" class="btn-outline" style="padding:8px 14px;font-size:13px">Đăng nhập</button>` : '')}
+      <button onclick="event.stopPropagation();showActivityDetail(${a.activityID})" class="btn-outline" style="flex:1;padding:8px;font-size:13px">
+        <i class="fa-solid fa-info-circle"></i> Chi tiết
+      </button>
     </div>
   </div>`;
 }
 
-// Render post cards
-function renderPostCard(p) {
-  const catCls = {'Tin tức':'badge-gold','Thông báo':'badge-blue','Hoạt động':'badge-open','Tuyển thành viên':'badge-red'};
-  const catIco = {'Tin tức':'📰','Thông báo':'📢','Hoạt động':'🎯','Tuyển thành viên':'🌟'};
+// Hàm render card bài viết cho trang chủ
+function renderHomePostCard(post) {
+  const catIcon = {
+    'Tin tức': '📰', 'Thông báo': '📢', 'Hoạt động': '🎯', 'Tuyển thành viên': '🌟'
+  };
+  const catClass = {
+    'Tin tức': 'badge-gold', 'Thông báo': 'badge-blue', 'Hoạt động': 'badge-open', 'Tuyển thành viên': 'badge-red'
+  };
+  
   return `
-  <div class="card" style="cursor:pointer" onclick="openPost(${p.postID})">
-    <div class="card-thumb" style="height:130px;font-size:2rem">${catIco[p.category] || '📰'}</div>
+  <div class="card" style="cursor:pointer" onclick="openPostModal(${post.postID})">
+    <div class="card-thumb" style="height:130px;font-size:2rem;background:linear-gradient(135deg,#fef2f4,#eef4fb)">
+      ${catIcon[post.category] || '📰'}
+    </div>
     <div class="card-body">
-      <span class="badge ${catCls[p.category] || 'badge-gold'}">${Utils.escapeHtml(p.category)}</span>
-      ${p.title ? `<div class="card-title">${Utils.escapeHtml(p.title)}</div>` : ''}
-      <div class="card-desc">${Utils.truncate(p.content, 80)}</div>
+      <span class="badge ${catClass[post.category] || 'badge-gold'}">${Utils.escapeHtml(post.category || 'Tin tức')}</span>
+      <div class="card-title" style="margin-top:8px">${Utils.escapeHtml(post.title || 'Bài viết')}</div>
+      <div class="card-desc">${Utils.truncate(post.content || '', 90)}</div>
       <div class="card-meta">
-        <span>✍️ ${Utils.escapeHtml(p.authorName || 'BTC')}</span>
-        <span>📅 ${Utils.formatDate(p.createdDate)}</span>
+        <span>✍️ ${Utils.escapeHtml(post.authorName || 'CLB CTXH DUT')}</span>
+        <span>📅 ${Utils.formatDate(post.createdDate || post.publishedDate)}</span>
       </div>
     </div>
   </div>`;
 }
 
-async function regActivity(id, btn) {
-  if (!Auth.isLoggedIn()) { Toast.info('Vui lòng đăng nhập'); setTimeout(() => AuthModal.open('login'), 700); return; }
-  btn.disabled = true; btn.textContent = '...';
-  try {
-    await API.register({ activityID: id });
-    Toast.success('Đăng ký thành công!');
-    btn.textContent = '✓ Đã đăng ký';
-    btn.className = 'btn-outline';
-    btn.style.cssText = 'padding:8px 14px;font-size:13px';
-  } catch(e) {
-    Toast.error(e.message);
-    btn.disabled = false; btn.textContent = 'Đăng ký';
+// Hàm mở modal bài viết
+async function openPostModal(postId) {
+  let modal = document.getElementById('postModal');
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.id = 'postModal';
+    modal.className = 'modal-overlay';
+    modal.innerHTML = '<div class="modal" style="max-width:640px" id="postModalBody"></div>';
+    document.body.appendChild(modal);
+    modal.onclick = (e) => { if (e.target === modal) modal.classList.remove('open'); };
   }
-}
-
-async function openPost(id) {
-  const modal = document.getElementById('postModal');
+  
   const body = document.getElementById('postModalBody');
   body.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
   modal.classList.add('open');
+  
   try {
-    const r = await API.getPost(id); const p = r.data;
-    const catCls = {'Tin tức':'badge-gold','Thông báo':'badge-blue','Hoạt động':'badge-open','Tuyển thành viên':'badge-red'};
+    const res = await API.getPost(postId);
+    const post = res.data;
+    const catClass = {
+      'Tin tức': 'badge-gold', 'Thông báo': 'badge-blue', 'Hoạt động': 'badge-open', 'Tuyển thành viên': 'badge-red'
+    };
     body.innerHTML = `
       <div class="modal-header">
-        <span class="badge ${catCls[p.category] || 'badge-gold'}">${Utils.escapeHtml(p.category)}</span>
+        <span class="badge ${catClass[post.category] || 'badge-gold'}">${Utils.escapeHtml(post.category || 'Tin tức')}</span>
         <button class="modal-close" onclick="document.getElementById('postModal').classList.remove('open')">✕</button>
       </div>
-      ${p.title ? `<div style="font-size:18px;font-weight:700;margin-bottom:12px">${Utils.escapeHtml(p.title)}</div>` : ''}
-      <div style="font-size:12px;color:#475569;margin-bottom:18px">
-        ✍️ ${Utils.escapeHtml(p.authorName || 'BTC')} &nbsp;·&nbsp; 📅 ${Utils.formatDateTime(p.createdDate)}
+      ${post.title ? `<div style="font-size:20px;font-weight:700;margin-bottom:12px">${Utils.escapeHtml(post.title)}</div>` : ''}
+      <div style="font-size:12px;color:#6b7280;margin-bottom:18px">
+        ✍️ ${Utils.escapeHtml(post.authorName || 'CLB CTXH DUT')} &nbsp;·&nbsp; 📅 ${Utils.formatDateTime(post.createdDate || post.publishedDate)}
       </div>
-      <div style="color:#94a3b8;line-height:1.85;white-space:pre-wrap;font-size:14px">${Utils.escapeHtml(p.content)}</div>`;
-  } catch(e) {
-    body.innerHTML = `<p style="color:#ff2d55;padding:20px">${e.message}</p>`;
+      <div style="color:#1f2937;line-height:1.8;white-space:pre-wrap;font-size:14px">${Utils.escapeHtml(post.content)}</div>
+    `;
+  } catch (err) {
+    body.innerHTML = `<div style="padding:40px;text-align:center;color:#e8213a">Lỗi tải bài viết: ${err.message}</div>`;
   }
 }
 
-document.getElementById('postModal').addEventListener('click', e => {
-  if (e.target === e.currentTarget) e.currentTarget.classList.remove('open');
-});
-
-// Load data
-async function loadHome() {
-  // Activities
-  try {
-    const r = await API.getActivities();
-    const list = (r.data?.items || []).slice(0, 3);
-    const el = document.getElementById('homeActivities');
-    if (!list.length) {
-      el.innerHTML = '<div class="empty" style="grid-column:1/-1"><div class="ico">🎯</div><p>Chưa có hoạt động nào đang mở</p></div>';
-    } else {
-      el.innerHTML = list.map(renderActCard).join('');
+// Hàm chính load dữ liệu cho trang chủ
+async function loadHomeData() {
+  // 1. Load Hoạt động nổi bật (3 hoạt động đang mở)
+  const activitiesContainer = document.getElementById('homeActivities');
+  if (activitiesContainer) {
+    activitiesContainer.innerHTML = '<div class="loading" style="grid-column:1/-1"><div class="spinner"></div><span style="margin-left:10px">Đang tải hoạt động...</span></div>';
+    
+    try {
+      const res = await API.getActivities();
+      // KIỂM TRA KỸ: API trả về dạng { data: { items: [] } } hoặc { items: [] } hoặc []
+      let allActs = [];
+      if (res.data && Array.isArray(res.data.items)) {
+        allActs = res.data.items;
+      } else if (Array.isArray(res.data)) {
+        allActs = res.data;
+      } else if (Array.isArray(res)) {
+        allActs = res;
+      } else {
+        allActs = [];
+      }
+      
+      // Lọc hoạt động đang mở (Open)
+      let openActs = allActs.filter(act => act.status === 'Open');
+      
+      // Sắp xếp theo ngày mới nhất
+      openActs.sort((a, b) => new Date(b.time) - new Date(a.time));
+      
+      // Lấy 3 hoạt động đầu
+      const featuredActs = openActs.slice(0, 3);
+      
+      if (featuredActs.length === 0) {
+        activitiesContainer.innerHTML = `
+          <div class="empty" style="grid-column:1/-1">
+            <div class="ico">🎯</div>
+            <p>Chưa có hoạt động nào đang mở</p>
+            <button class="btn-outline" style="margin-top:12px" onclick="location.href='activities.html'">Xem tất cả</button>
+          </div>`;
+      } else {
+        activitiesContainer.innerHTML = featuredActs.map(act => renderHomeActivityCard(act)).join('');
+      }
+    } catch (err) {
+      console.error('Lỗi load hoạt động:', err);
+      activitiesContainer.innerHTML = `
+        <div class="empty" style="grid-column:1/-1">
+          <div class="ico">⚠️</div>
+          <p>Không thể tải hoạt động: ${err.message}</p>
+          <button class="btn-outline" style="margin-top:12px" onclick="loadHomeData()">🔄 Thử lại</button>
+        </div>`;
     }
-  } catch(e) {
-    document.getElementById('homeActivities').innerHTML = `<div class="empty" style="grid-column:1/-1"><p>${e.message}</p></div>`;
   }
-
-  // Posts
-  try {
-    const r = await API.getPosts();
-    const list = (r.data || []).slice(0, 4);
-    const el = document.getElementById('homePosts');
-    if (!list.length) {
-      el.innerHTML = '<div class="empty" style="grid-column:1/-1"><div class="ico">📰</div><p>Chưa có bài viết nào</p></div>';
-    } else {
-      el.innerHTML = list.map(renderPostCard).join('');
+  
+  // 2. Load Bài viết nổi bật (4 bài viết mới nhất)
+  const postsContainer = document.getElementById('homePosts');
+  if (postsContainer) {
+    postsContainer.innerHTML = '<div class="loading" style="grid-column:1/-1"><div class="spinner"></div><span style="margin-left:10px">Đang tải tin tức...</span></div>';
+    
+    try {
+      const res = await API.getPosts();
+      
+      // KIỂM TRA KỸ: API trả về dạng gì?
+      let posts = [];
+      if (res.data && Array.isArray(res.data)) {
+        posts = res.data;
+      } else if (res.data && Array.isArray(res.data.items)) {
+        posts = res.data.items;
+      } else if (Array.isArray(res)) {
+        posts = res;
+      } else {
+        posts = [];
+      }
+      
+      // Đảm bảo posts là mảng trước khi sort
+      if (!Array.isArray(posts)) {
+        console.error('Posts data is not an array:', posts);
+        posts = [];
+      }
+      
+      // Lọc bài viết đã đăng (Published)
+      const publishedPosts = posts.filter(p => p.status === 'Published');
+      
+      // Sắp xếp theo ngày mới nhất
+      publishedPosts.sort((a, b) => {
+        const dateA = new Date(a.createdDate || a.publishedDate || 0);
+        const dateB = new Date(b.createdDate || b.publishedDate || 0);
+        return dateB - dateA;
+      });
+      
+      // Lấy 4 bài đầu
+      const featuredPosts = publishedPosts.slice(0, 4);
+      
+      if (featuredPosts.length === 0) {
+        postsContainer.innerHTML = `
+          <div class="empty" style="grid-column:1/-1">
+            <div class="ico">📰</div>
+            <p>Chưa có bài viết nào</p>
+          </div>`;
+      } else {
+        postsContainer.innerHTML = featuredPosts.map(post => renderHomePostCard(post)).join('');
+      }
+    } catch (err) {
+      console.error('Lỗi load bài viết:', err);
+      postsContainer.innerHTML = `
+        <div class="empty" style="grid-column:1/-1">
+          <div class="ico">⚠️</div>
+          <p>Không thể tải tin tức: ${err.message}</p>
+          <button class="btn-outline" style="margin-top:12px" onclick="loadHomeData()">🔄 Thử lại</button>
+        </div>`;
     }
-  } catch {}
+  }
 }
 
-//Cho cái giới thiệu
-document.addEventListener('DOMContentLoaded', () => {
-  // Năm thành lập
-  document.getElementById('clubAge').textContent = 
-    (new Date().getFullYear() - 2010) + '+';
+// Tính năm thành lập
+function setClubAge() {
+  const ageEl = document.getElementById('clubAge');
+  if (ageEl) {
+    ageEl.textContent = (new Date().getFullYear() - 2010) + '+';
+  }
+}
 
-  // Scroll animation
-  const aoEls = document.querySelectorAll('[data-aos]');
+// Scroll animation
+function initScrollAnimation() {
+  const aboutImages = document.querySelector('.about-images');
+  if (!aboutImages) return;
+  
   const observer = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
       if (entry.isIntersecting) {
@@ -378,20 +482,26 @@ document.addEventListener('DOMContentLoaded', () => {
         observer.unobserve(entry.target);
       }
     });
-  }, { threshold: 0.05, rootMargin: '0px 0px -30px 0px' });
+  }, { threshold: 0.2 });
+  
+  observer.observe(aboutImages);
+}
 
-  aoEls.forEach(el => {
-    const rect = el.getBoundingClientRect();
-    if (rect.top < window.innerHeight) {
-      setTimeout(() => el.classList.add('visible'), 300);
-    } else {
-      observer.observe(el);
-    }
-  });
+// Khởi tạo
+document.addEventListener('DOMContentLoaded', async () => {
+  updateNavbar();
+  setClubAge();
+  initScrollAnimation();
+  await loadHomeData();
 });
+
+// Export functions
+window.openPostModal = openPostModal;
+window.loadHomeData = loadHomeData;
 </script>
 
 <script src="api.js"></script>
+
 
 
 

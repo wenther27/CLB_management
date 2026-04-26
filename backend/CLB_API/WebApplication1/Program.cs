@@ -68,6 +68,7 @@ builder.Services.AddCors(options =>
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IActivityService, ActivityService>();
 builder.Services.AddScoped<IMemberService, MemberService>();
+builder.Services.AddScoped<IPostService, PostService>();
 
 // Background service: tự động khoá/mở hoạt động theo thời gian
 // Cấu hình tại appsettings.json > "ActivityAutoClose"

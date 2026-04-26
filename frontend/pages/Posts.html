@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tin tức – CTXH DUT</title>
+<link rel="stylesheet" href="../assets/css/style.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+</head>
+<body>
+
+<!-- Navbar -->
+<header>
+  <div class="nav-container">
+    <a href="../pages/index.html" class="logo">CTXH<span>DUT</span></a>
+    <nav class="nav-link">
+      <a href="../pages/index.html">Trang chủ</a>
+      <a href="../pages/activities.html">Hoạt động</a>
+      <a href="../pages/Posts.html" class="active">Tin Tức</a>
+      <a href="../pages/member-profile.html">Thành Viên</a>
+    </nav>
+    <div class="nav-right" id="navActions">
+      <button class="login" onclick="AuthModal.open('login')">Đăng Nhập</button>
+      <button class="signup" onclick="AuthModal.open('register')">Đăng Ký</button>
+    </div>
+  </div>
+</header>
+
+<div class="page-body">
+
+  <!-- Page Hero -->
+  <div class="page-hero">
+    <div class="container">
+      <div class="breadcrumb">
+        <a href="../pages/index.html">Trang chủ</a> › <span>Tin tức</span>
+      </div>
+      <h1>Tin tức <span>CLB</span></h1>
+      <p>Cập nhật thông tin hoạt động, thông báo và sự kiện mới nhất từ CLB CTXH DUT</p>
+    </div>
+  </div>
+
+  <!-- Content -->
+  <div class="section" style="padding-top:40px">
+    <div class="container">
+
+      <!-- Search bar -->
+      <div class="posts-filter">
+        <input id="searchPost" placeholder="🔍 Tìm kiếm bài viết..." oninput="filterPosts()">
+        <span class="posts-count" id="postsCount"></span>
+      </div>
+
+      <div class="posts-layout">
+
+        <!-- Feed chính -->
+        <div>
+          <!-- Category tags -->
+          <div style="margin-bottom:24px;display:flex;flex-wrap:wrap;gap:8px">
+            <span class="category-tag all active" onclick="filterByCategory('', this)">📰 Tất cả</span>
+            <span class="category-tag news" onclick="filterByCategory('Tin tức', this)">⭐ Tin tức</span>
+            <span class="category-tag notice" onclick="filterByCategory('Thông báo', this)">📢 Thông báo</span>
+            <span class="category-tag event" onclick="filterByCategory('Hoạt động', this)">🎯 Hoạt động</span>
+            <span class="category-tag recruit" onclick="filterByCategory('Tuyển thành viên', this)">🌟 Tuyển thành viên</span>
+          </div>
+
+          <div id="postsFeed">
+            <div class="posts-loading"><div class="spinner"></div></div>
+          </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="posts-sidebar">
+          <!-- Danh mục -->
+          <div class="sidebar-card">
+            <div class="sidebar-title">
+              <i class="fa-solid fa-folder" style="color:#e8213a"></i>
+              Danh mục
+            </div>
+            <div id="sidebarCategories">
+              <div style="font-size:13px;color:#6b7280">Đang tải...</div>
+            </div>
+          </div>
+
+          <!-- Bài viết nổi bật -->
+          <div class="sidebar-card">
+            <div class="sidebar-title">
+              <i class="fa-solid fa-fire" style="color:#f59e0b"></i>
+              Nổi bật
+            </div>
+            <div id="trendingPosts">
+              <div style="font-size:13px;color:#6b7280">Đang tải...</div>
+            </div>
+          </div>
+
+          <!-- Giới thiệu -->
+          <div class="sidebar-card" style="background:linear-gradient(135deg,rgba(232,33,58,0.05),rgba(15,76,129,0.03));border-color:rgba(232,33,58,0.15)">
+            <div style="font-size:32px;margin-bottom:10px;text-align:center">❤️</div>
+            <div style="font-size:15px;font-weight:700;margin-bottom:6px;text-align:center;color:#111827">CLB CTXH DUT</div>
+            <div style="font-size:12px;color:#6b7280;line-height:1.7;text-align:center">
+              Câu lạc bộ Công tác Xã hội<br>
+              Trường Đại học Bách Khoa Đà Nẵng
+            </div>
+            <button onclick="AuthModal.open('register')" class="btn-primary" style="width:100%;padding:10px;margin-top:16px;font-size:13px;border-radius:30px">
+              Gia nhập CLB →
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Image Lightbox -->
+<div class="lightbox-overlay" id="lightbox" onclick="closeLightbox()">
+  <img id="lightboxImg" src="" alt="">
+  <button class="lightbox-close" onclick="closeLightbox()">✕</button>
+</div>
+
+<!-- Footer -->
+<footer>
+  <div class="container">
+    <div class="footer-bottom" style="border:none;padding-top:0">
+      <span>© 2024 CLB Công Tác Xã Hội DUT</span>
+      <a href="../pages/index.html" style="color:#e8213a">← Trang chủ</a>
+    </div>
+  </div>
+</footer>
+
+<script src="../js/app/api.js"></script>
+<script src="../js/app/shared.js"></script>
+<script src="../js/app/auth-modal.js"></script>
+<script src="../js/pages/Posts.js"></script>
+</body>
+</html>
