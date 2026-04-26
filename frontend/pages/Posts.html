@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Tin tức – CTXH DUT</title>
 <link rel="stylesheet" href="../assets/css/style.css">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 
 </head>
 <body>
@@ -13,11 +13,11 @@
 <!-- Navbar -->
 <header>
   <div class="nav-container">
-    <a href="../pages/index.html" class="logo">CTXHDUT</a>
+    <a href="../pages/index.html" class="logo">CTXH<span>DUT</span></a>
     <nav class="nav-link">
       <a href="../pages/index.html">Trang chủ</a>
       <a href="../pages/activities.html">Hoạt động</a>
-      <a href="../pages/posts.html" class="active">Tin Tức</a>
+      <a href="../pages/Posts.html" class="active">Tin Tức</a>
       <a href="../pages/member-profile.html">Thành Viên</a>
     </nav>
     <div class="nav-right" id="navActions">
@@ -55,12 +55,12 @@
         <!-- Feed chính -->
         <div>
           <!-- Category tags -->
-          <div style="margin-bottom:20px;display:flex;flex-wrap:wrap">
-            <span class="category-tag all active" onclick="filterByCategory('', this)">🗂 Tất cả</span>
-            <span class="category-tag news"   onclick="filterByCategory('Tin tức', this)">📰 Tin tức</span>
+          <div style="margin-bottom:24px;display:flex;flex-wrap:wrap;gap:8px">
+            <span class="category-tag all active" onclick="filterByCategory('', this)">📰 Tất cả</span>
+            <span class="category-tag news" onclick="filterByCategory('Tin tức', this)">⭐ Tin tức</span>
             <span class="category-tag notice" onclick="filterByCategory('Thông báo', this)">📢 Thông báo</span>
-            <span class="category-tag event"  onclick="filterByCategory('Hoạt động', this)">🎯 Hoạt động</span>
-            <span class="category-tag recruit" onclick="filterByCategory('Tuyển thành viên', this)">⭐ Tuyển thành viên</span>
+            <span class="category-tag event" onclick="filterByCategory('Hoạt động', this)">🎯 Hoạt động</span>
+            <span class="category-tag recruit" onclick="filterByCategory('Tuyển thành viên', this)">🌟 Tuyển thành viên</span>
           </div>
 
           <div id="postsFeed">
@@ -72,28 +72,35 @@
         <div class="posts-sidebar">
           <!-- Danh mục -->
           <div class="sidebar-card">
-            <div class="sidebar-title">📂 Danh mục</div>
+            <div class="sidebar-title">
+              <i class="fa-solid fa-folder" style="color:#e8213a"></i>
+              Danh mục
+            </div>
             <div id="sidebarCategories">
-              <div style="font-size:13px;color:#334155">Đang tải...</div>
+              <div style="font-size:13px;color:#6b7280">Đang tải...</div>
             </div>
           </div>
 
           <!-- Bài viết nổi bật -->
           <div class="sidebar-card">
-            <div class="sidebar-title">🔥 Nổi bật</div>
+            <div class="sidebar-title">
+              <i class="fa-solid fa-fire" style="color:#f59e0b"></i>
+              Nổi bật
+            </div>
             <div id="trendingPosts">
-              <div style="font-size:13px;color:#334155">Đang tải...</div>
+              <div style="font-size:13px;color:#6b7280">Đang tải...</div>
             </div>
           </div>
 
           <!-- Giới thiệu -->
-          <div class="sidebar-card" style="background:linear-gradient(135deg,rgba(255,45,85,0.08),rgba(59,130,246,0.06));border-color:rgba(255,45,85,0.2)">
-            <div style="font-size:20px;margin-bottom:10px">❤️</div>
-            <div style="font-size:14px;font-weight:700;margin-bottom:6px">CLB CTXH DUT</div>
-            <div style="font-size:12px;color:#64748b;line-height:1.7">
-              Câu lạc bộ Công tác Xã hội Trường Đại học Bách Khoa Đà Nẵng — nơi lan tỏa yêu thương.
+          <div class="sidebar-card" style="background:linear-gradient(135deg,rgba(232,33,58,0.05),rgba(15,76,129,0.03));border-color:rgba(232,33,58,0.15)">
+            <div style="font-size:32px;margin-bottom:10px;text-align:center">❤️</div>
+            <div style="font-size:15px;font-weight:700;margin-bottom:6px;text-align:center;color:#111827">CLB CTXH DUT</div>
+            <div style="font-size:12px;color:#6b7280;line-height:1.7;text-align:center">
+              Câu lạc bộ Công tác Xã hội<br>
+              Trường Đại học Bách Khoa Đà Nẵng
             </div>
-            <button onclick="AuthModal.open('register')" class="btn-primary" style="width:100%;padding:9px;margin-top:14px;font-size:13px">
+            <button onclick="AuthModal.open('register')" class="btn-primary" style="width:100%;padding:10px;margin-top:16px;font-size:13px;border-radius:30px">
               Gia nhập CLB →
             </button>
           </div>
@@ -115,7 +122,7 @@
   <div class="container">
     <div class="footer-bottom" style="border:none;padding-top:0">
       <span>© 2024 CLB Công Tác Xã Hội DUT</span>
-      <a href="../pages/index.html" style="color:#ff2d55">← Trang chủ</a>
+      <a href="../pages/index.html" style="color:#e8213a">← Trang chủ</a>
     </div>
   </div>
 </footer>
@@ -123,380 +130,6 @@
 <script src="../js/app/api.js"></script>
 <script src="../js/app/shared.js"></script>
 <script src="../js/app/auth-modal.js"></script>
-<script>
-// ── State ──────────────────────────────────────────────────────────────────────
-let allPosts = [];
-let currentCategory = '';
-let likedPosts = new Set(JSON.parse(localStorage.getItem('ctxh_liked_posts') || '[]'));
-let likeCounts  = JSON.parse(localStorage.getItem('ctxh_like_counts') || '{}');
-
-// ── Bootstrap ─────────────────────────────────────────────────────────────────
-document.addEventListener('DOMContentLoaded', async () => {
-  updateNavbar();
-  await loadPosts();
-});
-
-// ── Load posts from API ────────────────────────────────────────────────────────
-async function loadPosts() {
-  try {
-    const r = await API.getPosts('?status=Published');
-    allPosts = r.data?.items || r.data || [];
-    renderFeed();
-    renderSidebar();
-  } catch (e) {
-    document.getElementById('postsFeed').innerHTML = `
-      <div class="empty" style="text-align:center;padding:60px 20px">
-        <div style="font-size:3rem;margin-bottom:14px">📭</div>
-        <p style="color:#ff2d55;margin-bottom:14px">${e.message}</p>
-        <button class="btn-outline" onclick="loadPosts()">🔄 Thử lại</button>
-      </div>`;
-  }
-}
-
-// ── Render full post feed ─────────────────────────────────────────────────────
-function renderFeed() {
-  const keyword = (document.getElementById('searchPost')?.value || '').toLowerCase().trim();
-
-  let filtered = allPosts.filter(p => {
-    const matchKw = !keyword
-      || (p.title || '').toLowerCase().includes(keyword)
-      || (p.content || '').toLowerCase().includes(keyword)
-      || (p.authorName || '').toLowerCase().includes(keyword);
-    const matchCat = !currentCategory || p.category === currentCategory;
-    return matchKw && matchCat;
-  });
-
-  const countEl = document.getElementById('postsCount');
-  if (countEl) countEl.textContent = `${filtered.length} bài viết`;
-
-  const feed = document.getElementById('postsFeed');
-
-  if (!filtered.length) {
-    feed.innerHTML = `
-      <div class="empty" style="text-align:center;padding:60px 20px">
-        <div style="font-size:3rem;margin-bottom:14px">🔍</div>
-        <p>Không tìm thấy bài viết phù hợp</p>
-        <button class="btn-outline" style="margin-top:12px" onclick="clearFilters()">Xóa bộ lọc</button>
-      </div>`;
-    return;
-  }
-
-  feed.innerHTML = filtered.map(p => renderPostCard(p)).join('');
-}
-
-// ── Render a single post card (Facebook-style) ────────────────────────────────
-function renderPostCard(p) {
-  const catCfg = getCatConfig(p.category);
-  const initials = getInitials(p.authorName || 'CLB');
-  const likeCount = likeCounts[p.postID] || 0;
-  const isLiked = likedPosts.has(p.postID);
-
-  // Xử lý nội dung — hiển thị đầy đủ, "xem thêm" nếu quá dài
-  const CONTENT_LIMIT = 400;
-  const fullContent = p.content || '';
-  const isLong = fullContent.length > CONTENT_LIMIT;
-  const shortContent = isLong ? fullContent.slice(0, CONTENT_LIMIT) + '...' : fullContent;
-
-  const contentHtml = isLong
-    ? `<div class="post-content-text" id="content-${p.postID}-short">${escHtml(shortContent)}</div>
-       <div class="post-content-text" id="content-${p.postID}-full" style="display:none">${escHtml(fullContent)}</div>
-       <button class="read-more-btn" id="readmore-${p.postID}" onclick="toggleReadMore(${p.postID})">Xem thêm</button>`
-    : `<div class="post-content-text">${escHtml(fullContent)}</div>`;
-
-  // Ảnh đính kèm
-  const images = p.images || [];
-  const imagesHtml = images.length > 0 ? buildImagesGrid(images) : '';
-
-  // Like section
-  const likeSection = likeCount > 0 ? `
-    <div class="post-reactions-summary">
-      <div class="reactions-left" onclick="toggleLike(${p.postID})">
-        <div class="reaction-emoji-stack">
-          <div class="reaction-emoji" style="background:#ff2d55;font-size:11px">❤️</div>
-        </div>
-        <span class="reactions-count" style="margin-left:8px">${likeCount} người thích</span>
-      </div>
-    </div>
-    <div class="post-divider"></div>
-  ` : '';
-
-  return `
-  <article class="post-card" id="post-${p.postID}">
-    <!-- Header -->
-    <div class="post-header">
-      <div class="post-avatar">${initials}</div>
-      <div class="post-author-info">
-        <div class="post-author-name">${escHtml(p.authorName || 'CLB CTXH DUT')}</div>
-        <div class="post-meta-row">
-          <span class="post-date">${Utils.formatDateTime(p.createdDate)}</span>
-          <div class="post-dot"></div>
-          <span class="badge ${catCfg.cls}" style="font-size:10px;padding:2px 7px">${escHtml(p.category)}</span>
-        </div>
-      </div>
-    </div>
-
-    <!-- Body -->
-    <div class="post-body">
-      ${p.title ? `<div class="post-title-text">${escHtml(p.title)}</div>` : ''}
-      ${contentHtml}
-      ${imagesHtml}
-    </div>
-
-    <div class="post-divider"></div>
-
-    ${likeSection}
-
-    <!-- Actions -->
-    <div class="post-actions">
-      <button class="post-action-btn ${isLiked ? 'liked' : ''}" id="like-btn-${p.postID}" onclick="toggleLike(${p.postID})">
-        <span class="btn-icon">
-          ${isLiked ? '<i class="fa-solid fa-heart"></i>' : '<i class="fa-regular fa-heart"></i>'}
-        </span>
-        <span id="like-label-${p.postID}">${isLiked ? 'Đã thích' : 'Thích'}</span>
-      </button>
-      <button class="post-action-btn" onclick="sharePost(${p.postID}, '${escHtml(p.title || p.content.slice(0,40))}')">
-        <span class="btn-icon"><i class="fa-solid fa-share-nodes"></i></span>
-        <span>Chia sẻ</span>
-      </button>
-    </div>
-  </article>`;
-}
-
-// ── Build images grid ──────────────────────────────────────────────────────────
-function buildImagesGrid(images) {
-  const count = Math.min(images.length, 3);
-  const cls = `post-images-grid count-${count}`;
-  const imgs = images.slice(0, count).map(url => {
-    const src = url.startsWith('http') ? url : `http://localhost:5190${url}`;
-    return `<img src="${src}" alt="" onclick="openLightbox('${src}')" loading="lazy" onerror="this.style.display='none'">`;
-  }).join('');
-  return `<div class="${cls}">${imgs}</div>`;
-}
-
-// ── Toggle read more / collapse ────────────────────────────────────────────────
-function toggleReadMore(postId) {
-  const shortEl = document.getElementById(`content-${postId}-short`);
-  const fullEl  = document.getElementById(`content-${postId}-full`);
-  const btn     = document.getElementById(`readmore-${postId}`);
-  const isExpanded = fullEl.style.display !== 'none';
-
-  if (isExpanded) {
-    fullEl.style.display = 'none';
-    shortEl.style.display = 'block';
-    btn.textContent = 'Xem thêm';
-  } else {
-    shortEl.style.display = 'none';
-    fullEl.style.display = 'block';
-    btn.textContent = 'Thu gọn';
-  }
-}
-
-// ── Like / Unlike ─────────────────────────────────────────────────────────────
-function toggleLike(postId) {
-  const btn = document.getElementById(`like-btn-${postId}`);
-  const lbl = document.getElementById(`like-label-${postId}`);
-
-  if (!Auth.isLoggedIn()) {
-    Toast.info('Đăng nhập để thả ❤️ bài viết');
-    setTimeout(() => AuthModal.open('login'), 600);
-    return;
-  }
-
-  const wasLiked = likedPosts.has(postId);
-
-  if (wasLiked) {
-    likedPosts.delete(postId);
-    likeCounts[postId] = Math.max(0, (likeCounts[postId] || 1) - 1);
-    btn.classList.remove('liked');
-    btn.querySelector('.btn-icon').innerHTML = '<i class="fa-regular fa-heart"></i>';
-    if (lbl) lbl.textContent = 'Thích';
-    Toast.info('Đã bỏ thích bài viết');
-  } else {
-    likedPosts.add(postId);
-    likeCounts[postId] = (likeCounts[postId] || 0) + 1;
-    btn.classList.add('liked');
-    btn.querySelector('.btn-icon').innerHTML = '<i class="fa-solid fa-heart"></i>';
-    if (lbl) lbl.textContent = 'Đã thích';
-    Toast.success('❤️ Đã thích bài viết!');
-  }
-
-  // Lưu vào localStorage
-  localStorage.setItem('ctxh_liked_posts', JSON.stringify([...likedPosts]));
-  localStorage.setItem('ctxh_like_counts', JSON.stringify(likeCounts));
-
-  // Cập nhật lại phần reactions summary
-  updateReactionsSummary(postId);
-}
-
-// ── Cập nhật reactions summary sau khi like ───────────────────────────────────
-function updateReactionsSummary(postId) {
-  // Re-render toàn bộ post card đơn giản nhất
-  const postData = allPosts.find(p => p.postID === postId);
-  if (!postData) return;
-
-  const articleEl = document.getElementById(`post-${postId}`);
-  if (!articleEl) return;
-
-  // Chỉ update phần reactions (không re-render cả card để tránh mất state "xem thêm")
-  const count = likeCounts[postId] || 0;
-  const isLiked = likedPosts.has(postId);
-
-  // Xóa reactions summary cũ
-  const existingSummary = articleEl.querySelector('.post-reactions-summary');
-  if (existingSummary) {
-    const dividerBefore = existingSummary.previousElementSibling;
-    existingSummary.remove();
-    if (dividerBefore && dividerBefore.classList.contains('post-divider')) {
-      const nextDivider = dividerBefore.nextElementSibling;
-      if (nextDivider && nextDivider.classList.contains('post-divider')) {
-        // duplicate divider
-      }
-    }
-  }
-
-  // Chèn reactions summary mới nếu count > 0
-  if (count > 0) {
-    const actionsDiv = articleEl.querySelector('.post-actions');
-    const dividerBefore = actionsDiv?.previousElementSibling;
-
-    const reactionHtml = `
-      <div class="post-reactions-summary">
-        <div class="reactions-left" onclick="toggleLike(${postId})">
-          <div class="reaction-emoji-stack">
-            <div class="reaction-emoji">❤️</div>
-          </div>
-          <span class="reactions-count" style="margin-left:8px">${count} người thích</span>
-        </div>
-      </div>`;
-
-    if (dividerBefore && dividerBefore.classList.contains('post-divider')) {
-      dividerBefore.insertAdjacentHTML('afterend', reactionHtml);
-    } else if (actionsDiv) {
-      actionsDiv.insertAdjacentHTML('beforebegin', reactionHtml);
-    }
-  }
-}
-
-// ── Share post ────────────────────────────────────────────────────────────────
-function sharePost(postId, title) {
-  if (navigator.share) {
-    navigator.share({
-      title: title || 'CLB CTXH DUT',
-      url: window.location.href
-    });
-  } else {
-    // Fallback: copy link
-    navigator.clipboard?.writeText(window.location.href).then(() => {
-      Toast.success('Đã sao chép liên kết!');
-    }).catch(() => {
-      Toast.info('Chia sẻ: ' + window.location.href);
-    });
-  }
-}
-
-// ── Sidebar ───────────────────────────────────────────────────────────────────
-function renderSidebar() {
-  // Category counts
-  const cats = {};
-  allPosts.forEach(p => { cats[p.category] = (cats[p.category] || 0) + 1; });
-
-  const catCfg = { 'Tin tức':'news', 'Thông báo':'notice', 'Hoạt động':'event', 'Tuyển thành viên':'recruit' };
-  const catIco  = { 'Tin tức':'📰', 'Thông báo':'📢', 'Hoạt động':'🎯', 'Tuyển thành viên':'⭐' };
-
-  const catHtml = Object.entries(cats).map(([name, cnt]) => `
-    <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.05);cursor:pointer"
-         onclick="filterByCategory('${name}', null)">
-      <span style="font-size:13px;color:#94a3b8">${catIco[name] || '📁'} ${name}</span>
-      <span class="badge ${catCfg[name] ? 'badge-' + (catCfg[name] === 'news' ? 'gold' : catCfg[name] === 'notice' ? 'blue' : catCfg[name] === 'event' ? 'open' : 'red') : ''}" style="font-size:11px">${cnt}</span>
-    </div>`).join('');
-
-  document.getElementById('sidebarCategories').innerHTML = catHtml || '<div style="color:#334155;font-size:13px">Chưa có danh mục</div>';
-
-  // Trending (most liked or newest)
-  const trending = [...allPosts].slice(0, 5);
-  const trendHtml = trending.map((p, i) => `
-    <div class="trending-item" onclick="scrollToPost(${p.postID})">
-      <div class="trending-num">${String(i + 1).padStart(2, '0')}</div>
-      <div>
-        <div class="trending-title">${escHtml((p.title || p.content || '').slice(0, 60))}${(p.title || p.content || '').length > 60 ? '...' : ''}</div>
-        <div class="trending-cat">${p.category || ''} · ${Utils.formatDate(p.createdDate)}</div>
-      </div>
-    </div>`).join('');
-
-  document.getElementById('trendingPosts').innerHTML = trendHtml || '<div style="color:#334155;font-size:13px">Chưa có bài viết</div>';
-}
-
-// ── Scroll to post ────────────────────────────────────────────────────────────
-function scrollToPost(postId) {
-  const el = document.getElementById(`post-${postId}`);
-  if (el) {
-    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    el.style.boxShadow = '0 0 0 2px rgba(255,45,85,0.5)';
-    setTimeout(() => el.style.boxShadow = '', 1500);
-  }
-}
-
-// ── Filters ───────────────────────────────────────────────────────────────────
-function filterByCategory(cat, clickedEl) {
-  currentCategory = cat;
-
-  // Update active tag
-  document.querySelectorAll('.category-tag').forEach(t => t.classList.remove('active'));
-  if (clickedEl) clickedEl.classList.add('active');
-
-  renderFeed();
-}
-
-function filterPosts() {
-  renderFeed();
-}
-
-function clearFilters() {
-  currentCategory = '';
-  document.getElementById('searchPost').value = '';
-  document.querySelectorAll('.category-tag').forEach((t, i) => {
-    if (i === 0) t.classList.add('active');
-    else t.classList.remove('active');
-  });
-  renderFeed();
-}
-
-// ── Lightbox ──────────────────────────────────────────────────────────────────
-function openLightbox(src) {
-  document.getElementById('lightboxImg').src = src;
-  document.getElementById('lightbox').classList.add('open');
-}
-
-function closeLightbox() {
-  document.getElementById('lightbox').classList.remove('open');
-  document.getElementById('lightboxImg').src = '';
-}
-
-document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') closeLightbox();
-});
-
-// ── Helpers ───────────────────────────────────────────────────────────────────
-function escHtml(str) {
-  const d = document.createElement('div');
-  d.appendChild(document.createTextNode(str || ''));
-  return d.innerHTML;
-}
-
-function getInitials(name) {
-  return (name || 'C').split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
-}
-
-function getCatConfig(cat) {
-  const map = {
-    'Tin tức':          { cls: 'badge-gold',  ico: '📰' },
-    'Thông báo':        { cls: 'badge-blue',  ico: '📢' },
-    'Hoạt động':        { cls: 'badge-open',  ico: '🎯' },
-    'Tuyển thành viên': { cls: 'badge-red',   ico: '⭐' },
-  };
-  return map[cat] || { cls: 'badge-closed', ico: '📁' };
-}
-</script>
-
+<script src="../js/pages/Posts.js"></script>
 </body>
 </html>
