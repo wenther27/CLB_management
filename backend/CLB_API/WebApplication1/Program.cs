@@ -6,16 +6,15 @@ using ClubManagement.API.Data;
 using ClubManagement.API.Service;
 using ClubManagement.API.AuthService;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.Extensions.FileProviders;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to container
+// ========== DATABASE ==========
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(
         builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// ========== CẤU HÌNH AUTHENTICATION ==========
+// ========== JWT CONFIG ==========
 var jwtKey = builder.Configuration["JwtSettings:SecretKey"] ??
              builder.Configuration["Jwt:Key"] ??
              "DefaultSecretKey123!@#$%^&*()_+CLUBMANAGEMENT";
@@ -28,6 +27,7 @@ var jwtAudience = builder.Configuration["JwtSettings:Audience"] ??
                   builder.Configuration["Jwt:Audience"] ??
                   "ClubManagementAPI";
 
+// ========== AUTHENTICATION ==========
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -50,12 +50,11 @@ builder.Services.AddAuthentication(options =>
 
 builder.Services.AddAuthorization();
 
-// ========== CÁC SERVICE KHÁC ==========
+// ========== CONTROLLERS ==========
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(); // ← Dòng này cần package Swashbuckle.AspNetCore
 
-// CORS
+// ========== CORS ==========
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll", policy => policy
@@ -64,44 +63,39 @@ builder.Services.AddCors(options =>
         .AllowAnyHeader());
 });
 
-// Dependency Injection
+// ========== MEMORY CACHE (OTP + pending register) ==========
+builder.Services.AddMemoryCache();
+
+// ========== DEPENDENCY INJECTION ==========
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IOtpService, OtpService>();
 builder.Services.AddScoped<IActivityService, ActivityService>();
 builder.Services.AddScoped<IMemberService, MemberService>();
 builder.Services.AddScoped<IPostService, PostService>();
 
 // Background service: tự động khoá/mở hoạt động theo thời gian
-// Cấu hình tại appsettings.json > "ActivityAutoClose"
 builder.Services.AddHostedService<ActivityAutoCloseService>();
 
-// Cấu hình upload file
+// ========== UPLOAD FILE ==========
 builder.Services.Configure<FormOptions>(options =>
 {
-    options.MultipartBodyLengthLimit = 10 * 1024 * 1024;
+    options.MultipartBodyLengthLimit = 10 * 1024 * 1024; // 10 MB
     options.ValueLengthLimit = int.MaxValue;
     options.MemoryBufferThreshold = 1024 * 1024;
 });
 
+// ========== BUILD APP ==========
 var app = builder.Build();
 
 // Tạo thư mục uploads nếu chưa tồn tại
 var uploadsFolder = Path.Combine(app.Environment.WebRootPath ?? "wwwroot", "uploads", "activities");
 if (!Directory.Exists(uploadsFolder))
-{
     Directory.CreateDirectory(uploadsFolder);
-}
 
 app.UseStaticFiles();
 
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
-
-// FIX: CORS phải đứng TRƯỚC Authentication/Authorization
-// FIX: Bỏ UseHttpsRedirection khi dev với HTTP (localhost:5190)
-//      vì redirect HTTP→HTTPS sẽ làm mất header Authorization
+// QUAN TRỌNG: thứ tự middleware
+// CORS → Authentication → Authorization → Controllers
 app.UseCors("AllowAll");
 app.UseAuthentication();
 app.UseAuthorization();

@@ -1,4 +1,4 @@
-﻿namespace ClubManagement.API.DTOs
+﻿namespace ClubManagement.API.DTOs.Common
 {
     public class ApiResponse<T>
     {

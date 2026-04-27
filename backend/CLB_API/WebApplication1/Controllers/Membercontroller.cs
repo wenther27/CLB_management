@@ -1,5 +1,6 @@
 ﻿using ClubManagement.API.DTOs;
 using ClubManagement.API.DTOs.Activityes;
+using ClubManagement.API.DTOs.Common;
 using ClubManagement.API.DTOs.Members;
 using ClubManagement.API.Service;
 using Microsoft.AspNetCore.Authorization;
