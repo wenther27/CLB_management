@@ -6,52 +6,75 @@
 <title>CTXH DUT - Kết nối Cộng đồng</title>
 <link rel="stylesheet" href="../assets/css/style.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+
 </head>
 <body>
 
-<!-- Navbar -->
+<!-- Navbar (giữ nguyên) -->
 <header>
   <div class="nav-container">
     <div class="logo">CTXHDUT</div>
-
     <nav class="nav-link">
-      <a href="../pages/index.html" class="active"> Trang chủ</a>
-      <a href="../pages/activities.html"> Hoạt động</a>
+      <a href="../pages/index.html" class="active">Trang chủ</a>
+      <a href="../pages/activities.html">Hoạt động</a>
       <a href="../pages/posts.html">Tin Tức</a>
       <a href="../pages/member-profile.html">Thành Viên</a>
     </nav>
-
     <div class="nav-right" id="navActions">
-      <input type="text" placeholder="Tìm kiếm">
-     <button class="login" onclick="AuthModal.open('login')">Đăng Nhập</button>
-     <button class="signup" onclick="AuthModal.open('register')">Đăng Ký</button>
+      <button class="login" onclick="AuthModal.open('login')">Đăng Nhập</button>
+      <button class="signup" onclick="AuthModal.open('register')">Đăng Ký</button>
     </div>
   </div>
 </header>
 
-<!-- Hero -->
+<!-- ================================================
+     HERO - Ảnh bìa sắc nét, overlay tinh chỉnh
+     ================================================ -->
 <section class="hero">
-  <!-- Ảnh nền -->
   <div class="hero-bg">
     <img src="../assets/images/backgrounds/hero_photo.jpg" alt="" class="hero-bg-img"
          onerror="this.parentElement.classList.add('no-photo')">
     <div class="hero-bg-overlay"></div>
+    <div class="hero-bg-sharpen"></div>
   </div>
 
-  <!-- Nội dung chữ đè lên -->
   <div class="hero-content">
-    <span class="tag">★ CLB Công tác xã hội DUT</span>
+    <div class="hero-tag">
+      <i class="fa-solid fa-star" style="font-size:9px"></i>
+      CLB Công tác xã hội DUT
+    </div>
     <h1>
       Kết nối Cộng đồng,<br>
       <span>Lan tỏa Yêu thương</span>
     </h1>
-    <p>
+    <p class="hero-desc">
       Câu lạc bộ Công tác Xã hội DUT – nơi các bạn sinh viên cùng nhau tạo ra
       những giá trị tích cực thông qua các hoạt động thiện nguyện đầy ý nghĩa.
     </p>
     <div class="hero-buttons">
-      <button class="btn-primary" onclick="AuthModal.open('register')">Tham gia ngay</button>
-      <button class="btn-outline" onclick="location.href='activities.html'">Xem hoạt động</button>
+      <button class="btn-primary" onclick="AuthModal.open('register')" style="padding:13px 26px;font-size:15px;font-weight:700;box-shadow:0 4px 20px rgba(232,33,58,0.4)">
+        <i class="fa-solid fa-heart-circle-plus"></i> Tham gia ngay
+      </button>
+      <button class="btn-outline" onclick="location.href='activities.html'" style="padding:13px 26px;font-size:15px;font-weight:600;border-color:rgba(255,255,255,0.4);color:#ffffff;backdrop-filter:blur(8px);background:rgba(255,255,255,0.08)">
+        <i class="fa-solid fa-calendar-heart"></i> Xem hoạt động
+      </button>
+    </div>
+
+    <!-- Thống kê nhỏ -->
+    <div class="hero-stat-row">
+      <div>
+        <div class="hero-stat-num">200+</div>
+        <div class="hero-stat-lbl">Thành viên</div>
+      </div>
+      <div>
+        <div class="hero-stat-num">50+</div>
+        <div class="hero-stat-lbl">Hoạt động</div>
+      </div>
+      <div>
+        <div class="hero-stat-num" id="heroYears">14+</div>
+        <div class="hero-stat-lbl">Năm hoạt động</div>
+      </div>
     </div>
   </div>
 </section>
@@ -61,22 +84,22 @@
   <div class="container">
     <div class="features-grid">
       <div class="feat-card">
-        <div class="ico"><i class="fa-solid fa-heart fa-beat fa-sm" style="color: rgb(255, 0, 0);"></i></div>
+        <div class="ico"><i class="fa-solid fa-heart fa-beat" style="color:#e8213a"></i></div>
         <h4>Thiện nguyện</h4>
         <p>Hỗ trợ các hoàn cảnh khó khăn, trao học bổng và quà tặng ý nghĩa</p>
       </div>
       <div class="feat-card">
-        <div class="ico"><i class="fa-solid fa-graduation-cap fa-beat" style="color: rgb(116, 192, 252);"></i></div>
+        <div class="ico"><i class="fa-solid fa-graduation-cap" style="color:#74c0fc"></i></div>
         <h4>Giảng dạy</h4>
         <p>Dạy học miễn phí, hướng nghiệp cho học sinh vùng xa</p>
       </div>
       <div class="feat-card">
-        <div class="ico"><i class="fa-solid fa-seedling fa-bounce" style="color: rgb(99, 230, 190);"></i></div>
+        <div class="ico"><i class="fa-solid fa-seedling" style="color:#63e6be"></i></div>
         <h4>Môi trường</h4>
         <p>Dọn vệ sinh, trồng cây xanh, bảo vệ môi trường Đà Nẵng</p>
       </div>
       <div class="feat-card">
-        <div class="ico"><i class="fa-solid fa-hand-holding-heart fa-beat" style="color: rgb(255, 255, 255);"></i></div>
+        <div class="ico"><i class="fa-solid fa-hand-holding-heart" style="color:#fff"></i></div>
         <h4>Kết nối</h4>
         <p>Gắn kết sinh viên, xây dựng cộng đồng DUT vững mạnh</p>
       </div>
@@ -84,14 +107,10 @@
   </div>
 </div>
 
-<!-- ================================================
-     GIỚI THIỆU CLB
-     ================================================ -->
+<!-- Giới thiệu CLB (giữ nguyên) -->
 <div class="section about-section">
   <div class="container">
     <div class="about-wrap">
-
-      <!-- Cột ảnh tròn bên trái -->
       <div class="about-images" data-aos>
         <div class="about-circle about-circle-1">
           <img src="../assets/images/backgrounds/gioithieu2.JPG" alt="Hoạt động CLB"
@@ -102,85 +121,66 @@
                onerror="this.src=''; this.parentElement.classList.add('no-img')">
         </div>
       </div>
-
-      <!-- Cột chữ bên phải -->
       <div class="about-content">
-        <div class="section-label">
-          <i class="fa-solid fa-heart" style="color:#ff2d55"></i> Giới thiệu
-        </div>
+        <div class="section-label"><i class="fa-solid fa-heart" style="color:#ff2d55"></i> Giới thiệu</div>
         <div class="about-title">CLB Công Tác Xã Hội <span>DUT</span></div>
-
-        <p class="about-desc">
-          <strong>CLB Công tác Xã hội DUT</strong> được thành lập với mục tiêu tạo ra
-          một sân chơi lành mạnh, ý nghĩa cho sinh viên Đại học Bách Khoa Đà Nẵng.
-          Chúng tôi tin rằng mỗi hành động nhỏ đều có thể tạo ra sự thay đổi lớn
-          trong cộng đồng.
-        </p>
-        <p class="about-desc">
-          Với phương châm <em>"Cho đi là còn mãi"</em>, CLB là nơi các bạn sinh viên
-          cùng nhau lan tỏa yêu thương qua các hoạt động thiện nguyện, giảng dạy
-          và bảo vệ môi trường.
-        </p>
-
-        <div class="about-slogan">
-          <i class="fa-solid fa-quote-left" style="color:#ff2d55;font-size:14px"></i>
-          &nbsp;Slogan: <strong>CTXH DUT – Kết nối trái tim, lan tỏa yêu thương</strong>
-        </div>
-
+        <p class="about-desc"><strong>CLB Công tác Xã hội DUT</strong> được thành lập với mục tiêu tạo ra một sân chơi lành mạnh, ý nghĩa cho sinh viên Đại học Bách Khoa Đà Nẵng.</p>
+        <p class="about-desc">Với phương châm <em>"Cho đi là còn mãi"</em>, CLB là nơi các bạn sinh viên cùng nhau lan tỏa yêu thương qua các hoạt động thiện nguyện, giảng dạy và bảo vệ môi trường.</p>
+        <div class="about-slogan"><i class="fa-solid fa-quote-left" style="color:#ff2d55;font-size:14px"></i>&nbsp;Slogan: <strong>CTXH DUT – Kết nối trái tim, lan tỏa yêu thương</strong></div>
         <div class="about-stats">
-          <div class="about-stat">
-            <div class="about-stat-num">200+</div>
-            <div class="about-stat-lbl">Thành viên</div>
-          </div>
-          <div class="about-stat">
-            <div class="about-stat-num">50+</div>
-            <div class="about-stat-lbl">Hoạt động</div>
-          </div>
-          <div class="about-stat">
-            <div class="about-stat-num" id="clubAge"></div>
-            <div class="about-stat-lbl">Năm thành lập</div>
-          </div>
+          <div class="about-stat"><div class="about-stat-num">200+</div><div class="about-stat-lbl">Thành viên</div></div>
+          <div class="about-stat"><div class="about-stat-num">50+</div><div class="about-stat-lbl">Hoạt động</div></div>
+          <div class="about-stat"><div class="about-stat-num" id="clubAge"></div><div class="about-stat-lbl">Năm thành lập</div></div>
         </div>
       </div>
-
     </div>
   </div>
 </div>
 
-<!-- Hoạt động nổi bật -->
-<div class="section">
+<!-- ================================================
+     HOẠT ĐỘNG NỔI BẬT - Card sáng, chữ đen
+     ================================================ -->
+<div class="section-activities">
   <div class="container">
-    <div class="section-header">
-      <div>
-        <div class="section-label"><i class="fa-solid fa-people-group fa-bounce fa-lg" style="color: rgb(239, 239, 239);"></i> Hoạt động nổi bật</div>
+    <div class="section-header" style="margin-bottom:36px">
+      <div class="section-header-light">
+        <div class="section-label"><i class="fa-solid fa-people-group"></i> Hoạt động nổi bật</div>
         <div class="section-title">Đang mở <span>đăng ký</span></div>
       </div>
-      <a href="./activities.html" class="btn-outline" style="padding:8px 18px;font-size:13px">Xem tất cả →</a>
+      <a href="./activities.html" class="btn-outline" style="padding:9px 20px;font-size:13px;color:#e8213a;border-color:#e8213a;background:#fff">
+        Xem tất cả <i class="fa-solid fa-arrow-right" style="font-size:11px"></i>
+      </a>
     </div>
     <div class="grid grid-3" id="homeActivities">
-      <div class="loading" style="grid-column:1/-1"><div class="spinner"></div></div>
+      <div class="loading" style="grid-column:1/-1;padding:60px;text-align:center">
+        <div class="spinner" style="margin:0 auto;border-top-color:#e8213a"></div>
+      </div>
     </div>
   </div>
 </div>
 
-<!-- Tin tức -->
-<!-- Tin tức -->
-<div style="background:#0d1424;border-top:1px solid rgba(255,255,255,0.05);border-bottom:1px solid rgba(255,255,255,0.05)">
-  <div class="section">
-    <div class="container">
-      <div class="section-header">
-        <div>
-          <div class="section-label"><i class="fa-solid fa-envelopes-bulk"></i> Tin tức CLB</div>
-          <div class="section-title">Thông tin <span>mới nhất</span></div>
-        </div>
-        <a href="./Posts.html" class="btn-outline" style="padding:8px 18px;font-size:13px">Xem tất cả →</a>
+<!-- ================================================
+     TIN TỨC - Card sáng đồng bộ
+     ================================================ -->
+<div class="section-posts">
+  <div class="container">
+    <div class="section-header" style="margin-bottom:36px">
+      <div class="section-header-light">
+        <div class="section-label"><i class="fa-solid fa-newspaper"></i> Tin tức CLB</div>
+        <div class="section-title">Thông tin <span>mới nhất</span></div>
       </div>
-      <div class="grid grid-4" id="homePosts">
-        <!-- JS sẽ load dữ liệu vào đây -->
+      <a href="./Posts.html" class="btn-outline" style="padding:9px 20px;font-size:13px;color:#e8213a;border-color:#e8213a;background:#fff">
+        Xem tất cả <i class="fa-solid fa-arrow-right" style="font-size:11px"></i>
+      </a>
+    </div>
+    <div class="grid grid-4" id="homePosts">
+      <div class="loading" style="grid-column:1/-1;padding:60px;text-align:center">
+        <div class="spinner" style="margin:0 auto;border-top-color:#e8213a"></div>
       </div>
     </div>
   </div>
 </div>
+
 <!-- CTA -->
 <div class="section">
   <div class="container">
@@ -188,7 +188,9 @@
       <h2>Sẵn sàng gia nhập CLB?</h2>
       <p>Hãy cùng chúng tôi tạo nên những điều ý nghĩa. Đăng ký ngay hôm nay để tham gia cộng đồng hơn 200 thành viên tích cực.</p>
       <div class="cta-buttons">
-        <button class="btn-primary" onclick="AuthModal.open('register')"><i class="fa-solid fa-heart-circle-plus" style="color: rgb(255, 255, 255);"></i> Đăng ký thành viên</button>
+        <button class="btn-primary" onclick="AuthModal.open('register')">
+          <i class="fa-solid fa-heart-circle-plus"></i> Đăng ký thành viên
+        </button>
         <button class="btn-outline" onclick="location.href='activities.html'">Khám phá hoạt động</button>
       </div>
     </div>
@@ -209,15 +211,15 @@
           <li><a href="../pages/index.html">Trang chủ</a></li>
           <li><a href="../pages/activities.html">Hoạt động</a></li>
           <li><a href="../pages/Posts.html">Tin tức</a></li>
-          <li><a href="../pages/register.html">Đăng ký thành viên</a></li>
+          <li><a href="../pages/member-profile.html">Hồ sơ</a></li>
         </ul>
       </div>
       <div>
         <h5>Liên hệ</h5>
         <ul>
-          <li><a href="#"><i class="fa-regular fa-envelope" style="color: rgb(255, 255, 255);"></i> ctxh@dut.edu.vn</a></li>
-          <li><a href="https://www.facebook.com/tran.le.minh.141006?locale=vi_VN"><i class="fa-brands fa-facebook" style="color: rgb(255, 255, 255);"></i> Facebook</a></li>
-          <li><a href="#"><i class="fa-solid fa-earth-asia" style="color: rgb(255, 255, 255);"></i> dut.udn.vn</a></li>
+          <li><a href="#"><i class="fa-regular fa-envelope"></i> ctxh@dut.edu.vn</a></li>
+          <li><a href="#"><i class="fa-brands fa-facebook"></i> Facebook</a></li>
+          <li><a href="#"><i class="fa-solid fa-earth-asia"></i> dut.udn.vn</a></li>
         </ul>
       </div>
     </div>
@@ -228,282 +230,413 @@
   </div>
 </footer>
 
-<!-- Modal đọc bài viết -->
+<!-- Modal bài viết -->
 <div class="modal-overlay" id="postModal">
   <div class="modal" style="max-width:640px" id="postModalBody"></div>
+</div>
+<!-- Detail Modal -->
+<div class="modal-overlay" id="detailModal">
+  <div class="modal" style="max-width:640px" id="detailBody"></div>
 </div>
 
 <script src="../js/app/api.js"></script>
 <script src="../js/app/shared.js"></script>
-<script src="../js/app/auth-modal.js"> </script>
-
+<script src="../js/app/auth-modal.js"></script>
 
 <script>
-// ================================================
-// INDEX PAGE - DYNAMIC DATA LOADER
-// Lấy dữ liệu động từ API cho trang chủ
-// ================================================
+// ── Helpers ───────────────────────────────────────────────────────────────────
+function fmtDT(dateStr) {
+  if (!dateStr) return null;
+  const d = new Date(dateStr);
+  const dd   = String(d.getDate()).padStart(2,'0');
+  const mm   = String(d.getMonth()+1).padStart(2,'0');
+  const yyyy = d.getFullYear();
+  const hh   = String(d.getHours()).padStart(2,'0');
+  const min  = String(d.getMinutes()).padStart(2,'0');
+  return `${dd}/${mm}/${yyyy} ${hh}:${min}`;
+}
 
-// Hàm render card hoạt động cho trang chủ
-function renderHomeActivityCard(a) {
-  const pct = a.maxParticipants ? Math.min(100, Math.round((a.registeredCount / a.maxParticipants) * 100)) : 0;
-  
-  // Ảnh đại diện hoạt động
-  const firstImage = a.image && a.image.length > 0 ? a.image[0] : null;
-  const thumbHtml = firstImage
-    ? `<img src="${firstImage.startsWith('http') ? firstImage : 'http://localhost:5190' + firstImage}" 
-           style="width:100%;height:160px;object-fit:cover;border-radius:12px 12px 0 0"
-           onerror="this.style.display='none';this.parentElement.innerHTML='<div style=\'height:160px;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#fef2f4,#eef4fb);font-size:2rem;border-radius:12px 12px 0 0\'><i class=\'fa-solid fa-heart\'></i></div>'">`
-    : `<div style="height:160px;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#fef2f4,#eef4fb);font-size:2rem;border-radius:12px 12px 0 0">
-        <i class="fa-solid fa-hand-holding-heart"></i>
-      </div>`;
-  
-  return `
-  <div class="card" style="cursor:pointer;overflow:hidden" onclick="showActivityDetail(${a.activityID})">
-    ${thumbHtml}
-    <div class="card-body">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
-        ${Utils.statusLabel(a.status)}
-      </div>
-      <div class="card-title">${Utils.escapeHtml(a.activityName)}</div>
-      <div class="card-desc">${Utils.truncate(a.description || 'Không có mô tả', 80)}</div>
-      ${a.maxParticipants ? `
-        <div style="display:flex;justify-content:space-between;font-size:12px;color:#64748b;margin-bottom:6px">
-          <span><i class="fa-solid fa-user-group"></i> ${a.registeredCount} / ${a.maxParticipants}</span>
-          <span style="color:#e8213a">${pct}%</span>
+function escHtml(str) {
+  if (!str) return '';
+  const d = document.createElement('div');
+  d.appendChild(document.createTextNode(str));
+  return d.innerHTML;
+}
+
+function truncate(str, n) {
+  if (!str) return '';
+  return str.length > n ? str.slice(0, n) + '…' : str;
+}
+
+// ── Render activity card sáng + đầy đủ thông tin ────────────────────────────
+// Đồng bộ với Activity.js renderCard — dùng chung userRegistrations map
+function renderActivityCard(a) {
+  const now = new Date();
+  const deadline  = a.registrationDeadLine ? new Date(a.registrationDeadLine) : null;
+  const openDate  = a.registrationOpenDate ? new Date(a.registrationOpenDate) : null;
+
+  const isDeadlinePassed = deadline && deadline <= now;
+  const isNotOpenYet     = openDate && openDate > now;
+  const isDeadlineNear   = deadline && !isDeadlinePassed && (deadline - now) < 24*60*60*1000;
+
+  const pct = a.maxParticipants
+    ? Math.min(100, Math.round((a.registeredCount / a.maxParticipants) * 100))
+    : 0;
+  const isFull = a.maxParticipants && a.registeredCount >= a.maxParticipants;
+
+  // Kiểm tra đã đăng ký (dùng chung map với Activity.js nếu có)
+  const homeRegs = window.homeUserRegistrations || new Map();
+  const hasRegistered = homeRegs.get(a.activityID) === true;
+
+  // Ảnh thumbnail
+  const firstImg = a.image && a.image.length > 0 ? a.image[0] : null;
+  const thumbHtml = firstImg
+    ? `<img src="${firstImg.startsWith('http') ? firstImg : 'http://localhost:5190' + firstImg}"
+            alt="${escHtml(a.activityName)}"
+            onerror="this.parentElement.innerHTML='<div class=act-card-thumb-placeholder>🎯</div>';">`
+    : `<div class="act-card-thumb-placeholder">🎯</div>`;
+
+  // Status badge
+  const statusCls = a.status === 'Open' ? 'open' : a.status === 'Cancelled' ? 'cancelled' : 'closed';
+  const statusLabel = { Open:'Đang mở', Closed:'Đã đóng', Cancelled:'Đã hủy' }[a.status] || a.status;
+
+  // Khung thời gian đăng ký
+  let regInfoHtml = '';
+  const openRow = openDate ? (() => {
+    const cls  = isNotOpenYet ? 'future' : '';
+    const badge = isNotOpenYet
+      ? `<span class="act-reg-badge future">chưa mở</span>` : '';
+    return `<div class="act-reg-row">
+      <span class="icon"><i class="fa-solid fa-calendar-check" style="color:#16a34a;font-size:11px"></i></span>
+      <span class="act-reg-label">Mở đăng ký:</span>
+      <span class="act-reg-value ${cls}">${fmtDT(a.registrationOpenDate)}${badge}</span>
+    </div>`;
+  })() : '';
+
+  const deadlineRow = deadline ? (() => {
+    const cls   = isDeadlinePassed ? 'expired' : isDeadlineNear ? 'near' : '';
+    const badge = isDeadlinePassed
+      ? `<span class="act-reg-badge expired">hết hạn</span>`
+      : isDeadlineNear
+      ? `<span class="act-reg-badge near">sắp hết</span>` : '';
+    return `<div class="act-reg-row">
+      <span class="icon"><i class="fa-solid fa-calendar-xmark" style="color:#dc2626;font-size:11px"></i></span>
+      <span class="act-reg-label">Hạn đăng ký:</span>
+      <span class="act-reg-value ${cls}">${fmtDT(a.registrationDeadLine)}${badge}</span>
+    </div>`;
+  })() : '';
+
+  if (openRow || deadlineRow) {
+    regInfoHtml = `<div class="act-reg-info">${openRow}${deadlineRow}</div>`;
+  }
+
+  // Progress bar
+  let progressHtml = '';
+  if (a.maxParticipants) {
+    const pctColor = pct >= 90 ? '#dc2626' : pct >= 70 ? '#d97706' : '#2563eb';
+    progressHtml = `
+      <div class="act-progress-wrap">
+        <div class="act-progress-label">
+          <span><i class="fa-solid fa-user-group" style="color:#94a3b8"></i> ${a.registeredCount} / ${a.maxParticipants} người</span>
+          <span class="pct${pct >= 80 ? ' high' : ''}">${pct}%</span>
         </div>
-        <div class="progress-bar"><div class="progress-fill" style="width:${pct}%;background:#e8213a"></div></div>
-      ` : `<div style="font-size:12px;color:#64748b"><i class="fa-solid fa-user-group"></i> ${a.registeredCount} người đăng ký</div>`}
-      <div class="card-meta" style="margin-top:10px">
-        <span><i class="fa-solid fa-calendar-days"></i> ${Utils.formatDateTime(a.time)}</span>
-        <span><i class="fa-solid fa-location-dot"></i> ${Utils.escapeHtml(a.location || 'TBD')}</span>
-      </div>
-    </div>
-    <div class="card-footer">
-      <button onclick="event.stopPropagation();showActivityDetail(${a.activityID})" class="btn-outline" style="flex:1;padding:8px;font-size:13px">
-        <i class="fa-solid fa-info-circle"></i> Chi tiết
-      </button>
-    </div>
-  </div>`;
-}
+        <div class="act-progress-bar">
+          <div class="act-progress-fill" style="width:${pct}%;background:${pctColor}"></div>
+        </div>
+      </div>`;
+  } else {
+    progressHtml = `<div style="font-size:12px;color:#374151;font-weight:500;margin-bottom:12px">
+      <i class="fa-solid fa-user-group"></i> ${a.registeredCount} người đăng ký
+    </div>`;
+  }
 
-// Hàm render card bài viết cho trang chủ
-function renderHomePostCard(post) {
-  const catIcon = {
-    'Tin tức': '📰', 'Thông báo': '📢', 'Hoạt động': '🎯', 'Tuyển thành viên': '🌟'
-  };
-  const catClass = {
-    'Tin tức': 'badge-gold', 'Thông báo': 'badge-blue', 'Hoạt động': 'badge-open', 'Tuyển thành viên': 'badge-red'
-  };
-  
+  // Nút hành động — đồng bộ với Activity.js
+  const _isLoggedIn = !!(localStorage.getItem('token') && localStorage.getItem('user'));
+
+  let actionBtn = '';
+  if (hasRegistered) {
+    actionBtn = `<button class="btn-act-register" style="background:#dc2626;box-shadow:0 2px 8px rgba(220,38,38,0.3)"
+                   onclick="event.stopPropagation(); homeCancelRegistration(${a.activityID}, this)">
+                  <i class="fa-solid fa-xmark"></i> Hủy đăng ký
+                </button>`;
+  } else if (a.status === 'Open' && !isFull && !isDeadlinePassed && !isNotOpenYet) {
+    if (_isLoggedIn) {
+      actionBtn = `<button class="btn-act-register" onclick="event.stopPropagation(); homeRegisterActivity(${a.activityID}, this)">
+        <i class="fa-solid fa-person-circle-plus"></i> Đăng ký
+      </button>`;
+    } else {
+      actionBtn = `<button class="btn-act-register" onclick="event.stopPropagation(); AuthModal.open('login')">
+        <i class="fa-solid fa-right-to-bracket"></i> Đăng nhập
+      </button>`;
+    }
+  } else if (isNotOpenYet) {
+    actionBtn = `<span class="act-reg-status-tag" style="background:#dbeafe;color:#1d4ed8;border:1px solid #bfdbfe;flex:1;justify-content:center;font-size:12px;padding:7px 12px;border-radius:10px;display:inline-flex;align-items:center;gap:5px">
+      <i class="fa-solid fa-hourglass-start"></i> Chưa mở đăng ký</span>`;
+  } else if (isFull) {
+    actionBtn = `<span class="act-reg-status-tag full"><i class="fa-solid fa-ban"></i> Đã đủ chỗ</span>`;
+  } else if (a.status === 'Closed' || isDeadlinePassed) {
+    actionBtn = `<span class="act-reg-status-tag closed"><i class="fa-solid fa-lock"></i> Đã đóng đăng ký</span>`;
+  } else if (a.status === 'Cancelled') {
+    actionBtn = `<span class="act-reg-status-tag cancelled"><i class="fa-solid fa-circle-xmark"></i> Đã hủy</span>`;
+  }
+
   return `
-  <div class="card" style="cursor:pointer" onclick="openPostModal(${post.postID})">
-    <div class="card-thumb" style="height:130px;font-size:2rem;background:linear-gradient(135deg,#fef2f4,#eef4fb)">
-      ${catIcon[post.category] || '📰'}
+  <div class="act-card" onclick="showActivityDetail(${a.activityID})">
+    <div class="act-card-thumb">
+      ${thumbHtml}
+      <div class="act-status-badge act-status-${statusCls}">
+        <i class="fa-solid fa-${a.status==='Open'?'circle-check':a.status==='Cancelled'?'circle-xmark':'lock'}" style="font-size:9px"></i>
+        ${statusLabel}
+      </div>
+      ${hasRegistered ? `<div style="position:absolute;top:12px;right:12px;font-size:11px;color:#ffffff;background:rgba(22,163,74,0.92);
+          padding:3px 9px;border-radius:100px;font-weight:700;backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,0.3)">
+          <i class="fa-solid fa-check"></i> Đã đăng ký</div>` : ''}
     </div>
-    <div class="card-body">
-      <span class="badge ${catClass[post.category] || 'badge-gold'}">${Utils.escapeHtml(post.category || 'Tin tức')}</span>
-      <div class="card-title" style="margin-top:8px">${Utils.escapeHtml(post.title || 'Bài viết')}</div>
-      <div class="card-desc">${Utils.truncate(post.content || '', 90)}</div>
-      <div class="card-meta">
-        <span>✍️ ${Utils.escapeHtml(post.authorName || 'CLB CTXH DUT')}</span>
-        <span>📅 ${Utils.formatDate(post.createdDate || post.publishedDate)}</span>
+    <div class="act-card-body">
+      <div class="act-card-title">${escHtml(a.activityName)}</div>
+      <div class="act-card-desc">${truncate(a.description || 'Không có mô tả', 90)}</div>
+      ${regInfoHtml}
+      ${progressHtml}
+      <div class="act-card-meta">
+        <span><i class="fa-solid fa-calendar-days"></i> ${fmtDT(a.time)}</span>
+        <span><i class="fa-solid fa-location-dot"></i> ${escHtml(a.location || 'Chưa xác định')}</span>
+      </div>
+    </div>
+    <div class="act-card-footer" onclick="event.stopPropagation()">
+      <button class="btn-act-detail" onclick="showActivityDetail(${a.activityID})">
+        <i class="fa-solid fa-circle-info"></i> Chi tiết
+      </button>
+      ${actionBtn}
+    </div>
+  </div>`;
+}
+
+// ── Render post card sáng đồng bộ ────────────────────────────────────────────
+function renderPostCardHome(post) {
+  const catMap = {
+    'Tin tức':          { cls: 'news',     ico: '📰', badge: 'news',     label: 'Tin tức' },
+    'Thông báo':        { cls: 'notice',   ico: '📢', badge: 'notice',   label: 'Thông báo' },
+    'Hoạt động':        { cls: 'activity', ico: '🎯', badge: 'activity', label: 'Hoạt động' },
+    'Tuyển thành viên': { cls: 'recruit',  ico: '⭐', badge: 'recruit',  label: 'Tuyển thành viên' },
+  };
+  const cat = catMap[post.category] || { cls: 'default', ico: '📁', badge: 'default', label: post.category || 'Tin tức' };
+  const initials = (post.authorName || 'CLB').split(' ').map(w => w[0]).join('').toUpperCase().slice(0,2);
+
+  const dateStr = post.createdDate || post.publishedDate;
+  let dateLabel = '—';
+  if (dateStr) {
+    const d = new Date(dateStr);
+    dateLabel = `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
+  }
+
+  return `
+  <div class="post-card-home" onclick="openPostModal(${post.postID})">
+    <div class="post-card-thumb post-cat-${cat.cls}">
+      <span style="font-size:2rem">${cat.ico}</span>
+    </div>
+    <div class="post-card-body">
+      <span class="post-badge post-badge-${cat.badge}">${cat.label}</span>
+      <div class="post-card-title">${escHtml(post.title || truncate(post.content, 55))}</div>
+      <div class="post-card-excerpt">${truncate(post.content || '', 100)}</div>
+      <div class="post-card-meta">
+        <div class="post-card-author">
+          <div class="post-author-avatar">${initials}</div>
+          <span>${escHtml(post.authorName || 'CLB CTXH DUT')}</span>
+        </div>
+        <span style="margin-left:auto"><i class="fa-regular fa-calendar"></i> ${dateLabel}</span>
       </div>
     </div>
   </div>`;
 }
 
-// Hàm mở modal bài viết
+// ── Quản lý trạng thái đăng ký cho trang chủ ─────────────────────────────────
+window.homeUserRegistrations = new Map();
+
+async function checkHomeRegistrations(activities) {
+  if (!(localStorage.getItem('token') && localStorage.getItem('user'))) {
+    window.homeUserRegistrations.clear();
+    return;
+  }
+  try {
+    const results = await Promise.all(
+      activities.map(async (act) => {
+        try {
+          const r = await API.hasRegistered(act.activityID);
+          return { id: act.activityID, registered: r.data === true };
+        } catch {
+          return { id: act.activityID, registered: false };
+        }
+      })
+    );
+    window.homeUserRegistrations.clear();
+    results.forEach(r => window.homeUserRegistrations.set(r.id, r.registered));
+  } catch (e) {
+    console.error('Error checking home registrations:', e);
+  }
+}
+
+// ── Đăng ký hoạt động từ trang chủ ───────────────────────────────────────────
+async function homeRegisterActivity(id, btn) {
+  if (!Auth.isLoggedIn()) {
+    Toast.info('Vui lòng đăng nhập để đăng ký');
+    setTimeout(() => AuthModal.open('login'), 600);
+    return;
+  }
+  const orig = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang xử lý...';
+  try {
+    await API.register(id);
+    Toast.success('Đăng ký tham gia thành công! 🎉');
+    window.homeUserRegistrations.set(id, true);
+    // Cập nhật count
+    const homeActs = window.homeActivitiesData || [];
+    const act = homeActs.find(a => a.activityID === id);
+    if (act) act.registeredCount = (act.registeredCount || 0) + 1;
+    renderHomeActivities(homeActs);
+  } catch (e) {
+    Toast.error(e.message || 'Đăng ký thất bại');
+    btn.disabled = false;
+    btn.innerHTML = orig;
+  }
+}
+
+// ── Hủy đăng ký từ trang chủ ─────────────────────────────────────────────────
+async function homeCancelRegistration(id, btn) {
+  if (!confirm('Bạn có chắc muốn hủy đăng ký hoạt động này?')) return;
+  const orig = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+  try {
+    await API.cancelRegistration(id);
+    Toast.success('Hủy đăng ký thành công');
+    window.homeUserRegistrations.set(id, false);
+    const homeActs = window.homeActivitiesData || [];
+    const act = homeActs.find(a => a.activityID === id);
+    if (act) act.registeredCount = Math.max(0, (act.registeredCount || 0) - 1);
+    renderHomeActivities(homeActs);
+  } catch (e) {
+    Toast.error(e.message || 'Hủy đăng ký thất bại');
+    btn.disabled = false;
+    btn.innerHTML = orig;
+  }
+}
+
+function renderHomeActivities(openActs) {
+  const actContainer = document.getElementById('homeActivities');
+  if (!openActs.length) {
+    actContainer.innerHTML = `<div class="empty" style="grid-column:1/-1;padding:60px;text-align:center;color:#374151">
+      <div style="font-size:3rem;margin-bottom:12px">🎯</div>
+      <p>Chưa có hoạt động nào đang mở</p>
+      <a href="activities.html" class="btn-outline" style="margin-top:12px;display:inline-flex;padding:9px 20px;font-size:13px">Xem tất cả hoạt động</a>
+    </div>`;
+  } else {
+    actContainer.innerHTML = openActs.map(a => renderActivityCard(a)).join('');
+  }
+}
+
+// ── Modal đọc bài viết ────────────────────────────────────────────────────────
 async function openPostModal(postId) {
   let modal = document.getElementById('postModal');
-  if (!modal) {
-    modal = document.createElement('div');
-    modal.id = 'postModal';
-    modal.className = 'modal-overlay';
-    modal.innerHTML = '<div class="modal" style="max-width:640px" id="postModalBody"></div>';
-    document.body.appendChild(modal);
-    modal.onclick = (e) => { if (e.target === modal) modal.classList.remove('open'); };
-  }
-  
   const body = document.getElementById('postModalBody');
-  body.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+  body.innerHTML = '<div class="loading"><div class="spinner" style="border-top-color:#e8213a"></div></div>';
   modal.classList.add('open');
-  
+  modal.onclick = (e) => { if (e.target === modal) modal.classList.remove('open'); };
+
   try {
     const res = await API.getPost(postId);
     const post = res.data;
-    const catClass = {
-      'Tin tức': 'badge-gold', 'Thông báo': 'badge-blue', 'Hoạt động': 'badge-open', 'Tuyển thành viên': 'badge-red'
-    };
     body.innerHTML = `
       <div class="modal-header">
-        <span class="badge ${catClass[post.category] || 'badge-gold'}">${Utils.escapeHtml(post.category || 'Tin tức')}</span>
+        <span class="badge badge-gold">${escHtml(post.category || 'Tin tức')}</span>
         <button class="modal-close" onclick="document.getElementById('postModal').classList.remove('open')">✕</button>
       </div>
-      ${post.title ? `<div style="font-size:20px;font-weight:700;margin-bottom:12px">${Utils.escapeHtml(post.title)}</div>` : ''}
-      <div style="font-size:12px;color:#6b7280;margin-bottom:18px">
-        ✍️ ${Utils.escapeHtml(post.authorName || 'CLB CTXH DUT')} &nbsp;·&nbsp; 📅 ${Utils.formatDateTime(post.createdDate || post.publishedDate)}
+      ${post.title ? `<div style="font-size:19px;font-weight:700;margin-bottom:10px;color:#0f172a">${escHtml(post.title)}</div>` : ''}
+      <div style="font-size:12px;color:#94a3b8;margin-bottom:16px">
+        ✍️ ${escHtml(post.authorName || 'CLB CTXH DUT')} &nbsp;·&nbsp; 📅 ${fmtDT(post.createdDate)}
       </div>
-      <div style="color:#1f2937;line-height:1.8;white-space:pre-wrap;font-size:14px">${Utils.escapeHtml(post.content)}</div>
-    `;
+      <div style="color:#334155;line-height:1.85;white-space:pre-wrap;font-size:14px">${escHtml(post.content)}</div>`;
   } catch (err) {
-    body.innerHTML = `<div style="padding:40px;text-align:center;color:#e8213a">Lỗi tải bài viết: ${err.message}</div>`;
+    body.innerHTML = `<div style="padding:40px;text-align:center;color:#e8213a">Lỗi: ${err.message}</div>`;
   }
 }
 
-// Hàm chính load dữ liệu cho trang chủ
+// ── Load dữ liệu trang chủ ────────────────────────────────────────────────────
 async function loadHomeData() {
-  // 1. Load Hoạt động nổi bật (3 hoạt động đang mở)
-  const activitiesContainer = document.getElementById('homeActivities');
-  if (activitiesContainer) {
-    activitiesContainer.innerHTML = '<div class="loading" style="grid-column:1/-1"><div class="spinner"></div><span style="margin-left:10px">Đang tải hoạt động...</span></div>';
-    
-    try {
-      const res = await API.getActivities();
-      // KIỂM TRA KỸ: API trả về dạng { data: { items: [] } } hoặc { items: [] } hoặc []
-      let allActs = [];
-      if (res.data && Array.isArray(res.data.items)) {
-        allActs = res.data.items;
-      } else if (Array.isArray(res.data)) {
-        allActs = res.data;
-      } else if (Array.isArray(res)) {
-        allActs = res;
-      } else {
-        allActs = [];
-      }
-      
-      // Lọc hoạt động đang mở (Open)
-      let openActs = allActs.filter(act => act.status === 'Open');
-      
-      // Sắp xếp theo ngày mới nhất
-      openActs.sort((a, b) => new Date(b.time) - new Date(a.time));
-      
-      // Lấy 3 hoạt động đầu
-      const featuredActs = openActs.slice(0, 3);
-      
-      if (featuredActs.length === 0) {
-        activitiesContainer.innerHTML = `
-          <div class="empty" style="grid-column:1/-1">
-            <div class="ico">🎯</div>
-            <p>Chưa có hoạt động nào đang mở</p>
-            <button class="btn-outline" style="margin-top:12px" onclick="location.href='activities.html'">Xem tất cả</button>
-          </div>`;
-      } else {
-        activitiesContainer.innerHTML = featuredActs.map(act => renderHomeActivityCard(act)).join('');
-      }
-    } catch (err) {
-      console.error('Lỗi load hoạt động:', err);
-      activitiesContainer.innerHTML = `
-        <div class="empty" style="grid-column:1/-1">
-          <div class="ico">⚠️</div>
-          <p>Không thể tải hoạt động: ${err.message}</p>
-          <button class="btn-outline" style="margin-top:12px" onclick="loadHomeData()">🔄 Thử lại</button>
-        </div>`;
+  // Hoạt động
+  const actContainer = document.getElementById('homeActivities');
+  try {
+    const res = await API.getActivities();
+    let acts = [];
+    if (res.data && Array.isArray(res.data.items)) acts = res.data.items;
+    else if (Array.isArray(res.data)) acts = res.data;
+    else if (Array.isArray(res)) acts = res;
+
+    const openActs = acts.filter(a => a.status === 'Open')
+      .sort((a, b) => new Date(b.createAt || b.time) - new Date(a.createAt || a.time))
+      .slice(0, 3);
+
+    window.homeActivitiesData = openActs;
+
+    // Kiểm tra trạng thái đăng ký song song
+    await checkHomeRegistrations(openActs);
+    renderHomeActivities(openActs);
+  } catch (err) {
+    actContainer.innerHTML = `<div style="grid-column:1/-1;padding:40px;text-align:center;color:#e8213a">
+      <i class="fa-solid fa-triangle-exclamation" style="font-size:2rem;margin-bottom:10px"></i>
+      <p>${err.message}</p>
+      <button class="btn-outline" style="margin-top:12px" onclick="loadHomeData()">Thử lại</button>
+    </div>`;
+  }
+
+  // Bài viết
+  const postContainer = document.getElementById('homePosts');
+  try {
+    const res = await API.getPosts();
+    let posts = [];
+    if (res.data && Array.isArray(res.data.items)) posts = res.data.items;
+    else if (res.data && Array.isArray(res.data)) posts = res.data;
+    else if (Array.isArray(res)) posts = res;
+
+    const published = posts.filter(p => p.status === 'Published')
+      .sort((a, b) => new Date(b.createdDate || 0) - new Date(a.createdDate || 0))
+      .slice(0, 4);
+
+    if (!published.length) {
+      postContainer.innerHTML = `<div class="empty" style="grid-column:1/-1;padding:40px;text-align:center;color:#64748b">
+        <p>Chưa có bài viết nào</p></div>`;
+    } else {
+      postContainer.innerHTML = published.map(p => renderPostCardHome(p)).join('');
     }
-  }
-  
-  // 2. Load Bài viết nổi bật (4 bài viết mới nhất)
-  const postsContainer = document.getElementById('homePosts');
-  if (postsContainer) {
-    postsContainer.innerHTML = '<div class="loading" style="grid-column:1/-1"><div class="spinner"></div><span style="margin-left:10px">Đang tải tin tức...</span></div>';
-    
-    try {
-      const res = await API.getPosts();
-      
-      // KIỂM TRA KỸ: API trả về dạng gì?
-      let posts = [];
-      if (res.data && Array.isArray(res.data)) {
-        posts = res.data;
-      } else if (res.data && Array.isArray(res.data.items)) {
-        posts = res.data.items;
-      } else if (Array.isArray(res)) {
-        posts = res;
-      } else {
-        posts = [];
-      }
-      
-      // Đảm bảo posts là mảng trước khi sort
-      if (!Array.isArray(posts)) {
-        console.error('Posts data is not an array:', posts);
-        posts = [];
-      }
-      
-      // Lọc bài viết đã đăng (Published)
-      const publishedPosts = posts.filter(p => p.status === 'Published');
-      
-      // Sắp xếp theo ngày mới nhất
-      publishedPosts.sort((a, b) => {
-        const dateA = new Date(a.createdDate || a.publishedDate || 0);
-        const dateB = new Date(b.createdDate || b.publishedDate || 0);
-        return dateB - dateA;
-      });
-      
-      // Lấy 4 bài đầu
-      const featuredPosts = publishedPosts.slice(0, 4);
-      
-      if (featuredPosts.length === 0) {
-        postsContainer.innerHTML = `
-          <div class="empty" style="grid-column:1/-1">
-            <div class="ico">📰</div>
-            <p>Chưa có bài viết nào</p>
-          </div>`;
-      } else {
-        postsContainer.innerHTML = featuredPosts.map(post => renderHomePostCard(post)).join('');
-      }
-    } catch (err) {
-      console.error('Lỗi load bài viết:', err);
-      postsContainer.innerHTML = `
-        <div class="empty" style="grid-column:1/-1">
-          <div class="ico">⚠️</div>
-          <p>Không thể tải tin tức: ${err.message}</p>
-          <button class="btn-outline" style="margin-top:12px" onclick="loadHomeData()">🔄 Thử lại</button>
-        </div>`;
-    }
+  } catch (err) {
+    postContainer.innerHTML = `<div style="grid-column:1/-1;padding:40px;text-align:center;color:#e8213a">${err.message}</div>`;
   }
 }
 
-// Tính năm thành lập
-function setClubAge() {
-  const ageEl = document.getElementById('clubAge');
-  if (ageEl) {
-    ageEl.textContent = (new Date().getFullYear() - 2010) + '+';
-  }
-}
+// ── Khởi tạo ──────────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  // Năm hoạt động
+  document.getElementById('clubAge').textContent = (new Date().getFullYear() - 2010) + '+';
+  document.getElementById('heroYears').textContent = (new Date().getFullYear() - 2010) + '+';
 
-// Scroll animation
-function initScrollAnimation() {
-  const aboutImages = document.querySelector('.about-images');
-  if (!aboutImages) return;
-  
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        entry.target.classList.add('visible');
-        observer.unobserve(entry.target);
-      }
-    });
-  }, { threshold: 0.2 });
-  
-  observer.observe(aboutImages);
-}
-
-// Khởi tạo
-document.addEventListener('DOMContentLoaded', async () => {
   updateNavbar();
-  setClubAge();
-  initScrollAnimation();
-  await loadHomeData();
+  loadHomeData();
+
+  // Scroll animation cho about images
+  const aboutImages = document.querySelector('.about-images');
+  if (aboutImages) {
+    const obs = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (e.isIntersecting) { e.target.classList.add('visible'); obs.unobserve(e.target); }
+      });
+    }, { threshold: 0.15 });
+    obs.observe(aboutImages);
+  }
 });
 
-// Export functions
 window.openPostModal = openPostModal;
-window.loadHomeData = loadHomeData;
+window.homeRegisterActivity = homeRegisterActivity;
+window.homeCancelRegistration = homeCancelRegistration;
 </script>
-
-<script src="api.js"></script>
-
-
-
-
 </body>
 </html>
