@@ -1,9 +1,4 @@
-// ================================================
-// Activity.js — Đồng bộ giao diện với trang chủ
-// - Dùng class act-card (giống index.html)
-// - Badge "Kết thúc" khi sự kiện đã qua
-// - Chip "Đã đăng ký" overlay trên ảnh
-// ================================================
+
 
 let allActivities = [];
 let currentPage = 1;

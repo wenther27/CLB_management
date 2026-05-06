@@ -102,27 +102,24 @@
             </button>
           </div>
         </div>
-
-        <!-- Stats nhanh (toggle) -->
         <div id="memberStatsRow" style="display:none;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px">
-          <div style="background:#ffffff;border:1px solid #e2e8f0;border-radius:10px;padding:14px;text-align:center;box-shadow:0 1px 4px rgba(0,0,0,0.06)">
+          <div style="background:#ffffff;border:1px solid #e2e8f0;border-radius:10px;padding:14px;text-align:center">
             <div style="font-size:22px;font-weight:700;color:#111827" id="ms-total">—</div>
             <div style="font-size:11px;color:#111827;text-transform:uppercase;letter-spacing:.04em;margin-top:3px">Tổng thành viên</div>
           </div>
-          <div style="background:#ffffff;border:1px solid #e2e8f0;border-radius:10px;padding:14px;text-align:center;box-shadow:0 1px 4px rgba(0,0,0,0.06)">
+          <div style="background:#ffffff;border:1px solid #e2e8f0;border-radius:10px;padding:14px;text-align:center">
             <div style="font-size:22px;font-weight:700;color:#16a34a" id="ms-active">—</div>
             <div style="font-size:11px;color:#111827;text-transform:uppercase;letter-spacing:.04em;margin-top:3px">Đang hoạt động</div>
           </div>
-          <div style="background:#ffffff;border:1px solid #e2e8f0;border-radius:10px;padding:14px;text-align:center;box-shadow:0 1px 4px rgba(0,0,0,0.06)">
+          <div style="background:#ffffff;border:1px solid #e2e8f0;border-radius:10px;padding:14px;text-align:center">
             <div style="font-size:22px;font-weight:700;color:#dc2626" id="ms-inactive">—</div>
             <div style="font-size:11px;color:#111827;text-transform:uppercase;letter-spacing:.04em;margin-top:3px">Ngừng hoạt động</div>
           </div>
-          <div style="background:#ffffff;border:1px solid #e2e8f0;border-radius:10px;padding:14px;text-align:center;box-shadow:0 1px 4px rgba(0,0,0,0.06)">
+          <div style="background:#ffffff;border:1px solid #e2e8f0;border-radius:10px;padding:14px;text-align:center">
             <div style="font-size:22px;font-weight:700;color:#b45309" id="ms-new">—</div>
             <div style="font-size:11px;color:#111827;text-transform:uppercase;letter-spacing:.04em;margin-top:3px">Mới tháng này</div>
           </div>
         </div>
-
         <div class="filter-bar" style="margin-bottom:18px">
           <input id="mSearch" placeholder="🔍 Tìm tên, email..." oninput="loadMembers()" style="flex:2">
           <select id="mStatus" onchange="loadMembers()">
@@ -166,15 +163,9 @@
           <table>
             <thead>
               <tr>
-                <th>ID</th>
-                <th>Tên hoạt động</th>
-                <th>Thời gian</th>
-                <th>Ngày mở ĐK</th>
-                <th>Hạn đăng ký</th>
-                <th>Địa điểm</th>
-                <th>Đăng ký</th>
-                <th>Trạng thái</th>
-                <th>Thao tác</th>
+                <th>ID</th><th>Tên hoạt động</th><th>Thời gian</th>
+                <th>Ngày mở ĐK</th><th>Hạn đăng ký</th><th>Địa điểm</th>
+                <th>Đăng ký</th><th>Trạng thái</th><th>Thao tác</th>
               </tr>
             </thead>
             <tbody id="aBody">
@@ -205,55 +196,128 @@
       </div>
 
       <!-- USERS -->
+      <!-- FIX: Thêm filter bar + stats + pagination đầy đủ cho UsersPanel -->
       <div class="adm-panel" id="p-users">
         <div class="adm-header">
           <h2><i class="fa-solid fa-user"></i> Người dùng</h2>
-          <button class="btn-outline btn-sm" onclick="loadUsers()">
+          <button class="btn-outline btn-sm" onclick="UsersPanel.init()">
             <i class="fa-solid fa-arrow-rotate-right"></i> Làm mới
           </button>
         </div>
+
+        <!-- Stats -->
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px">
+          <div style="background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:14px;text-align:center">
+            <div style="font-size:22px;font-weight:700;color:#111827" id="uStatTotal">—</div>
+            <div style="font-size:11px;color:#64748b;text-transform:uppercase;margin-top:3px">Tổng</div>
+          </div>
+          <div style="background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:14px;text-align:center">
+            <div style="font-size:22px;font-weight:700;color:#16a34a" id="uStatActive">—</div>
+            <div style="font-size:11px;color:#64748b;text-transform:uppercase;margin-top:3px">Hoạt động</div>
+          </div>
+          <div style="background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:14px;text-align:center">
+            <div style="font-size:22px;font-weight:700;color:#dc2626" id="uStatInactive">—</div>
+            <div style="font-size:11px;color:#64748b;text-transform:uppercase;margin-top:3px">Vô hiệu</div>
+          </div>
+          <div style="background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:14px;text-align:center">
+            <div style="font-size:22px;font-weight:700;color:#b45309" id="uStatNew">—</div>
+            <div style="font-size:11px;color:#64748b;text-transform:uppercase;margin-top:3px">Mới tháng này</div>
+          </div>
+        </div>
+
+        <!-- Filter -->
+        <div class="filter-bar" style="margin-bottom:18px">
+          <input id="uSearch" placeholder="🔍 Tìm username, email, họ tên..." oninput="UsersPanel.search()" style="flex:2">
+          <select id="uRoleFilter" onchange="UsersPanel.search()">
+            <option value="">Tất cả vai trò</option>
+          </select>
+          <select id="uActiveFilter" onchange="UsersPanel.search()">
+            <option value="">Tất cả trạng thái</option>
+            <option value="true">Hoạt động</option>
+            <option value="false">Vô hiệu</option>
+          </select>
+          <button class="btn-outline btn-sm" onclick="UsersPanel.resetSearch()">
+            <i class="fa-solid fa-xmark"></i> Xóa lọc
+          </button>
+        </div>
+
         <div class="table-wrap">
           <table>
             <thead>
-              <tr><th>ID</th><th>Username</th><th>Email</th><th>Vai trò</th><th>Trạng thái</th><th>Thao tác</th></tr>
+              <tr>
+                <th>ID</th>
+                <th>Người dùng</th>
+                <th>Email</th>
+                <th>Vai trò</th>
+                <th>Trạng thái</th>
+                <th>Ngày tạo</th>
+                <th>Thống kê</th>
+                <th>Thao tác</th>
+              </tr>
             </thead>
             <tbody id="uBody">
-              <tr><td colspan="6" class="loading"><div class="spinner"></div></td></tr>
+              <tr><td colspan="8" class="loading"><div class="spinner"></div></td></tr>
             </tbody>
           </table>
         </div>
+        <div id="uPagination" style="display:flex;gap:6px;justify-content:center;margin-top:16px;flex-wrap:wrap"></div>
       </div>
 
       <!-- LOGS -->
+      <!-- FIX: Thêm filter + pagination cho LogsPanel -->
       <div class="adm-panel" id="p-logs">
         <div class="adm-header">
-          <h2><i class="fa-solid fa-clock-rotate-left"></i> Lịch sử</h2>
-          <button class="btn-outline btn-sm" onclick="loadLogs()">
+          <h2><i class="fa-solid fa-clock-rotate-left"></i> Lịch sử hệ thống</h2>
+          <button class="btn-outline btn-sm" onclick="LogsPanel.load()">
             <i class="fa-solid fa-arrow-rotate-right"></i> Làm mới
           </button>
         </div>
+
+        <!-- Filter -->
+        <div class="filter-bar" style="margin-bottom:18px">
+          <input id="lSearch" placeholder="🔍 Tìm hành động, người dùng..." oninput="LogsPanel.search()" style="flex:2">
+          <select id="lCategory" onchange="LogsPanel.search()">
+            <option value="">Tất cả loại</option>
+            <option value="activity">Hoạt động</option>
+            <option value="post">Bài viết</option>
+            <option value="member">Thành viên</option>
+            <option value="user">Người dùng</option>
+            <option value="system">Hệ thống</option>
+            <option value="login">Đăng nhập</option>
+          </select>
+          <button class="btn-outline btn-sm" onclick="LogsPanel.resetSearch()">
+            <i class="fa-solid fa-xmark"></i> Xóa lọc
+          </button>
+        </div>
+
         <div class="table-wrap">
           <table>
             <thead>
-              <tr><th>ID</th><th>Người dùng</th><th>Hành động</th><th>Đối tượng</th><th>Thời gian</th></tr>
+              <tr>
+                <th>ID</th>
+                <th>Người dùng</th>
+                <th>Hành động</th>
+                <th>Đối tượng</th>
+                <th>Thời gian</th>
+              </tr>
             </thead>
             <tbody id="lBody">
               <tr><td colspan="5" class="loading"><div class="spinner"></div></td></tr>
             </tbody>
           </table>
         </div>
+        <div id="lPagination" style="display:flex;gap:6px;justify-content:center;margin-top:16px;flex-wrap:wrap"></div>
       </div>
 
     </main>
   </div>
 </div>
 
-<!-- Generic Modal (dùng cho form tạo/sửa) -->
+<!-- Generic Modal -->
 <div class="modal-overlay" id="gModal">
   <div class="modal" id="gModalInner" style="max-width:580px"></div>
 </div>
 
-<!-- FIX: KHÔNG đặt style="display:none" ở đây — để class .open điều khiển visibility -->
 <div class="modal-overlay" id="detailModal">
   <div class="modal" style="max-width:640px" id="detailBody"></div>
 </div>

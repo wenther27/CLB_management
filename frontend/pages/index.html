@@ -40,13 +40,10 @@
   </div>
 
   <div class="hero-content">
-    <div class="hero-tag">
-      <i class="fa-solid fa-star" style="font-size:9px"></i>
-      CLB Công tác xã hội DUT
-    </div>
+  
     <h1>
       Kết nối Cộng đồng,<br>
-      <span>Lan tỏa Yêu thương</span>
+      <span style="color:#e8213a">Lan tỏa Yêu thương </span>
     </h1>
     <p class="hero-desc">
       Câu lạc bộ Công tác Xã hội DUT – nơi các bạn sinh viên cùng nhau tạo ra
@@ -62,20 +59,7 @@
     </div>
 
     <!-- Thống kê nhỏ -->
-    <div class="hero-stat-row">
-      <div>
-        <div class="hero-stat-num">200+</div>
-        <div class="hero-stat-lbl">Thành viên</div>
-      </div>
-      <div>
-        <div class="hero-stat-num">50+</div>
-        <div class="hero-stat-lbl">Hoạt động</div>
-      </div>
-      <div>
-        <div class="hero-stat-num" id="heroYears">14+</div>
-        <div class="hero-stat-lbl">Năm hoạt động</div>
-      </div>
-    </div>
+   
   </div>
 </section>
 
@@ -84,22 +68,22 @@
   <div class="container">
     <div class="features-grid">
       <div class="feat-card">
-        <div class="ico"><i class="fa-solid fa-heart fa-beat" style="color:#e8213a"></i></div>
+        <div class="ico"><i class="fa-solid fa-heart " style="color:#e8213a"></i></div>
         <h4>Thiện nguyện</h4>
         <p>Hỗ trợ các hoàn cảnh khó khăn, trao học bổng và quà tặng ý nghĩa</p>
       </div>
       <div class="feat-card">
-        <div class="ico"><i class="fa-solid fa-graduation-cap" style="color:#74c0fc"></i></div>
+        <div class="ico"><i class="fa-solid fa-graduation-cap" style="color:#128deb"></i></div>
         <h4>Giảng dạy</h4>
         <p>Dạy học miễn phí, hướng nghiệp cho học sinh vùng xa</p>
       </div>
       <div class="feat-card">
-        <div class="ico"><i class="fa-solid fa-seedling" style="color:#63e6be"></i></div>
+        <div class="ico"><i class="fa-solid fa-seedling" style="color:#08e9a6"></i></div>
         <h4>Môi trường</h4>
         <p>Dọn vệ sinh, trồng cây xanh, bảo vệ môi trường Đà Nẵng</p>
       </div>
       <div class="feat-card">
-        <div class="ico"><i class="fa-solid fa-hand-holding-heart" style="color:#fff"></i></div>
+        <div class="ico"><i class="fa-solid fa-hand-holding-heart" style="color:#ff0404"></i></div>
         <h4>Kết nối</h4>
         <p>Gắn kết sinh viên, xây dựng cộng đồng DUT vững mạnh</p>
       </div>
@@ -616,11 +600,14 @@ async function loadHomeData() {
 // ── Khởi tạo ──────────────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
   // Năm hoạt động
-  document.getElementById('clubAge').textContent = (new Date().getFullYear() - 2010) + '+';
-  document.getElementById('heroYears').textContent = (new Date().getFullYear() - 2010) + '+';
-
-  updateNavbar();
-  loadHomeData();
+    const clubAge = document.getElementById('clubAge');
+  const heroYears = document.getElementById('heroYears');
+  
+  if (clubAge) clubAge.textContent = (new Date().getFullYear() - 2010) + '+';
+  if (heroYears) heroYears.textContent = (new Date().getFullYear() - 2010) + '+';
+  
+  if (typeof updateNavbar === 'function') updateNavbar();
+  if (typeof loadHomeData === 'function') loadHomeData();
 
   // Scroll animation cho about images
   const aboutImages = document.querySelector('.about-images');

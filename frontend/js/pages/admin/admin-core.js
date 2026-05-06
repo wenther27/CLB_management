@@ -38,12 +38,13 @@ function showP(name) {
   document.getElementById('p-' + name)?.classList.add('active');
   document.querySelector(`[data-p="${name}"]`)?.classList.add('active');
 
+  // FIX: đổi loadUsers → UsersPanel.init, loadLogs → LogsPanel.init
   const handlers = {
-    members:    loadMembers,
-    activities: loadActivitiesAdmin,
-    posts:      loadPostsAdmin,
-    users:      loadUsers,
-    logs:       loadLogs,
+    members:    () => loadMembers?.(),
+    activities: () => loadActivitiesAdmin?.(),
+    posts:      () => loadPostsAdmin?.(),
+    users:      () => UsersPanel?.init(),
+    logs:       () => LogsPanel?.init(),
   };
   handlers[name]?.();
 }
