@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quản trị – CTXH DUT</title>
+<link rel="stylesheet" href="../assets/css/style.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body>
+
+<!-- Navbar -->
+<header>
+  <div class="nav-container">
+    <a href="../pages/index.html" class="logo">CTXHDUT <span style="font-size:12px;font-weight:400;color:#475569">Admin</span></a>
+    <nav class="nav-link">
+      <a href="../pages/index.html">← Trang chủ</a>
+    </nav>
+    <div class="nav-right" id="navActions">
+      <button class="login">Đăng Nhập</button>
+    </div>
+  </div>
+</header>
+
+<div class="page-body">
+  <div class="admin-wrap">
+
+    <!-- Sidebar -->
+    <aside class="adm-sidebar">
+      <div class="adm-group-lbl">Tổng quan</div>
+      <button class="adm-item active" data-p="overview" onclick="showP('overview')">
+        <span class="ico"><i class="fa-solid fa-bars"></i></span> Bảng điều khiển
+      </button>
+
+      <div class="adm-group-lbl" style="margin-top:6px">Quản lý</div>
+      <button class="adm-item" data-p="members" onclick="showP('members')">
+        <span class="ico"><i class="fa-solid fa-user-group"></i></span> Thành viên
+      </button>
+      <button class="adm-item" data-p="activities" onclick="showP('activities')">
+        <span class="ico"><i class="fa-solid fa-heart"></i></span> Hoạt động
+      </button>
+      <button class="adm-item" data-p="posts" onclick="showP('posts')">
+        <span class="ico"><i class="fa-solid fa-newspaper"></i></span> Tin tức
+      </button>
+
+      <div class="adm-group-lbl" style="margin-top:6px" id="adminGrpLbl">Admin</div>
+      <button class="adm-item" data-p="users" onclick="showP('users')" id="usersBtn">
+        <span class="ico"><i class="fa-solid fa-user"></i></span> Người dùng
+      </button>
+      <button class="adm-item" data-p="logs" onclick="showP('logs')" id="logsBtn">
+        <span class="ico"><i class="fa-solid fa-clock-rotate-left"></i></span> Lịch sử
+      </button>
+    </aside>
+
+    <!-- Main content -->
+    <main class="adm-main">
+
+      <!-- OVERVIEW -->
+      <div class="adm-panel active" id="p-overview">
+        <div class="adm-header">
+          <h2><i class="fa-solid fa-bars"></i> Bảng điều khiển</h2>
+          <span id="dateLabel" style="font-size:13px;color:#111827"></span>
+        </div>
+        <div class="stat-row">
+          <div class="stat-box">
+            <div class="stat-ico r"><i class="fa-solid fa-user-group"></i></div>
+            <div><div class="stat-num" id="sMembers">—</div><div class="stat-lbl">Thành viên</div></div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-ico b"><i class="fa-solid fa-heart"></i></div>
+            <div><div class="stat-num" id="sOpenActs">—</div><div class="stat-lbl">Hoạt động đang mở</div></div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-ico g"><i class="fa-solid fa-newspaper"></i></div>
+            <div><div class="stat-num" id="sPosts">—</div><div class="stat-lbl">Bài viết</div></div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-ico y"><i class="fa-solid fa-calendar-alt"></i></div>
+            <div><div class="stat-num" id="sAllActs">—</div><div class="stat-lbl">Tổng hoạt động</div></div>
+          </div>
+        </div>
+        <div style="background:#ffffff;border:1px solid #e2e8f0;border-radius:12px;padding:22px">
+          <div style="font-size:15px;font-weight:700;margin-bottom:14px">Truy cập nhanh</div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap">
+            <button class="btn-primary btn-sm" onclick="showP('members')"><i class="fa-solid fa-plus"></i> Thêm thành viên</button>
+            <button class="btn-outline btn-sm" onclick="showP('activities')"><i class="fa-solid fa-plus"></i> Tạo hoạt động</button>
+            <button class="btn-outline btn-sm" onclick="showP('posts')"><i class="fa-solid fa-plus"></i> Đăng bài viết</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- MEMBERS -->
+      <div class="adm-panel" id="p-members">
+        <div class="adm-header">
+          <h2><i class="fa-solid fa-user-group"></i> Quản lý thành viên</h2>
+          <div style="display:flex;gap:8px">
+            <button class="btn-outline btn-sm" onclick="loadMemberStats()">
+              <i class="fa-solid fa-chart-pie"></i> Thống kê
+            </button>
+            <button class="btn-primary btn-sm" onclick="openMemberModal()">
+              <i class="fa-solid fa-plus"></i> Thêm
+            </button>
+          </div>
+        </div>
+
+        <!-- Stats nhanh (toggle) -->
+        <div id="memberStatsRow" style="display:none;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px">
+          <div style="background:#ffffff;border:1px solid #e2e8f0;border-radius:10px;padding:14px;text-align:center;box-shadow:0 1px 4px rgba(0,0,0,0.06)">
+            <div style="font-size:22px;font-weight:700;color:#111827" id="ms-total">—</div>
+            <div style="font-size:11px;color:#111827;text-transform:uppercase;letter-spacing:.04em;margin-top:3px">Tổng thành viên</div>
+          </div>
+          <div style="background:#ffffff;border:1px solid #e2e8f0;border-radius:10px;padding:14px;text-align:center;box-shadow:0 1px 4px rgba(0,0,0,0.06)">
+            <div style="font-size:22px;font-weight:700;color:#16a34a" id="ms-active">—</div>
+            <div style="font-size:11px;color:#111827;text-transform:uppercase;letter-spacing:.04em;margin-top:3px">Đang hoạt động</div>
+          </div>
+          <div style="background:#ffffff;border:1px solid #e2e8f0;border-radius:10px;padding:14px;text-align:center;box-shadow:0 1px 4px rgba(0,0,0,0.06)">
+            <div style="font-size:22px;font-weight:700;color:#dc2626" id="ms-inactive">—</div>
+            <div style="font-size:11px;color:#111827;text-transform:uppercase;letter-spacing:.04em;margin-top:3px">Ngừng hoạt động</div>
+          </div>
+          <div style="background:#ffffff;border:1px solid #e2e8f0;border-radius:10px;padding:14px;text-align:center;box-shadow:0 1px 4px rgba(0,0,0,0.06)">
+            <div style="font-size:22px;font-weight:700;color:#b45309" id="ms-new">—</div>
+            <div style="font-size:11px;color:#111827;text-transform:uppercase;letter-spacing:.04em;margin-top:3px">Mới tháng này</div>
+          </div>
+        </div>
+
+        <div class="filter-bar" style="margin-bottom:18px">
+          <input id="mSearch" placeholder="🔍 Tìm tên, email..." oninput="loadMembers()" style="flex:2">
+          <select id="mStatus" onchange="loadMembers()">
+            <option value="">Tất cả trạng thái</option>
+            <option value="Active">Hoạt động</option>
+            <option value="Inactive">Ngừng</option>
+            <option value="Suspended">Tạm đình chỉ</option>
+          </select>
+          <select id="mFaculty" onchange="loadMembers()">
+            <option value="">Tất cả khoa</option>
+            <option value="Điện tử - Viễn thông">Điện tử - Viễn thông</option>
+            <option value="Công nghệ thông tin">Công nghệ thông tin</option>
+            <option value="Cơ khí">Cơ khí</option>
+            <option value="Xây dựng">Xây dựng</option>
+            <option value="Kiến trúc">Kiến trúc</option>
+            <option value="Hóa">Hóa</option>
+            <option value="Môi trường">Môi trường</option>
+          </select>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>ID</th><th>Thành viên</th><th>Lớp</th><th>Khoa</th><th>Chức vụ</th><th>Trạng thái</th><th>Thao tác</th></tr>
+            </thead>
+            <tbody id="mBody">
+              <tr><td colspan="7" class="loading"><div class="spinner"></div></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ACTIVITIES -->
+      <div class="adm-panel" id="p-activities">
+        <div class="adm-header">
+          <h2><i class="fa-solid fa-heart"></i> Quản lý hoạt động</h2>
+          <button class="btn-primary btn-sm" onclick="openActModal()">
+            <i class="fa-solid fa-plus"></i> Tạo hoạt động
+          </button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Tên hoạt động</th>
+                <th>Thời gian</th>
+                <th>Ngày mở ĐK</th>
+                <th>Hạn đăng ký</th>
+                <th>Địa điểm</th>
+                <th>Đăng ký</th>
+                <th>Trạng thái</th>
+                <th>Thao tác</th>
+              </tr>
+            </thead>
+            <tbody id="aBody">
+              <tr><td colspan="9" class="loading"><div class="spinner"></div></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- POSTS -->
+      <div class="adm-panel" id="p-posts">
+        <div class="adm-header">
+          <h2><i class="fa-solid fa-newspaper"></i> Quản lý tin tức</h2>
+          <button class="btn-primary btn-sm" onclick="openPostModal()">
+            <i class="fa-solid fa-plus"></i> Đăng bài viết
+          </button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>ID</th><th>Tiêu đề</th><th>Danh mục</th><th>Ngày đăng</th><th>Trạng thái</th><th>Thao tác</th></tr>
+            </thead>
+            <tbody id="pBody">
+              <tr><td colspan="6" class="loading"><div class="spinner"></div></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- USERS -->
+      <div class="adm-panel" id="p-users">
+        <div class="adm-header">
+          <h2><i class="fa-solid fa-user"></i> Người dùng</h2>
+          <button class="btn-outline btn-sm" onclick="loadUsers()">
+            <i class="fa-solid fa-arrow-rotate-right"></i> Làm mới
+          </button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>ID</th><th>Username</th><th>Email</th><th>Vai trò</th><th>Trạng thái</th><th>Thao tác</th></tr>
+            </thead>
+            <tbody id="uBody">
+              <tr><td colspan="6" class="loading"><div class="spinner"></div></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- LOGS -->
+      <div class="adm-panel" id="p-logs">
+        <div class="adm-header">
+          <h2><i class="fa-solid fa-clock-rotate-left"></i> Lịch sử</h2>
+          <button class="btn-outline btn-sm" onclick="loadLogs()">
+            <i class="fa-solid fa-arrow-rotate-right"></i> Làm mới
+          </button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>ID</th><th>Người dùng</th><th>Hành động</th><th>Đối tượng</th><th>Thời gian</th></tr>
+            </thead>
+            <tbody id="lBody">
+              <tr><td colspan="5" class="loading"><div class="spinner"></div></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<!-- Generic Modal (dùng cho form tạo/sửa) -->
+<div class="modal-overlay" id="gModal">
+  <div class="modal" id="gModalInner" style="max-width:580px"></div>
+</div>
+
+<!-- FIX: KHÔNG đặt style="display:none" ở đây — để class .open điều khiển visibility -->
+<div class="modal-overlay" id="detailModal">
+  <div class="modal" style="max-width:640px" id="detailBody"></div>
+</div>
+
+<script src="../js/app/api.js"></script>
+<script src="../js/app/shared.js"></script>
+<script src="../js/app/auth-modal.js"></script>
+<script src="../js/pages/admin/admin-core.js"></script>
+<script src="../js/pages/admin/admin-members.js"></script>
+<script src="../js/pages/admin/admin-activities.js"></script>
+<script src="../js/pages/admin/admin-posts.js"></script>
+<script src="../js/pages/admin/admin-users-logs.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', async () => {
+  updateNavbar();
+
+  if (!Auth.isLoggedIn() || (!Auth.isExecutive() && !Auth.isAdmin())) {
+    Toast.error('Không có quyền truy cập');
+    setTimeout(() => location.href = '../pages/index.html', 800);
+    return;
+  }
+
+  if (!Auth.isAdmin()) {
+    ['adminGrpLbl', 'usersBtn', 'logsBtn'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.style.display = 'none';
+    });
+  }
+
+  // Hiển thị ngày
+  const dateLabel = document.getElementById('dateLabel');
+  if (dateLabel) {
+    dateLabel.textContent = new Date().toLocaleDateString('vi-VN', {
+      day: '2-digit', month: '2-digit', year: 'numeric'
+    });
+  }
+
+  await loadStats();
+});
+
+async function loadStats() {
+  try {
+    // Members cần auth, activities không cần
+    const [members, activities] = await Promise.all([
+      request('GET', '/members?page=1&pageSize=200', null, true),
+      request('GET', '/activities', null, false),
+    ]);
+
+    const memberList   = members.data?.items   || [];
+    const activityList = activities.data?.items || [];
+
+    const set = (id, v) => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = v;
+    };
+
+    set('sMembers',  memberList.length);
+    set('sOpenActs', activityList.filter(a => a.status === 'Open').length);
+    set('sPosts',    '—');
+    set('sAllActs',  activityList.length);
+
+  } catch(e) {
+    console.error('loadStats lỗi:', e);
+  }
+}
+
+window.loadStats = loadStats;
+
+window.showP = function(panelId) {
+  document.querySelectorAll('.adm-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.adm-item').forEach(i => i.classList.remove('active'));
+
+  const target = document.getElementById(`p-${panelId}`);
+  if (target) target.classList.add('active');
+
+  const btn = document.querySelector(`[data-p="${panelId}"]`);
+  if (btn) btn.classList.add('active');
+
+  const handlers = {
+    members:    () => loadMembers(),
+    activities: () => loadActivitiesAdmin(),
+    posts:      () => Toast.info('Tính năng Tin tức đang phát triển'),
+    users:      () => Auth.isAdmin() && loadUsers(),
+    logs:       () => Auth.isAdmin() && loadLogs(),
+  };
+
+  handlers[panelId]?.();
+};
+</script>
+</body>
+</html>

@@ -1,0 +1,96 @@
+<!--
+  THAY THẾ phần <!-- MEMBERS --> trong Admin-dashboard.html bằng đoạn này:
+-->
+
+<!-- MEMBERS -->
+<div class="adm-panel" id="p-members">
+  <div class="adm-header">
+    <h2><i class="fa-solid fa-user-group" style="color:rgb(255,255,255)"></i> Quản lý thành viên</h2>
+    <div style="display:flex;gap:8px">
+      <button class="btn-outline btn-sm" onclick="loadMemberStats()">
+        <i class="fa-solid fa-chart-pie"></i> Thống kê
+      </button>
+      <button class="btn-primary btn-sm" onclick="openMemberModal()">
+        <i class="fa-solid fa-plus" style="color:rgb(255,255,255)"></i> Thêm
+      </button>
+    </div>
+  </div>
+
+  <!-- Stats nhanh -->
+  <div id="memberStatsRow" style="display:none;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px">
+    <div style="background:#111827;border:1px solid rgba(255,255,255,0.06);border-radius:10px;padding:14px;text-align:center">
+      <div style="font-size:22px;font-weight:700" id="ms-total">—</div>
+      <div style="font-size:11px;color:#475569;text-transform:uppercase;letter-spacing:.04em;margin-top:3px">Tổng thành viên</div>
+    </div>
+    <div style="background:#111827;border:1px solid rgba(255,255,255,0.06);border-radius:10px;padding:14px;text-align:center">
+      <div style="font-size:22px;font-weight:700;color:#22c55e" id="ms-active">—</div>
+      <div style="font-size:11px;color:#475569;text-transform:uppercase;letter-spacing:.04em;margin-top:3px">Đang hoạt động</div>
+    </div>
+    <div style="background:#111827;border:1px solid rgba(255,255,255,0.06);border-radius:10px;padding:14px;text-align:center">
+      <div style="font-size:22px;font-weight:700;color:#ff2d55" id="ms-inactive">—</div>
+      <div style="font-size:11px;color:#475569;text-transform:uppercase;letter-spacing:.04em;margin-top:3px">Ngừng hoạt động</div>
+    </div>
+    <div style="background:#111827;border:1px solid rgba(255,255,255,0.06);border-radius:10px;padding:14px;text-align:center">
+      <div style="font-size:22px;font-weight:700;color:#f59e0b" id="ms-new">—</div>
+      <div style="font-size:11px;color:#475569;text-transform:uppercase;letter-spacing:.04em;margin-top:3px">Mới tháng này</div>
+    </div>
+  </div>
+
+  <!-- Filter -->
+  <div class="filter-bar" style="margin-bottom:18px">
+    <input id="mSearch" placeholder="🔍 Tìm tên, email..." oninput="loadMembers()" style="flex:2">
+    <select id="mStatus" onchange="loadMembers()">
+      <option value="">Tất cả trạng thái</option>
+      <option value="Active">Hoạt động</option>
+      <option value="Inactive">Ngừng</option>
+      <option value="Suspended">Tạm đình chỉ</option>
+    </select>
+    <select id="mFaculty" onchange="loadMembers()">
+      <option value="">Tất cả khoa</option>
+      <option value="Điện tử - Viễn thông">Điện tử - Viễn thông</option>
+      <option value="Công nghệ thông tin">Công nghệ thông tin</option>
+      <option value="Cơ khí">Cơ khí</option>
+      <option value="Xây dựng">Xây dựng</option>
+      <option value="Kiến trúc">Kiến trúc</option>
+      <option value="Hóa">Hóa</option>
+      <option value="Môi trường">Môi trường</option>
+    </select>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Thành viên</th>
+          <th>Lớp</th>
+          <th>Khoa</th>
+          <th>Chức vụ</th>
+          <th>Trạng thái</th>
+          <th>Thao tác</th>
+        </tr>
+      </thead>
+      <tbody id="mBody">
+        <tr><td colspan="7" class="loading"><div class="spinner"></div></td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!--
+  THÊM hàm loadMemberStats() vào Admin.js:
+
+  async function loadMemberStats() {
+    const row = document.getElementById('memberStatsRow');
+    row.style.display = row.style.display === 'none' ? 'grid' : 'none';
+    if (row.style.display === 'none') return;
+    try {
+      const r = await request('GET', '/members/stats', null, true);
+      const s = r.data;
+      document.getElementById('ms-total').textContent   = s.totalMembers;
+      document.getElementById('ms-active').textContent  = s.activeMembers;
+      document.getElementById('ms-inactive').textContent= s.inactiveMembers;
+      document.getElementById('ms-new').textContent     = s.newThisMonth;
+    } catch(e) { Toast.error(e.message); }
+  }
+-->

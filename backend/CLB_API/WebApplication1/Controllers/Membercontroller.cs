@@ -16,10 +16,12 @@ namespace ClubManagement.API.Controllers
         private readonly IMemberService _memberService;
         public MemberController(IMemberService memberService) => _memberService = memberService;
 
-        private int GetUserId() => int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "0");
-        private string GetUserRole() => User.FindFirstValue(ClaimTypes.Role) ?? "Member";
+        private int GetUserId() =>
+            int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "0");
+        private string GetUserRole() =>
+            User.FindFirstValue(ClaimTypes.Role) ?? "Member";
 
-        // GET /api/members  → Admin/Board xem danh sách
+        // GET /api/members
         [HttpGet]
         [Authorize(Roles = "Admin,ExecutiveBoard")]
         public async Task<IActionResult> GetAll([FromQuery] MemberQueryDTO query)
@@ -28,7 +30,7 @@ namespace ClubManagement.API.Controllers
             return Ok(ApiResponse<PagedResultDTO<MemberDTO>>.Ok(result, "Lấy danh sách thành viên thành công"));
         }
 
-        // GET /api/members/stats  → Admin xem thống kê
+        // GET /api/members/stats
         [HttpGet("stats")]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> GetStats()
@@ -37,7 +39,7 @@ namespace ClubManagement.API.Controllers
             return Ok(ApiResponse<MemberStatsDTO>.Ok(stats, "Lấy thống kê thành công"));
         }
 
-        // GET /api/members/me  → Thành viên xem profile bản thân
+        // GET /api/members/me
         [HttpGet("me")]
         public async Task<IActionResult> GetMyProfile()
         {
@@ -47,7 +49,7 @@ namespace ClubManagement.API.Controllers
             return Ok(ApiResponse<MemberDTO>.Ok(result, "Lấy thông tin profile thành công"));
         }
 
-        // GET /api/members/{id}  → Admin/Board xem chi tiết
+        // GET /api/members/{id}
         [HttpGet("{id:int}")]
         [Authorize(Roles = "Admin,ExecutiveBoard")]
         public async Task<IActionResult> GetById(int id)
@@ -58,7 +60,7 @@ namespace ClubManagement.API.Controllers
             return Ok(ApiResponse<MemberDTO>.Ok(result, "Lấy thông tin thành viên thành công"));
         }
 
-        // PUT /api/members/me  → Thành viên tự cập nhật profile
+        // PUT /api/members/me  — cập nhật thông tin cơ bản
         [HttpPut("me")]
         public async Task<IActionResult> UpdateMyProfile([FromBody] UpdateProfileDTO dto)
         {
@@ -68,7 +70,21 @@ namespace ClubManagement.API.Controllers
             return Ok(ApiResponse<MemberDTO>.Ok(result, "Cập nhật profile thành công"));
         }
 
-        // PUT /api/members/{id}  → Admin cập nhật (kể cả Position, Status)
+        // PUT /api/members/me/avatar  — cập nhật ảnh đại diện
+        [HttpPut("me/avatar")]
+        public async Task<IActionResult> UpdateMyAvatar([FromBody] UpdateAvatarDTO dto)
+        {
+            if (string.IsNullOrWhiteSpace(dto.AvatarUrl))
+                return BadRequest(ApiResponse<string>.Fail("avatarUrl không được để trống"));
+
+            var result = await _memberService.UpdateAvatarAsync(GetUserId(), dto);
+            if (result == null)
+                return NotFound(ApiResponse<string>.Fail("Không tìm thấy thành viên"));
+
+            return Ok(ApiResponse<MemberDTO>.Ok(result, "Cập nhật ảnh đại diện thành công"));
+        }
+
+        // PUT /api/members/{id}  — Admin cập nhật toàn bộ
         [HttpPut("{id:int}")]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> AdminUpdate(int id, [FromBody] UpdateMemberDTO dto)
@@ -79,7 +95,7 @@ namespace ClubManagement.API.Controllers
             return Ok(ApiResponse<MemberDTO>.Ok(result, "Cập nhật thành viên thành công"));
         }
 
-        // PATCH /api/members/{id}/deactivate  → Admin khóa tài khoản
+        // PATCH /api/members/{id}/deactivate
         [HttpPatch("{id:int}/deactivate")]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Deactivate(int id)
@@ -90,7 +106,7 @@ namespace ClubManagement.API.Controllers
             return Ok(ApiResponse<string>.Ok("Deactivated", "Vô hiệu hóa thành công"));
         }
 
-        // POST /api/members/me/change-password  → Thành viên đổi mật khẩu
+        // POST /api/members/me/change-password
         [HttpPost("me/change-password")]
         public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDTO dto)
         {

@@ -1,0 +1,17 @@
+# Visual Studio
+.vs/
+bin/
+obj/
+*.user
+*.suo
+*.pdb
+
+# Build
+*.exe
+*.dll
+
+# Node
+node_modules/
+
+# Logs
+*.log

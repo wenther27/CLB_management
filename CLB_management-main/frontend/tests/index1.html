@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CTXH DUT - Kết nối Cộng đồng</title>
+<link rel="stylesheet" href="css.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+</head>
+<body>
+
+<!-- Navbar -->
+<header>
+  <div class="nav-container">
+    <div class="logo">CTXHDUT</div>
+
+    <nav class="nav-link">
+      <a href="index1.html" class="active"> Trang chủ</a>
+      <a href="activities.html"> Hoạt động</a>
+      <a href="posts.html">Tin Tức</a>
+      <a href="member-profile.html">Thành Viên</a>
+    </nav>
+
+    <div class="nav-right" id="navActions">
+      <input type="text" placeholder="Tìm kiếm">
+     <button class="login" onclick="AuthModal.open('login')">Đăng Nhập</button>
+     <button class="signup" onclick="AuthModal.open('register')">Đăng Ký</button>
+    </div>
+  </div>
+</header>
+
+<!-- Hero -->
+<section class="hero">
+  <!-- Ảnh nền -->
+  <div class="hero-bg">
+    <img src="../assets/images/backgrounds/hero_photo.jpg" alt="" class="hero-bg-img"
+         onerror="this.parentElement.classList.add('no-photo')">
+    <div class="hero-bg-overlay"></div>
+  </div>
+
+  <!-- Nội dung chữ đè lên -->
+  <div class="hero-content">
+    <span class="tag">★ CLB Công tác xã hội DUT</span>
+    <h1>
+      Kết nối Cộng đồng,<br>
+      <span>Lan tỏa Yêu thương</span>
+    </h1>
+    <p>
+      Câu lạc bộ Công tác Xã hội DUT – nơi các bạn sinh viên cùng nhau tạo ra
+      những giá trị tích cực thông qua các hoạt động thiện nguyện đầy ý nghĩa.
+    </p>
+    <div class="hero-buttons">
+      <button class="btn-primary" onclick="AuthModal.open('register')">Tham gia ngay</button>
+      <button class="btn-outline" onclick="location.href='activities.html'">Xem hoạt động</button>
+    </div>
+  </div>
+</section>
+
+<!-- Features -->
+<div class="features">
+  <div class="container">
+    <div class="features-grid">
+      <div class="feat-card">
+        <div class="ico"><i class="fa-solid fa-heart fa-beat fa-sm" style="color: rgb(255, 0, 0);"></i></div>
+        <h4>Thiện nguyện</h4>
+        <p>Hỗ trợ các hoàn cảnh khó khăn, trao học bổng và quà tặng ý nghĩa</p>
+      </div>
+      <div class="feat-card">
+        <div class="ico"><i class="fa-solid fa-graduation-cap fa-beat" style="color: rgb(116, 192, 252);"></i></div>
+        <h4>Giảng dạy</h4>
+        <p>Dạy học miễn phí, hướng nghiệp cho học sinh vùng xa</p>
+      </div>
+      <div class="feat-card">
+        <div class="ico"><i class="fa-solid fa-seedling fa-bounce" style="color: rgb(99, 230, 190);"></i></div>
+        <h4>Môi trường</h4>
+        <p>Dọn vệ sinh, trồng cây xanh, bảo vệ môi trường Đà Nẵng</p>
+      </div>
+      <div class="feat-card">
+        <div class="ico"><i class="fa-solid fa-hand-holding-heart fa-beat" style="color: rgb(255, 255, 255);"></i></div>
+        <h4>Kết nối</h4>
+        <p>Gắn kết sinh viên, xây dựng cộng đồng DUT vững mạnh</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================================================
+     GIỚI THIỆU CLB
+     ================================================ -->
+<div class="section about-section">
+  <div class="container">
+    <div class="about-wrap">
+
+      <!-- Cột ảnh tròn bên trái -->
+      <div class="about-images" data-aos>
+        <div class="about-circle about-circle-1">
+          <img src="../assets/images/backgrounds/gioithieu2.JPG" alt="Hoạt động CLB"
+               onerror="this.src=''; this.parentElement.classList.add('no-img')">
+        </div>
+        <div class="about-circle about-circle-2">
+          <img src="../assets/images/backgrounds/gioithieu1.jpg" alt="Thành viên CLB"
+               onerror="this.src=''; this.parentElement.classList.add('no-img')">
+        </div>
+      </div>
+
+      <!-- Cột chữ bên phải -->
+      <div class="about-content">
+        <div class="section-label">
+          <i class="fa-solid fa-heart" style="color:#ff2d55"></i> Giới thiệu
+        </div>
+        <div class="about-title">CLB Công Tác Xã Hội <span>DUT</span></div>
+
+        <p class="about-desc">
+          <strong>CLB Công tác Xã hội DUT</strong> được thành lập với mục tiêu tạo ra
+          một sân chơi lành mạnh, ý nghĩa cho sinh viên Đại học Bách Khoa Đà Nẵng.
+          Chúng tôi tin rằng mỗi hành động nhỏ đều có thể tạo ra sự thay đổi lớn
+          trong cộng đồng.
+        </p>
+        <p class="about-desc">
+          Với phương châm <em>"Cho đi là còn mãi"</em>, CLB là nơi các bạn sinh viên
+          cùng nhau lan tỏa yêu thương qua các hoạt động thiện nguyện, giảng dạy
+          và bảo vệ môi trường.
+        </p>
+
+        <div class="about-slogan">
+          <i class="fa-solid fa-quote-left" style="color:#ff2d55;font-size:14px"></i>
+          &nbsp;Slogan: <strong>CTXH DUT – Kết nối trái tim, lan tỏa yêu thương</strong>
+        </div>
+
+        <div class="about-stats">
+          <div class="about-stat">
+            <div class="about-stat-num">200+</div>
+            <div class="about-stat-lbl">Thành viên</div>
+          </div>
+          <div class="about-stat">
+            <div class="about-stat-num">50+</div>
+            <div class="about-stat-lbl">Hoạt động</div>
+          </div>
+          <div class="about-stat">
+            <div class="about-stat-num" id="clubAge"></div>
+            <div class="about-stat-lbl">Năm thành lập</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Hoạt động nổi bật -->
+<div class="section">
+  <div class="container">
+    <div class="section-header">
+      <div>
+        <div class="section-label"><i class="fa-solid fa-people-group fa-bounce fa-lg" style="color: rgb(239, 239, 239);"></i> Hoạt động nổi bật</div>
+        <div class="section-title">Đang mở <span>đăng ký</span></div>
+      </div>
+      <a href="activities.html" class="btn-outline" style="padding:8px 18px;font-size:13px">Xem tất cả →</a>
+    </div>
+    <div class="grid grid-3" id="homeActivities">
+      <div class="loading" style="grid-column:1/-1"><div class="spinner"></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- Tin tức -->
+<div style="background:#0d1424;border-top:1px solid rgba(255,255,255,0.05);border-bottom:1px solid rgba(255,255,255,0.05)">
+  <div class="section">
+    <div class="container">
+      <div class="section-header">
+        <div>
+          <div class="section-label"><i class="fa-solid fa-envelopes-bulk fa-bounce" style="color: rgb(239, 239, 239);"></i> Tin tức CLB</div>
+          <div class="section-title">Thông tin <span>mới nhất</span></div>
+        </div>
+        <a href="posts.html" class="btn-outline" style="padding:8px 18px;font-size:13px">Xem tất cả →</a>
+      </div>
+      <div class="grid grid-4" id="homePosts">
+        <div class="loading" style="grid-column:1/-1"><div class="spinner"></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CTA -->
+<div class="section">
+  <div class="container">
+    <div class="cta-section">
+      <h2>Sẵn sàng gia nhập CLB?</h2>
+      <p>Hãy cùng chúng tôi tạo nên những điều ý nghĩa. Đăng ký ngay hôm nay để tham gia cộng đồng hơn 200 thành viên tích cực.</p>
+      <div class="cta-buttons">
+        <button class="btn-primary" onclick="AuthModal.open('register')"><i class="fa-solid fa-heart-circle-plus" style="color: rgb(255, 255, 255);"></i> Đăng ký thành viên</button>
+        <button class="btn-outline" onclick="location.href='activities.html'">Khám phá hoạt động</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Footer -->
+<footer>
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <div class="name">CTXH<span>DUT</span></div>
+        <p>Câu lạc bộ Công tác Xã hội<br>Trường Đại học Bách Khoa Đà Nẵng<br>54 Nguyễn Lương Bằng, Đà Nẵng</p>
+      </div>
+      <div>
+        <h5>Liên kết</h5>
+        <ul>
+          <li><a href="index1.html">Trang chủ</a></li>
+          <li><a href="activities.html">Hoạt động</a></li>
+          <li><a href="posts.html">Tin tức</a></li>
+          <li><a href="register.html">Đăng ký thành viên</a></li>
+        </ul>
+      </div>
+      <div>
+        <h5>Liên hệ</h5>
+        <ul>
+          <li><a href="#"><i class="fa-regular fa-envelope" style="color: rgb(255, 255, 255);"></i> ctxh@dut.edu.vn</a></li>
+          <li><a href="https://www.facebook.com/tran.le.minh.141006?locale=vi_VN"><i class="fa-brands fa-facebook" style="color: rgb(255, 255, 255);"></i> Facebook</a></li>
+          <li><a href="#"><i class="fa-solid fa-earth-asia" style="color: rgb(255, 255, 255);"></i> dut.udn.vn</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2024 CLB Công Tác Xã Hội DUT</span>
+      <span>Made with ❤️ for the community</span>
+    </div>
+  </div>
+</footer>
+
+<!-- Modal đọc bài viết -->
+<div class="modal-overlay" id="postModal">
+  <div class="modal" style="max-width:640px" id="postModalBody"></div>
+</div>
+
+<script src="api.js"></script>
+<script src="shared.js"></script>
+<script src="auth-modal.js"> </script>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  // Năm thành lập
+  document.getElementById('clubAge').textContent = 
+    (new Date().getFullYear() - 2010) + '+';
+
+  // Scroll animation
+  const aoEls = document.querySelectorAll('[data-aos]');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.05, rootMargin: '0px 0px -30px 0px' });
+
+  aoEls.forEach(el => {
+    const rect = el.getBoundingClientRect();
+    if (rect.top < window.innerHeight) {
+      setTimeout(() => el.classList.add('visible'), 300);
+    } else {
+      observer.observe(el);
+    }
+  });
+});
+</script>
+
+<script src="api.js"></script>
+
+</body>
+</html>

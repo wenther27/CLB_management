@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Thành viên – CTXH DUT</title>
+  <link rel="stylesheet" href="../assets/css/style.css">
+  <link rel="stylesheet" href="../assets/css/members.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body>
+
+<header>
+  <div class="nav-container">
+    <a href="index.html" class="logo">CTXHDUT</a>
+    <nav class="nav-link">
+      <a href="index.html">Trang chủ</a>
+      <a href="activities.html">Hoạt động</a>
+      <a href="posts.html">Tin Tức</a>
+      <a href="members.html" class="active">Thành Viên</a>
+    </nav>
+    <div class="nav-right" id="navActions"></div>
+  </div>
+</header>
+
+<div class="page-body">
+  <div class="page-hero">
+    <div class="container">
+      <div class="breadcrumb">
+        <a href="index.html">Trang chủ</a> › <span>Thành viên</span>
+      </div>
+      <h1>Ban <span>Chấp hành</span></h1>
+      <p>Những con người tạo nên CLB Công tác Xã hội DUT</p>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="container">
+      <!-- Loading -->
+      <div id="boardLoading" class="loading">
+        <div class="spinner"></div>
+      </div>
+
+      <!-- Nội dung các ban -->
+      <div id="boardContent" style="display:none"></div>
+
+      <!-- Lỗi -->
+      <div id="boardError" style="display:none;text-align:center;padding:60px;color:#ff2d55"></div>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <div class="container">
+    <div class="footer-bottom" style="border:none;padding-top:0">
+      <span>© 2024 CLB Công Tác Xã Hội DUT</span>
+      <a href="index.html" style="color:#ff2d55">← Trang chủ</a>
+    </div>
+  </div>
+</footer>
+
+<script src="../js/app/api.js"></script>
+<script src="../js/app/auth-modal.js"></script>
+<script src="../js/pages/members.js"></script>
+</body>
+</html>
