@@ -58,7 +58,6 @@
       </button>
     </div>
 
-    <!-- Thống kê nhỏ -->
    
   </div>
 </section>
@@ -339,7 +338,7 @@ function renderActivityCard(a) {
 
   let actionBtn = '';
   if (hasRegistered) {
-    actionBtn = `<button class="btn-act-register" style="background:#dc2626;box-shadow:0 2px 8px rgba(220,38,38,0.3)"
+    actionBtn = `<button class="btn-act-register btn-cancel-register"
                    onclick="event.stopPropagation(); homeCancelRegistration(${a.activityID}, this)">
                   <i class="fa-solid fa-xmark"></i> Hủy đăng ký
                 </button>`;

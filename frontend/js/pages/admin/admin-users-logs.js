@@ -1,11 +1,306 @@
 // ================================================
 // admin-users-logs.js
-// Quản lý người dùng — Panel Admin Dashboard
+// Quản lý người dùng & Lịch sử — Panel Admin Dashboard
 // ================================================
 
 'use strict';
 
-// ── State ──────────────────────────────────────────────────────────────────────
+// ── Role definitions ─────────────────────────────────────────────────────────
+const ROLES = [
+  { id: 1, name: 'Admin' },
+  { id: 2, name: 'ExecutiveBoard' },
+  { id: 3, name: 'Member' },
+  { id: 4, name: 'Guest' },
+];
+
+function roleLabelVi(role) {
+  const map = {
+    Admin: 'Quản trị viên',
+    ExecutiveBoard: 'Ban chủ nhiệm',
+    Member: 'Thành viên',
+    Guest: 'Khách',
+  };
+  return map[role] || role || '—';
+}
+
+function roleColor(role) {
+  const map = {
+    Admin: 'linear-gradient(135deg,#ff2d55,#ff6b84)',
+    ExecutiveBoard: 'linear-gradient(135deg,#f59e0b,#fbbf24)',
+    Member: 'linear-gradient(135deg,#3b82f6,#60a5fa)',
+    Guest: 'linear-gradient(135deg,#475569,#64748b)',
+  };
+  return map[role] || 'linear-gradient(135deg,#475569,#64748b)';
+}
+
+function avatarColor(role) {
+  return roleColor(role);
+}
+
+function badgeClassForRole(role) {
+  const map = {
+    Admin: 'badge-red',
+    ExecutiveBoard: 'badge-gold',
+    Member: 'badge-blue',
+    Guest: 'badge-closed',
+  };
+  return map[role] || 'badge-closed';
+}
+
+function roleIcon(role) {
+  const map = {
+    Admin: 'fa-crown',
+    ExecutiveBoard: 'fa-clipboard',
+    Member: 'fa-user',
+    Guest: 'fa-user-clock',
+  };
+  return map[role] || 'fa-user';
+}
+
+// ================================================
+// LOGS PANEL — Lịch sử hệ thống
+// ================================================
+const LogsPanel = (() => {
+  let _query = {
+    keyword: '',
+    category: '',
+    tableName: '',
+    fromDate: '',
+    toDate: '',
+    page: 1,
+    pageSize: 20,
+  };
+  let _totalPages = 1;
+  let _totalCount = 0;
+
+  // ── Khởi tạo ──────────────────────────────────────────────────────────────
+  async function init() {
+    await load();
+  }
+
+  // ── Load logs ─────────────────────────────────────────────────────────────
+  async function load() {
+    const tbody = document.getElementById('lBody');
+    if (!tbody) return;
+
+    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;padding:40px">
+      <div class="spinner" style="margin:0 auto"></div>
+    </td></tr>`;
+
+    try {
+      const params = _buildParams();
+      // FIX: getAuditLogs cần nhận params để filter + phân trang
+      const r = await request('GET', `/users/audit-logs${params}`, null, true);
+      
+      const pagedData = r.data;
+      const list = pagedData?.items || [];
+      _totalCount = pagedData?.totalCount || 0;
+      _totalPages = pagedData?.totalPages || Math.ceil(_totalCount / _query.pageSize) || 1;
+
+      if (!list.length) {
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;padding:40px;color:#475569">
+          <div style="font-size:2rem;margin-bottom:12px">📋</div>
+          Không tìm thấy lịch sử nào
+        </td></tr>`;
+        _renderPagination();
+        return;
+      }
+
+      tbody.innerHTML = list.map(_renderRow).join('');
+      _renderPagination();
+    } catch (e) {
+      console.error('load logs error:', e);
+      tbody.innerHTML = `<tr><td colspan="5" style="color:#ff2d55;padding:20px;text-align:center">
+        <i class="fa-solid fa-circle-exclamation"></i> ${Utils.escapeHtml(e.message)}
+      </td></tr>`;
+    }
+  }
+
+  // ── Render một dòng log ───────────────────────────────────────────────────
+  function _renderRow(log) {
+    // Lấy icon theo category
+    const iconMap = {
+      activity: '<i class="fa-solid fa-heart" style="color:#ec489a"></i>',
+      post: '<i class="fa-solid fa-newspaper" style="color:#f59e0b"></i>',
+      member: '<i class="fa-solid fa-user-group" style="color:#3b82f6"></i>',
+      user: '<i class="fa-solid fa-user" style="color:#8b5cf6"></i>',
+      system: '<i class="fa-solid fa-gear" style="color:#64748b"></i>',
+      login: '<i class="fa-solid fa-right-to-bracket" style="color:#22c55e"></i>',
+    };
+    const icon = iconMap[log.category] || '<i class="fa-solid fa-clock-rotate-left"></i>';
+    
+    // User display
+    const userDisplay = log.fullName 
+      ? `${Utils.escapeHtml(log.fullName)} <span style="color:#94a3b8;font-size:11px">(@${Utils.escapeHtml(log.username)})</span>`
+      : Utils.escapeHtml(log.username);
+
+    // Đối tượng display
+    let objectDisplay = '';
+    if (log.tableName) {
+      const tableMap = {
+        'Activities': 'Hoạt động',
+        'ActivityImages': 'Ảnh hoạt động',
+        'Registrations': 'Đăng ký',
+        'Posts': 'Bài viết',
+        'PostImages': 'Ảnh bài viết',
+        'Members': 'Thành viên',
+        'Users': 'Người dùng',
+        'Roles': 'Vai trò',
+      };
+      const viName = tableMap[log.tableName] || log.tableName;
+      objectDisplay = log.recordId 
+        ? `<span style="color:#64748b">${viName} #${log.recordId}</span>`
+        : `<span style="color:#64748b">${viName}</span>`;
+    }
+
+    return `<tr>
+      <td style="color:#475569;font-size:12px">${log.logID}</td>
+      <td style="font-size:13px">
+        <div style="display:flex;align-items:center;gap:8px">
+          <div class="u-avatar" style="width:28px;height:28px;font-size:11px;background:${log.fullName ? '#3b82f6' : '#64748b'}">
+            ${log.fullName ? log.fullName.charAt(0).toUpperCase() : 'S'}
+          </div>
+          <div>
+            <div style="font-weight:600">${userDisplay}</div>
+            <div style="color:#94a3b8;font-size:10px">${objectDisplay}</div>
+          </div>
+        </div>
+      </td>
+      <td style="font-size:13px">
+        <div style="display:flex;align-items:center;gap:6px">
+          ${icon}
+          <span>${Utils.escapeHtml(log.action || '—')}</span>
+        </div>
+      </td>
+      <td style="font-size:12px;color:#64748b">
+        <span class="badge" style="background:rgba(100,116,139,0.1)">
+          ${_categoryLabelVi(log.category)}
+        </span>
+      </td>
+      <td style="font-size:12px;color:#475569;white-space:nowrap">
+        ${Utils.formatDateTime(log.createdAt)}
+      </td>
+    </tr>`;
+  }
+
+  function _categoryLabelVi(cat) {
+    const map = {
+      activity: 'Hoạt động',
+      post: 'Bài viết',
+      member: 'Thành viên',
+      user: 'Người dùng',
+      system: 'Hệ thống',
+      login: 'Đăng nhập',
+    };
+    return map[cat] || cat || 'Khác';
+  }
+
+  // ── Build query params ────────────────────────────────────────────────────
+  function _buildParams() {
+    const p = new URLSearchParams();
+    if (_query.keyword) p.append('keyword', _query.keyword);
+    if (_query.category) p.append('category', _query.category);
+    if (_query.tableName) p.append('tableName', _query.tableName);
+    if (_query.fromDate) p.append('fromDate', _query.fromDate);
+    if (_query.toDate) p.append('toDate', _query.toDate);
+    p.append('page', _query.page);
+    p.append('pageSize', _query.pageSize);
+    return '?' + p.toString();
+  }
+
+  // ── Pagination ────────────────────────────────────────────────────────────
+  function _renderPagination() {
+    const wrap = document.getElementById('lPagination');
+    if (!wrap) return;
+    if (_totalPages <= 1) { wrap.innerHTML = ''; return; }
+
+    const cur = _query.page;
+    let html = '';
+
+    html += `<button onclick="LogsPanel.changePage(${cur - 1})"
+      ${cur === 1 ? 'disabled' : ''}
+      class="u-page-btn">←</button>`;
+
+    const pages = _pageRange(cur, _totalPages);
+    pages.forEach(p => {
+      if (p === '…') {
+        html += `<span class="u-page-ellipsis">…</span>`;
+      } else {
+        html += `<button onclick="LogsPanel.changePage(${p})"
+          class="u-page-btn ${p === cur ? 'active' : ''}">${p}</button>`;
+      }
+    });
+
+    html += `<button onclick="LogsPanel.changePage(${cur + 1})"
+      ${cur === _totalPages ? 'disabled' : ''}
+      class="u-page-btn">→</button>`;
+
+    wrap.innerHTML = html;
+  }
+
+  function _pageRange(cur, total) {
+    if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
+    if (cur <= 4) return [1, 2, 3, 4, 5, '…', total];
+    if (cur >= total - 3) return [1, '…', total - 4, total - 3, total - 2, total - 1, total];
+    return [1, '…', cur - 1, cur, cur + 1, '…', total];
+  }
+
+  // ── Search / filter ───────────────────────────────────────────────────────
+  function search() {
+    _query.keyword = document.getElementById('lSearch')?.value.trim() || '';
+    
+    const category = document.getElementById('lCategory')?.value || '';
+    _query.category = category;
+    // Map category to tableName if needed (backend filter theo TableName.Contains)
+    const tableNameMap = {
+      activity: 'Activities',
+      post: 'Posts',
+      member: 'Members',
+      user: 'Users',
+    };
+    _query.tableName = tableNameMap[category] || '';
+    
+    _query.page = 1;
+    load();
+  }
+
+  function resetSearch() {
+    const searchInput = document.getElementById('lSearch');
+    const categorySelect = document.getElementById('lCategory');
+    if (searchInput) searchInput.value = '';
+    if (categorySelect) categorySelect.value = '';
+    
+    _query = {
+      keyword: '',
+      category: '',
+      tableName: '',
+      fromDate: '',
+      toDate: '',
+      page: 1,
+      pageSize: 20,
+    };
+    load();
+  }
+
+  function changePage(page) {
+    if (page < 1 || page > _totalPages) return;
+    _query.page = page;
+    load();
+  }
+
+  // ── Public API ────────────────────────────────────────────────────────────
+  return {
+    init,
+    load,
+    search,
+    resetSearch,
+    changePage,
+  };
+})();
+
+// ================================================
+// USERS PANEL — Quản lý người dùng
+// ================================================
 const UsersPanel = (() => {
   function initialQuery() {
     return {
@@ -14,7 +309,7 @@ const UsersPanel = (() => {
       isActive: '',
       fromDate: '',
       toDate: '',
-      sortBy: 'CreatedAt',
+      sortBy: 'createdAt',
       sortDir: 'desc',
       page: 1,
       pageSize: 15,
@@ -24,12 +319,6 @@ const UsersPanel = (() => {
   let _query = initialQuery();
   let _totalPages = 1;
   let _stats = null;
-  let _roles = [
-    { id: 1, name: 'Admin' },
-    { id: 2, name: 'ExecutiveBoard' },
-    { id: 3, name: 'Member' },
-    { id: 4, name: 'Guest' },
-  ];
 
   // ── Khởi tạo ──────────────────────────────────────────────────────────────
   async function init() {
@@ -41,17 +330,14 @@ const UsersPanel = (() => {
   function _populateRoleDropdown() {
     const sel = document.getElementById('uRoleFilter');
     if (!sel) return;
-    sel.innerHTML =
-      `<option value="">Tất cả vai trò</option>` +
-      _roles.map(r => `<option value="${r.name}">${_roleLabelVi(r.name)}</option>`).join('');
+    sel.innerHTML = `<option value="">Tất cả vai trò</option>` +
+      ROLES.map(r => `<option value="${r.name}">${roleLabelVi(r.name)}</option>`).join('');
   }
 
   // ── Load stats ─────────────────────────────────────────────────────────────
   async function loadStats() {
     try {
-      // FIX: gọi đúng path (API_BASE đã có /api, chỉ cần /users/stats)
       const r = await request('GET', '/users/stats', null, true);
-      // FIX: r là ApiResponse, r.data mới là UserStatsDTO
       _stats = r.data;
       _renderStats(_stats);
     } catch (e) {
@@ -61,14 +347,13 @@ const UsersPanel = (() => {
 
   function _renderStats(s) {
     if (!s) return;
-    // FIX: camelCase theo JSON serializer của ASP.NET Core
-    _setEl('uStatTotal',    s.totalUsers);
-    _setEl('uStatActive',   s.activeUsers);
+    _setEl('uStatTotal', s.totalUsers);
+    _setEl('uStatActive', s.activeUsers);
     _setEl('uStatInactive', s.inactiveUsers);
-    _setEl('uStatNew',      s.newThisMonth);
-    _setEl('uStatAdmin',    s.adminCount);
-    _setEl('uStatBoard',    s.executiveBoardCount);
-    _setEl('uStatMember',   s.memberCount);
+    _setEl('uStatNew', s.newThisMonth);
+    _setEl('uStatAdmin', s.adminCount);
+    _setEl('uStatBoard', s.executiveBoardCount);
+    _setEl('uStatMember', s.memberCount);
   }
 
   // ── Load danh sách ─────────────────────────────────────────────────────────
@@ -82,14 +367,11 @@ const UsersPanel = (() => {
 
     try {
       const params = _buildParams();
-      // FIX: path đúng — API_BASE đã có /api
       const r = await request('GET', `/users${params}`, null, true);
 
-      // FIX: r.data là PagedResultDTO { items, totalCount, page, pageSize, totalPages }
-      const pagedData  = r.data;
-      const list       = pagedData?.items || [];
-      // FIX: dùng totalPages từ backend (sau khi thêm computed property vào DTO)
-      _totalPages      = pagedData?.totalPages || Math.ceil((pagedData?.totalCount || 0) / _query.pageSize) || 1;
+      const pagedData = r.data;
+      const list = pagedData?.items || [];
+      _totalPages = pagedData?.totalPages || Math.ceil((pagedData?.totalCount || 0) / _query.pageSize) || 1;
 
       if (!list.length) {
         tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:40px;color:#475569">
@@ -111,40 +393,24 @@ const UsersPanel = (() => {
 
   // ── Render một dòng bảng ───────────────────────────────────────────────────
   function _renderRow(u) {
-    // FIX: dùng đúng tên field camelCase từ backend
-    const name     = u.fullName || u.username || '?';
+    const name = u.fullName || u.username || '?';
     const initials = name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
-
-    const roleCls = {
-      Admin: 'badge-red',
-      ExecutiveBoard: 'badge-gold',
-      Member: 'badge-blue',
-      Guest: 'badge-closed',
-    }[u.roleName] || 'badge-closed';
-
-    const roleIco = {
-      Admin: 'fa-crown',
-      ExecutiveBoard: 'fa-clipboard',
-      Member: 'fa-user',
-      Guest: 'fa-user-clock',
-    }[u.roleName] || 'fa-user';
 
     const activeHtml = u.isActive
       ? `<span class="badge badge-open"><i class="fa-solid fa-circle-check"></i> Hoạt động</span>`
       : `<span class="badge badge-inactive"><i class="fa-solid fa-circle-xmark"></i> Vô hiệu</span>`;
 
     const toggleTitle = u.isActive ? 'Vô hiệu hóa' : 'Kích hoạt';
-    const toggleIcon  = u.isActive ? 'fa-lock' : 'fa-lock-open';
+    const toggleIcon = u.isActive ? 'fa-lock' : 'fa-lock-open';
     const toggleStyle = u.isActive
       ? 'color:#f59e0b;border-color:rgba(245,158,11,0.3)'
       : 'color:#22c55e;border-color:rgba(34,197,94,0.3)';
 
-    // FIX: dùng u.userID (camelCase)
     return `<tr data-uid="${u.userID}">
       <td style="color:#475569;font-size:12px">${u.userID}</td>
       <td>
         <div style="display:flex;align-items:center;gap:10px">
-          <div class="u-avatar" style="background:${_avatarColor(u.roleName)}">
+          <div class="u-avatar" style="background:${avatarColor(u.roleName)}">
             ${initials}
           </div>
           <div>
@@ -158,8 +424,8 @@ const UsersPanel = (() => {
       </td>
       <td style="font-size:13px;color:#94a3b8">${Utils.escapeHtml(u.email || '')}</td>
       <td>
-        <span class="badge ${roleCls}">
-          <i class="fa-solid ${roleIco}"></i> ${_roleLabelVi(u.roleName)}
+        <span class="badge ${badgeClassForRole(u.roleName)}">
+          <i class="fa-solid ${roleIcon(u.roleName)}"></i> ${roleLabelVi(u.roleName)}
         </span>
       </td>
       <td>${activeHtml}</td>
@@ -199,7 +465,6 @@ const UsersPanel = (() => {
 
     try {
       const r = await request('GET', `/users/${id}`, null, true);
-      // FIX: r.data mới là UserDetailDTO
       const u = r.data;
       if (!u) { Toast.error('Không tìm thấy người dùng'); return; }
 
@@ -213,7 +478,7 @@ const UsersPanel = (() => {
         </div>
 
         <div class="u-detail-hero">
-          <div class="u-avatar-lg" style="background:${_avatarColor(u.roleName)}">${initials}</div>
+          <div class="u-avatar-lg" style="background:${avatarColor(u.roleName)}">${initials}</div>
           <div>
             <div class="u-detail-name">${Utils.escapeHtml(u.username || '')}</div>
             <div class="u-detail-sub">${Utils.escapeHtml(u.fullName || 'Chưa cập nhật')}</div>
@@ -221,20 +486,20 @@ const UsersPanel = (() => {
               <span class="badge ${u.isActive ? 'badge-open' : 'badge-inactive'}">
                 ${u.isActive ? '✅ Hoạt động' : '🔒 Vô hiệu'}
               </span>
-              <span class="badge badge-blue">${_roleLabelVi(u.roleName)}</span>
+              <span class="badge badge-blue">${roleLabelVi(u.roleName)}</span>
             </div>
           </div>
         </div>
 
         <div class="u-info-grid">
-          ${_infoCard('fa-envelope',         'Email',             u.email)}
-          ${_infoCard('fa-phone',            'Điện thoại',        u.phone || 'Chưa cập nhật')}
-          ${_infoCard('fa-school',           'Lớp',               u.className || '—')}
-          ${_infoCard('fa-building-columns', 'Khoa',              u.faculty || '—')}
-          ${_infoCard('fa-id-badge',         'Chức vụ',           u.position || '—')}
-          ${_infoCard('fa-calendar-plus',    'Ngày tham gia',     Utils.formatDate(u.createdAt))}
-          ${_infoCard('fa-calendar-check',   'Cập nhật lần cuối', u.updatedAt ? Utils.formatDateTime(u.updatedAt) : '—')}
-          ${_infoCard('fa-user-tag',         'Trạng thái TV',     u.memberStatus || '—')}
+          ${_infoCard('fa-envelope', 'Email', u.email)}
+          ${_infoCard('fa-phone', 'Điện thoại', u.phone || 'Chưa cập nhật')}
+          ${_infoCard('fa-school', 'Lớp', u.className || '—')}
+          ${_infoCard('fa-building-columns', 'Khoa', u.faculty || '—')}
+          ${_infoCard('fa-id-badge', 'Chức vụ', u.position || '—')}
+          ${_infoCard('fa-calendar-plus', 'Ngày tham gia', Utils.formatDate(u.createdAt))}
+          ${_infoCard('fa-calendar-check', 'Cập nhật lần cuối', u.updatedAt ? Utils.formatDateTime(u.updatedAt) : '—')}
+          ${_infoCard('fa-user-tag', 'Trạng thái TV', u.memberStatus || '—')}
         </div>
 
         <div class="u-stat-row">
@@ -253,7 +518,7 @@ const UsersPanel = (() => {
             <i class="fa-solid fa-pen"></i> Chỉnh sửa
           </button>
           <button onclick="UsersPanel.toggleActive(${u.userID}, '${Utils.escapeHtml(u.username || '')}')"
-            class="btn-sm" style="padding:10px 16px;border-radius:6px;cursor:pointer;font-family:'Be Vietnam Pro',Arial,sans-serif;
+            class="btn-sm" style="padding:10px 16px;border-radius:6px;cursor:pointer;
               ${u.isActive
                 ? 'background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.3);color:#f59e0b'
                 : 'background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.3);color:#22c55e'}">
@@ -270,7 +535,6 @@ const UsersPanel = (() => {
   async function openEdit(id) {
     try {
       const r = await request('GET', `/users/${id}`, null, true);
-      // FIX: r.data mới là UserDetailDTO
       const u = r.data;
       if (!u) { Toast.error('Không tìm thấy người dùng'); return; }
 
@@ -292,16 +556,16 @@ const UsersPanel = (() => {
           <div class="form-group">
             <label class="form-label">Vai trò *</label>
             <select id="ue-role" class="form-control">
-              ${_roles.map(ro => `
+              ${ROLES.map(ro => `
                 <option value="${ro.id}" ${u.roleID === ro.id ? 'selected' : ''}>
-                  ${_roleLabelVi(ro.name)}
+                  ${roleLabelVi(ro.name)}
                 </option>`).join('')}
             </select>
           </div>
           <div class="form-group">
             <label class="form-label">Trạng thái</label>
             <select id="ue-active" class="form-control">
-              <option value="true"  ${u.isActive ? 'selected' : ''}>Hoạt động</option>
+              <option value="true" ${u.isActive ? 'selected' : ''}>Hoạt động</option>
               <option value="false" ${!u.isActive ? 'selected' : ''}>Vô hiệu hóa</option>
             </select>
           </div>
@@ -323,15 +587,13 @@ const UsersPanel = (() => {
 
   // ── Lưu chỉnh sửa ─────────────────────────────────────────────────────────
   async function saveEdit(id) {
-    const roleId   = parseInt(document.getElementById('ue-role')?.value || '0');
+    const roleId = parseInt(document.getElementById('ue-role')?.value || '0');
     const isActive = document.getElementById('ue-active')?.value === 'true';
-    const phone    = document.getElementById('ue-phone')?.value.trim() || null;
+    const phone = document.getElementById('ue-phone')?.value.trim() || null;
 
     if (!roleId) { Toast.error('Vui lòng chọn vai trò'); return; }
 
     try {
-      // FIX: gửi đúng field name mà backend UpdateUserAdminDTO kỳ vọng
-      // Backend dùng [FromBody] và ASP.NET Core mặc định bind camelCase
       await request('PUT', `/users/${id}`, { roleID: roleId, isActive, phone }, true);
       Toast.success('Cập nhật người dùng thành công');
       closeModal();
@@ -343,20 +605,11 @@ const UsersPanel = (() => {
 
   // ── Toggle active ──────────────────────────────────────────────────────────
   async function toggleActive(id, username) {
-    const row = document.querySelector(`tr[data-uid="${id}"]`);
-    const isCurrentlyActive = row
-      ? row.querySelector('.badge-open') !== null
-      : true;
-
-    const msg = isCurrentlyActive
-      ? `Vô hiệu hóa tài khoản "${username}"?\nNgười dùng sẽ không thể đăng nhập.`
-      : `Kích hoạt lại tài khoản "${username}"?`;
-
-    if (!confirm(msg)) return;
+    const msg = confirm(`Bạn có chắc chắn muốn thay đổi trạng thái tài khoản "${username}"?`);
+    if (!msg) return;
 
     try {
       const r = await request('PATCH', `/users/${id}/toggle-active`, null, true);
-      // FIX: r.data mới là UserDetailDTO
       const newState = r.data?.isActive;
       Toast.success(newState ? 'Đã kích hoạt tài khoản' : 'Đã vô hiệu hóa tài khoản');
       closeModal();
@@ -368,11 +621,11 @@ const UsersPanel = (() => {
 
   // ── Search / filter ────────────────────────────────────────────────────────
   function search() {
-    _query.keyword  = document.getElementById('uSearch')?.value.trim() || '';
+    _query.keyword = document.getElementById('uSearch')?.value.trim() || '';
     _query.roleName = document.getElementById('uRoleFilter')?.value || '';
     _query.isActive = document.getElementById('uActiveFilter')?.value || '';
     _query.fromDate = document.getElementById('uFromDate')?.value || '';
-    _query.toDate   = document.getElementById('uToDate')?.value || '';
+    _query.toDate = document.getElementById('uToDate')?.value || '';
     _query.page = 1;
     load();
   }
@@ -397,27 +650,24 @@ const UsersPanel = (() => {
     if (_query.sortBy === field) {
       _query.sortDir = _query.sortDir === 'asc' ? 'desc' : 'asc';
     } else {
-      _query.sortBy  = field;
+      _query.sortBy = field;
       _query.sortDir = 'desc';
     }
     _query.page = 1;
     load();
-    document.querySelectorAll('.u-sort-icon').forEach(el => el.textContent = '⇅');
-    const icon = document.getElementById(`sort-${field}`);
-    if (icon) icon.textContent = _query.sortDir === 'asc' ? '↑' : '↓';
   }
 
   // ── Helpers ────────────────────────────────────────────────────────────────
   function _buildParams() {
     const p = new URLSearchParams();
-    if (_query.keyword)       p.append('keyword',   _query.keyword);
-    if (_query.roleName)      p.append('roleName',  _query.roleName);
+    if (_query.keyword) p.append('keyword', _query.keyword);
+    if (_query.roleName) p.append('roleName', _query.roleName);
     if (_query.isActive !== '') p.append('isActive', _query.isActive);
-    if (_query.fromDate)      p.append('fromDate',  _query.fromDate);
-    if (_query.toDate)        p.append('toDate',    _query.toDate);
-    p.append('sortBy',   _query.sortBy);
-    p.append('sortDir',  _query.sortDir);
-    p.append('page',     _query.page);
+    if (_query.fromDate) p.append('fromDate', _query.fromDate);
+    if (_query.toDate) p.append('toDate', _query.toDate);
+    p.append('sortBy', _query.sortBy);
+    p.append('sortDir', _query.sortDir);
+    p.append('page', _query.page);
     p.append('pageSize', _query.pageSize);
     return '?' + p.toString();
   }
@@ -453,7 +703,7 @@ const UsersPanel = (() => {
 
   function _pageRange(cur, total) {
     if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
-    if (cur <= 4)   return [1, 2, 3, 4, 5, '…', total];
+    if (cur <= 4) return [1, 2, 3, 4, 5, '…', total];
     if (cur >= total - 3) return [1, '…', total - 4, total - 3, total - 2, total - 1, total];
     return [1, '…', cur - 1, cur, cur + 1, '…', total];
   }
@@ -461,24 +711,6 @@ const UsersPanel = (() => {
   function _setEl(id, val) {
     const el = document.getElementById(id);
     if (el) el.textContent = val ?? '—';
-  }
-
-  function _avatarColor(role) {
-    return {
-      Admin: 'linear-gradient(135deg,#ff2d55,#ff6b84)',
-      ExecutiveBoard: 'linear-gradient(135deg,#f59e0b,#fbbf24)',
-      Member: 'linear-gradient(135deg,#3b82f6,#60a5fa)',
-      Guest: 'linear-gradient(135deg,#475569,#64748b)',
-    }[role] || 'linear-gradient(135deg,#475569,#64748b)';
-  }
-
-  function _roleLabelVi(role) {
-    return {
-      Admin: 'Quản trị viên',
-      ExecutiveBoard: 'Ban chủ nhiệm',
-      Member: 'Thành viên',
-      Guest: 'Khách',
-    }[role] || role || '—';
   }
 
   function _infoCard(ico, lbl, val) {
@@ -504,4 +736,17 @@ const UsersPanel = (() => {
   };
 })();
 
+// Khởi tạo khi DOM ready
+document.addEventListener('DOMContentLoaded', () => {
+  // Chỉ khởi tạo nếu element tồn tại trên trang
+  if (document.getElementById('uBody')) {
+    UsersPanel.init();
+  }
+  if (document.getElementById('lBody')) {
+    LogsPanel.init();
+  }
+});
+
+// Export ra global
 window.UsersPanel = UsersPanel;
+window.LogsPanel = LogsPanel;

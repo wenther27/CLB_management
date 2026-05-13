@@ -87,8 +87,31 @@
             <button class="btn-outline btn-sm" onclick="showP('posts')"><i class="fa-solid fa-plus"></i> Đăng bài viết</button>
           </div>
         </div>
-      </div>
 
+      <div class="dashboard-charts-grid">
+  <div class="dashboard-chart-card">
+    <div class="dashboard-chart-header">
+      <div>
+        <h3>Hoạt động theo tháng</h3>
+        <p>Số lượng hoạt động được tổ chức trong năm hiện tại</p>
+      </div>
+    </div>
+    <canvas id="activitiesByMonthLineChart"></canvas>
+  </div>
+
+  <div class="dashboard-chart-card">
+    <div class="dashboard-chart-header">
+      <div>
+        <h3>Top hoạt động nhiều đăng ký</h3>
+        <p>Những hoạt động thu hút nhiều thành viên nhất</p>
+      </div>
+    </div>
+    <div id="topActivitiesList" class="top-activities-list">
+      <div class="loading"><div class="spinner"></div></div>
+    </div>
+  </div>
+</div>
+      </div>
       <!-- MEMBERS -->
       <div class="adm-panel" id="p-members">
         <div class="adm-header">
@@ -122,13 +145,13 @@
         </div>
         <div class="filter-bar" style="margin-bottom:18px">
           <input id="mSearch" placeholder="🔍 Tìm tên, email..." oninput="loadMembers()" style="flex:2">
-          <select id="mStatus" onchange="loadMembers()">
+          <select id="mStatus" onchange="loadMembers()" aria-label="Lọc theo trạng thái">
             <option value="">Tất cả trạng thái</option>
             <option value="Active">Hoạt động</option>
             <option value="Inactive">Ngừng</option>
             <option value="Suspended">Tạm đình chỉ</option>
           </select>
-          <select id="mFaculty" onchange="loadMembers()">
+          <select id="mFaculty" onchange="loadMembers()" aria-label="Lọc theo khoa">
             <option value="">Tất cả khoa</option>
             <option value="Điện tử - Viễn thông">Điện tử - Viễn thông</option>
             <option value="Công nghệ thông tin">Công nghệ thông tin</option>
@@ -228,10 +251,10 @@
         <!-- Filter -->
         <div class="filter-bar" style="margin-bottom:18px">
           <input id="uSearch" placeholder="🔍 Tìm username, email, họ tên..." oninput="UsersPanel.search()" style="flex:2">
-          <select id="uRoleFilter" onchange="UsersPanel.search()">
+          <select id="uRoleFilter" onchange="UsersPanel.search()" aria-label="Lọc theo vai trò">
             <option value="">Tất cả vai trò</option>
           </select>
-          <select id="uActiveFilter" onchange="UsersPanel.search()">
+          <select id="uActiveFilter" onchange="UsersPanel.search()" aria-label="Lọc theo trạng thái">
             <option value="">Tất cả trạng thái</option>
             <option value="true">Hoạt động</option>
             <option value="false">Vô hiệu</option>
@@ -276,7 +299,7 @@
         <!-- Filter -->
         <div class="filter-bar" style="margin-bottom:18px">
           <input id="lSearch" placeholder="🔍 Tìm hành động, người dùng..." oninput="LogsPanel.search()" style="flex:2">
-          <select id="lCategory" onchange="LogsPanel.search()">
+          <select id="lCategory" onchange="LogsPanel.search()" aria-label="Lọc theo loại">
             <option value="">Tất cả loại</option>
             <option value="activity">Hoạt động</option>
             <option value="post">Bài viết</option>
@@ -321,7 +344,7 @@
 <div class="modal-overlay" id="detailModal">
   <div class="modal" style="max-width:640px" id="detailBody"></div>
 </div>
-
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="../js/app/api.js"></script>
 <script src="../js/app/shared.js"></script>
 <script src="../js/app/auth-modal.js"></script>

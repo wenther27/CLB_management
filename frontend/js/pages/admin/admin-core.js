@@ -29,6 +29,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   updateNavbar();
   loadStats();
+  loadDashboardCharts();
 });
 
 // ── Điều hướng sidebar ────────────────────────────────────────────────────────
@@ -109,4 +110,146 @@ function updateNavbar() {
     <button onclick="logout()" class="btn-secondary btn-sm">
       <i class="fa-solid fa-right-from-bracket"></i> Đăng xuất
     </button>`;
+}
+// ── Dashboard charts ─────────────────────────────────────────────────────────
+let activitiesByMonthChart = null;
+
+async function loadDashboardCharts() {
+  await Promise.all([
+    loadActivitiesByMonthLineChart(),
+    loadTopActivitiesList()
+  ]);
+}
+
+async function loadActivitiesByMonthLineChart() {
+  const canvas = document.getElementById('activitiesByMonthLineChart');
+  if (!canvas || typeof Chart === 'undefined') return;
+
+  try {
+    const res = await request('GET', '/dashboard/activities-by-month', null, true);
+    const data = res.data || [];
+
+    if (activitiesByMonthChart) {
+      activitiesByMonthChart.destroy();
+    }
+
+    activitiesByMonthChart = new Chart(canvas, {
+      type: 'line',
+      data: {
+        labels: data.map(x => x.month),
+        datasets: [{
+          label: 'Số hoạt động',
+          data: data.map(x => x.count),
+          borderColor: '#e8213a',
+          backgroundColor: 'rgba(232, 33, 58, 0.12)',
+          pointBackgroundColor: '#e8213a',
+          pointBorderColor: '#ffffff',
+          pointBorderWidth: 2,
+          pointRadius: 5,
+          pointHoverRadius: 7,
+          borderWidth: 3,
+          tension: 0.35,
+          fill: true
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            display: true,
+            labels: {
+              color: '#111827',
+              font: {
+                family: 'Be Vietnam Pro',
+                weight: '700'
+              }
+            }
+          },
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                return `${context.parsed.y} hoạt động`;
+              }
+            }
+          }
+        },
+        scales: {
+          x: {
+            ticks: {
+              color: '#111827',
+              font: {
+                family: 'Be Vietnam Pro',
+                weight: '600'
+              }
+            },
+            grid: {
+              color: '#f1f5f9'
+            }
+          },
+          y: {
+            beginAtZero: true,
+            ticks: {
+              precision: 0,
+              color: '#111827',
+              font: {
+                family: 'Be Vietnam Pro',
+                weight: '600'
+              }
+            },
+            grid: {
+              color: '#e2e8f0'
+            }
+          }
+        }
+      }
+    });
+  } catch (e) {
+    console.warn('loadActivitiesByMonthLineChart:', e.message);
+  }
+}
+
+async function loadTopActivitiesList() {
+  const wrap = document.getElementById('topActivitiesList');
+  if (!wrap) return;
+
+  try {
+    const res = await request('GET', '/dashboard/top-activities?top=5', null, true);
+    const data = res.data || [];
+
+    if (!data.length) {
+      wrap.innerHTML = `
+        <div style="text-align:center;padding:30px;color:#111827">
+          Chưa có dữ liệu đăng ký
+        </div>`;
+      return;
+    }
+
+    const max = Math.max(...data.map(x => x.registeredCount || 0), 1);
+
+    wrap.innerHTML = data.map((item, index) => {
+      const percent = Math.round(((item.registeredCount || 0) / max) * 100);
+
+      return `
+        <div class="top-activity-item">
+          <div class="top-activity-rank">${index + 1}</div>
+          <div class="top-activity-info">
+            <div class="top-activity-name" title="${Utils.escapeHtml(item.activityName || '')}">
+              ${Utils.escapeHtml(item.activityName || 'Không tên')}
+            </div>
+            <div class="top-activity-count">
+              ${item.registeredCount || 0} lượt đăng ký
+            </div>
+            <div class="top-activity-bar">
+              <div class="top-activity-fill" style="width:${percent}%"></div>
+            </div>
+          </div>
+        </div>`;
+    }).join('');
+  } catch (e) {
+    wrap.innerHTML = `
+      <div style="text-align:center;padding:30px;color:#e8213a">
+        Không tải được thống kê hoạt động
+      </div>`;
+  }
 }

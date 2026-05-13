@@ -1,7 +1,3 @@
-// ================================================
-// api.js - Core API Communication Layer
-// CLB CTXH DUT
-// ================================================
 
 const API_BASE = 'http://localhost:5190/api';
 
@@ -66,7 +62,8 @@ const API = {
   getUser: (id) => request('GET', `/users/${id}`, null, true),
   updateUser: (id, data) => put(`/users/${id}`, data),
   deleteUser: (id) => del(`/users/${id}`),
-  getAuditLogs: () => request('GET', '/users/audit-logs', null, true),
+// Trong api.js, sửa hàm getAuditLogs:
+getAuditLogs: (params = '') => request('GET', `/users/audit-logs${params}`, null, true),
 
   // Members
   getMembers: (params = '') => request('GET', `/members${params}`),
