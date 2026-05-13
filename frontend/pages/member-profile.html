@@ -109,7 +109,7 @@
           <!-- Cột phải: Tabs nội dung -->
           <div>
             <!-- Tab buttons -->
-            <div style="display:flex;gap:4px;background:#111827;border-radius:10px;padding:5px;margin-bottom:24px;border:1px solid rgba(255,255,255,0.06)">
+            <div style="display:flex;gap:4px;background:#ffffff;border-radius:10px;padding:5px;margin-bottom:24px;border:1px solid #e2e8f0">
               <button class="tab-btn active" id="tab-history" onclick="showTab('history')"
                 style="flex:1;padding:9px;border:none;border-radius:7px;background:rgba(255,45,85,0.15);
                        color:#ff2d55;cursor:pointer;font-size:13px;font-weight:700;font-family:Arial,sans-serif;
@@ -162,7 +162,19 @@
                 </div>
                 <div class="form-group">
                   <label class="form-label">Khoa</label>
-                  <input id="edit-faculty" class="form-control" placeholder="Điện tử - Viễn thông">
+                  <select id="edit-faculty" class="form-control" aria-label="Chọn khoa">
+                    <option value="">-- Chọn khoa --</option>
+                    <option value="Điện tử - Viễn thông">Điện tử - Viễn thông</option>
+                    <option value="Công nghệ thông tin">Công nghệ thông tin</option>
+                    <option value="Cơ khí">Cơ khí</option>
+                    <option value="Xây dựng">Xây dựng</option>
+                    <option value="Kiến trúc">Kiến trúc</option>
+                    <option value="Hóa">Hóa</option>
+                    <option value="Môi trường">Môi trường</option>
+                    <option value="Điện">Điện</option>
+                    <option value="Cơ khí giao thông">Cơ khí giao thông</option>
+                    <option value="Khoa học công nghệ tiên tiến">Khoa học công nghệ tiên tiến</option>
+                  </select>
                 </div>
               </div>
               <button onclick="saveProfile()" class="btn-primary" style="padding:11px 24px">
@@ -325,11 +337,11 @@ async function loadRegistrations(page = 1) {
         <div style="display:flex;align-items:center;gap:8px">
           ${Utils.statusLabel(reg.status)}
           <button onclick="showActivityDetail(${reg.activityID})"
-            style="background:none;border:1px solid rgba(255,255,255,0.1);color:#94a3b8;
+            style="background:none;border:1px solid #e2e8f0;color:#64748b;
                    padding:5px 10px;border-radius:6px;cursor:pointer;font-size:12px;
                    font-family:Arial,sans-serif;transition:all 0.2s"
             onmouseover="this.style.borderColor='#ff2d55';this.style.color='#ff2d55'"
-            onmouseout="this.style.borderColor='rgba(255,255,255,0.1)';this.style.color='#94a3b8'">
+            onmouseout="this.style.borderColor='#e2e8f0';this.style.color='#64748b'">
             <i class="fa-solid fa-eye"></i>
           </button>
         </div>
@@ -341,7 +353,7 @@ async function loadRegistrations(page = 1) {
     pag.innerHTML = Array.from({length: totalPages}, (_, i) => i + 1).map(p => `
       <button onclick="loadRegistrations(${p})" style="
         padding:6px 12px;border-radius:6px;font-size:12px;font-family:Arial,sans-serif;cursor:pointer;
-        border:1px solid ${p === page ? '#ff2d55' : 'rgba(255,255,255,0.1)'};
+        border:1px solid ${p === page ? '#ff2d55' : '#e2e8f0'};
         background:${p === page ? 'rgba(255,45,85,0.15)' : 'transparent'};
         color:${p === page ? '#ff2d55' : '#64748b'}">${p}</button>
     `).join('');
@@ -357,7 +369,7 @@ function showTab(tab) {
     document.getElementById('content-' + t).style.display = t === tab ? 'block' : 'none';
     const btn = document.getElementById('tab-' + t);
     if (t === tab) {
-      btn.style.background = 'rgba(255,45,85,0.15)';
+      btn.style.background = '#fff1f3';
       btn.style.color = '#ff2d55';
     } else {
       btn.style.background = 'transparent';

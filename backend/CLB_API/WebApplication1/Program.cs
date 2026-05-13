@@ -73,6 +73,7 @@ builder.Services.AddScoped<IActivityService, ActivityService>();
 builder.Services.AddScoped<IMemberService, MemberService>();
 builder.Services.AddScoped<IPostService, PostService>();
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IDashboardService, DashboardService>();
 
 // Background service: tự động khoá/mở hoạt động theo thời gian
 builder.Services.AddHostedService<ActivityAutoCloseService>();

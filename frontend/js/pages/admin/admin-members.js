@@ -29,7 +29,7 @@ async function loadMembers() {
 
     tbody.innerHTML = list.map(m => `
       <tr>
-        <td style="color:#475569;font-size:12px">${m.memberID}</td>
+        <td style="color:#111827;font-size:12px">${m.memberID}</td>
         <td>
           <div style="display:flex;align-items:center;gap:10px">
             <div style="width:32px;height:32px;border-radius:50%;background:#ff2d55;
@@ -39,15 +39,15 @@ async function loadMembers() {
             </div>
             <div>
               <div style="font-weight:700;font-size:13px">${Utils.escapeHtml(m.fullName)}</div>
-              <div style="color:#475569;font-size:11px">
+              <div style="color:#111827 ;font-size:11px">
                 ${Utils.escapeHtml(m.username || '')}${m.email ? ' · ' + m.email : ''}
               </div>
             </div>
           </div>
         </td>
-        <td style="color:#94a3b8;font-size:13px">${Utils.escapeHtml(m.className || '—')}</td>
-        <td style="color:#94a3b8;font-size:13px">${Utils.escapeHtml(m.faculty || '—')}</td>
-        <td style="color:#94a3b8;font-size:13px">${Utils.escapeHtml(m.position || 'Thành viên')}</td>
+        <td style="color:#111827;font-size:13px">${Utils.escapeHtml(m.className || '—')}</td>
+        <td style="color:#111827;font-size:13px">${Utils.escapeHtml(m.faculty || '—')}</td>
+        <td style="color:#111827;font-size:13px">${Utils.escapeHtml(m.position || 'Thành viên')}</td>
         <td>${Utils.statusLabel(m.status || 'Active')}</td>
         <td>
           <div style="display:flex;gap:6px">
@@ -95,14 +95,14 @@ async function viewMember(id) {
       </div>
 
       <div style="display:flex;align-items:center;gap:16px;margin-bottom:22px;
-                  padding:16px;background:#0a0f1c;border-radius:10px;
-                  border:1px solid rgba(255,255,255,0.06)">
+                  padding:16px;background:#ffffff;border-radius:10px;
+                  border:1px solid #e2e8f0">
         <div style="width:56px;height:56px;border-radius:50%;background:#ff2d55;
                     display:flex;align-items:center;justify-content:center;
                     font-size:20px;font-weight:700;color:white;flex-shrink:0">${initials}</div>
         <div>
           <div style="font-size:18px;font-weight:700">${Utils.escapeHtml(m.fullName)}</div>
-          <div style="color:#475569;font-size:13px">@${Utils.escapeHtml(m.username || '—')}</div>
+          <div style="color:#111827;font-size:13px">@${Utils.escapeHtml(m.username || '—')}</div>
           <div style="margin-top:6px">${Utils.statusLabel(m.status || 'Active')}</div>
         </div>
       </div>
@@ -117,13 +117,13 @@ async function viewMember(id) {
           ['fa-shield-halved',   'Vai trò',       m.roleName || 'Member'],
           ['fa-calendar-plus',   'Ngày tham gia', Utils.formatDate(m.joinDate)],
         ].map(([ico, lbl, val]) => `
-          <div style="background:#0a0f1c;border-radius:8px;padding:12px;
-                      border:1px solid rgba(255,255,255,0.05)">
-            <div style="font-size:11px;color:#334155;text-transform:uppercase;
+          <div style="background:#ffffff;border-radius:8px;padding:12px;
+                      border:1px solid #111827">
+            <div style="font-size:11px;color:#475569;text-transform:uppercase;
                         letter-spacing:.05em;margin-bottom:5px">
               <i class="fa-solid ${ico}" style="color:#475569;margin-right:5px"></i>${lbl}
             </div>
-            <div style="font-size:13px;color:#e2e8f0;font-weight:600">
+            <div style="font-size:13px;color:#111827;font-weight:600">
               ${Utils.escapeHtml(String(val || '—'))}
             </div>
           </div>`).join('')}
@@ -174,8 +174,22 @@ function openMemberModal(data = {}) {
       </div>
       <div class="form-group">
         <label class="form-label">Khoa</label>
-        <input id="mf-fac" class="form-control" placeholder="Điện tử - Viễn thông"
-               value="${Utils.escapeHtml(data.faculty || '')}">
+        <select id="mf-fac" class="form-control" aria-label="Chọn khoa">
+          <option value="">-- Chọn khoa --</option>
+          ${[
+            'Điện tử - Viễn thông',
+            'Công nghệ thông tin',
+            'Cơ khí',
+            'Xây dựng',
+            'Kiến trúc',
+            'Hóa',
+            'Môi trường',
+            'Điện',
+            'Cơ khí giao thông',
+            'Khoa học công nghệ tiên tiến'
+          ].map(f => `<option value="${Utils.escapeHtml(f)}" ${(data.faculty === f) ? 'selected' : ''}>${Utils.escapeHtml(f)}</option>`).join('')}
+        </select>
+        
       </div>
     </div>
     <div class="form-row">

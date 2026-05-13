@@ -37,11 +37,11 @@ async function loadPostsAdmin() {
 
       return `
       <tr>
-        <td style="color:#475569;font-size:12px">${p.postID}</td>
+        <td style="color:#111827;font-size:12px">${p.postID}</td>
         <td style="max-width:260px">
           ${p.title ? `<div style="font-weight:700;font-size:13px;margin-bottom:3px">${Utils.escapeHtml(p.title)}</div>` : ''}
-          <div style="color:#64748b;font-size:12px;line-height:1.5">${Utils.escapeHtml(preview)}</div>
-          ${imgCount > 0 ? `<div style="font-size:11px;color:#475569;margin-top:3px"><i class="fa-solid fa-image"></i> ${imgCount} ảnh</div>` : ''}
+          <div style="color:#111827;font-size:12px;line-height:1.5">${Utils.escapeHtml(preview)}</div>
+          ${imgCount > 0 ? `<div style="font-size:11px;color:#111827;margin-top:3px"><i class="fa-solid fa-image"></i> ${imgCount} ảnh</div>` : ''}
         </td>
         <td>
           <span class="badge ${catCls[p.category] || 'badge-gold'}">
@@ -50,10 +50,10 @@ async function loadPostsAdmin() {
         </td>
         <td>
           ${p.authorName
-            ? `<div style="font-size:13px;color:#94a3b8"><i class="fa-solid fa-user" style="color:#475569;margin-right:4px"></i>${Utils.escapeHtml(p.authorName)}</div>`
-            : '<span style="color:#334155;font-size:12px">—</span>'}
+            ? `<div style="font-size:13px;color:#111827"><i class="fa-solid fa-user" style="color:#111827;margin-right:4px"></i>${Utils.escapeHtml(p.authorName)}</div>`
+            : '<span style="color:#111827;font-size:12px">—</span>'}
         </td>
-        <td style="color:#94a3b8;font-size:12px">${Utils.formatDate(p.createdDate)}</td>
+        <td style="color:#111827;font-size:12px">${Utils.formatDate(p.createdDate)}</td>
         <td>
           ${Utils.statusLabel(p.status)}
           ${likeCount > 0 ? `<div style="font-size:11px;color:#ff2d55;margin-top:3px"><i class="fa-solid fa-heart"></i> ${likeCount} lượt thích</div>` : ''}
@@ -69,7 +69,7 @@ async function loadPostsAdmin() {
             <button onclick="togglePostStatus(${p.postID}, '${p.status}')" 
               class="btn-sm" title="${p.status === 'Published' ? 'Ẩn bài' : 'Đăng bài'}"
               style="${p.status === 'Published' 
-                ? 'background:#1e293b;border:1px solid rgba(255,255,255,0.1);color:#94a3b8;border-radius:5px;cursor:pointer;padding:6px 12px;font-family:Arial,sans-serif'
+                ? 'background:#f1f5f9;border:1px solid #cbd5e1;color:#111827;color:#64748b;border-radius:5px;cursor:pointer;padding:6px 12px;font-family:Arial,sans-serif'
                 : 'background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.3);color:#22c55e;border-radius:5px;cursor:pointer;padding:6px 12px;font-family:Arial,sans-serif'}">
               ${p.status === 'Published' 
                 ? '<i class="fa-solid fa-eye-slash"></i>' 
@@ -127,7 +127,7 @@ async function previewPost(id) {
       </div>
 
       <!-- Post preview (Facebook-style) -->
-      <div style="background:#0a0f1c;border-radius:12px;padding:18px;border:1px solid rgba(255,255,255,0.06)">
+      <div style="background:#ffffff;border-radius:12px;padding:18px;border:1px solid #e2e8f0">
         <!-- Header -->
         <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
           <div style="width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#ff2d55,#ff6b84);
@@ -147,7 +147,7 @@ async function previewPost(id) {
         ${p.title ? `<div style="font-size:17px;font-weight:700;margin-bottom:10px;line-height:1.4">${Utils.escapeHtml(p.title)}</div>` : ''}
 
         <!-- Content -->
-        <div style="font-size:14px;color:#94a3b8;line-height:1.8;white-space:pre-wrap;word-break:break-word;margin-bottom:12px">
+        <div style="font-size:14px;color:#111827;line-height:1.8;white-space:pre-wrap;word-break:break-word;margin-bottom:12px">
           ${Utils.escapeHtml(p.content || '')}
         </div>
 
@@ -162,11 +162,11 @@ async function previewPost(id) {
         ` : ''}
 
         <!-- Actions preview -->
-        <div style="display:flex;gap:4px;margin-top:16px;padding-top:12px;border-top:1px solid rgba(255,255,255,0.06)">
-          <div style="flex:1;display:flex;align-items:center;justify-content:center;gap:7px;padding:8px;border-radius:8px;background:rgba(255,45,85,0.08);color:#ff2d55;font-size:13px;font-weight:600">
+        <div style="display:flex;gap:4px;margin-top:16px;padding-top:12px;border-top:1px solid #e2e8f0">
+          <div style="flex:1;display:flex;align-items:center;justify-content:center;gap:7px;padding:8px;border-radius:8px;background:#fff1f3;color:#ff2d55;font-size:13px;font-weight:600">
             <i class="fa-solid fa-heart"></i> Thích
           </div>
-          <div style="flex:1;display:flex;align-items:center;justify-content:center;gap:7px;padding:8px;border-radius:8px;background:rgba(255,255,255,0.04);color:#64748b;font-size:13px;font-weight:600">
+          <div style="flex:1;display:flex;align-items:center;justify-content:center;gap:7px;padding:8px;border-radius:8px;background:#f8fafc;color:#475569;font-size:13px;font-weight:600">
             <i class="fa-solid fa-share-nodes"></i> Chia sẻ
           </div>
         </div>
@@ -246,11 +246,11 @@ function openPostModal(data = {}) {
         ondragover="pfHandleDragOver(event)"
         ondragleave="pfHandleDragLeave(event)"
         ondrop="pfHandleDrop(event)"
-        style="border:2px dashed rgba(255,255,255,0.12);border-radius:10px;padding:24px;
+        style="border:2px dashed #cbd5e1;border-radius:10px;padding:24px;
                text-align:center;cursor:pointer;transition:border-color 0.2s,background 0.2s;
                margin-bottom:10px">
         <div style="font-size:1.8rem;margin-bottom:8px">🖼️</div>
-        <div style="font-size:13px;color:#64748b">
+        <div style="font-size:13px;color:#111827">
           Kéo thả ảnh vào đây hoặc
           <span style="color:#ff2d55;font-weight:700">click để chọn</span>
         </div>
@@ -264,15 +264,15 @@ function openPostModal(data = {}) {
         ${existingImages}
       </div>
 
-      <div id="pf-uploadStatus" style="font-size:12px;color:#64748b;margin-top:6px;min-height:16px"></div>
+      <div id="pf-uploadStatus" style="font-size:12px;color:#111827;margin-top:6px;min-height:16px"></div>
     </div>
 
     <!-- Preview box -->
-    <div style="background:#0a0f1c;border-radius:10px;padding:14px;border:1px solid rgba(255,255,255,0.06);margin-bottom:16px">
+    <div style="background:#ffffff;border-radius:10px;padding:14px;border:1px solid #e2e8f0;margin-bottom:16px">
       <div style="font-size:11px;color:#334155;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:10px">
         <i class="fa-solid fa-eye"></i> Xem trước
       </div>
-      <div id="pf-live-preview" style="font-size:13px;color:#64748b;font-style:italic">
+      <div id="pf-live-preview" style="font-size:13px;color:#111827;font-style:italic">
         Nhập nội dung để xem trước...
       </div>
     </div>
@@ -311,8 +311,8 @@ function openPostModal(data = {}) {
     }
 
     previewEl.innerHTML = `
-      ${title ? `<div style="font-size:15px;font-weight:700;color:#e2e8f0;margin-bottom:6px">${Utils.escapeHtml(title)}</div>` : ''}
-      <div style="color:#94a3b8;line-height:1.7;font-size:13px;font-style:normal;white-space:pre-wrap">
+      ${title ? `<div style="font-size:15px;font-weight:700;color:#111827;margin-bottom:6px">${Utils.escapeHtml(title)}</div>` : ''}
+      <div style="color:#111827;line-height:1.7;font-size:13px;font-style:normal;white-space:pre-wrap">
         ${Utils.escapeHtml(content.slice(0, 200))}${content.length > 200 ? '...' : ''}
       </div>`;
   }
@@ -411,7 +411,7 @@ function pfHandleDragOver(e) {
 
 function pfHandleDragLeave() {
   const dz = document.getElementById('pf-dropzone');
-  if (dz) { dz.style.borderColor = 'rgba(255,255,255,0.12)'; dz.style.background = 'transparent'; }
+  if (dz) { dz.style.borderColor = '#cbd5e1'; dz.style.background = 'transparent'; }
 }
 
 function pfHandleDrop(e) {

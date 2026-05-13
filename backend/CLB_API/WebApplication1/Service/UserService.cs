@@ -28,11 +28,6 @@ namespace ClubManagement.API.Service
             _context = context;
         }
 
-        // ────────────────────────────────────────────────────────────────────
-        // MAP TO DTO
-        // FIX: MapToDTO chỉ map field cơ bản, TotalRegistrations/TotalPostsCreated
-        //      phải được gán riêng sau khi query — đã đúng trong GetAllAsync/GetByIdAsync
-        // ────────────────────────────────────────────────────────────────────
         private static UserDetailDTO MapToDTO(User u)
         {
             var member = u.Member;

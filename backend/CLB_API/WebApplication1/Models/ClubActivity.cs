@@ -25,7 +25,6 @@ namespace ClubManagement.API.Models
 
         public DateTime? RegistrationDeadLine { get; set; }
 
-        [MaxLength(50)]
         public DateTime? CreateAt { get; set; } = DateTime.Now;
 
         [MaxLength(50)]

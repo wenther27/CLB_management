@@ -100,7 +100,7 @@ namespace ClubManagement.API.Service
                 RegistrationDeadLine = dto.RegistrationDeadLine,
                 MaxParticipants = dto.MaxParticipants,
                 CreateBy = creatorUserId,
-                CreateAt = DateTime.Now,   // FIX: local time
+                CreateAt = DateTime.Now,   
                 Registrations = new List<Registrations>(),
                 ExecutiveBoards = new List<ExecutiveBoard>(),
                 ActivityImages = dto.ImageUrls?.Select(url => new ActivityImage
@@ -250,7 +250,7 @@ namespace ClubManagement.API.Service
                 ActivityID = activityId,
                 MemberID = member.MemberID,
                 RegisterDate = DateTime.Now,   
-                Status = "Confirmed"
+                Status = "Đã đăng ký"
             };
 
             _context.Registrations.Add(registration);
@@ -366,7 +366,7 @@ namespace ClubManagement.API.Service
             MaxParticipants = a.MaxParticipants,
             CreateBy = a.CreateBy,
             CreatorName = a.Creator?.Username ?? "",
-            RegisteredCount = a.Registrations?.Count(r => r.Status == "Confirmed") ?? 0,
+            RegisteredCount = a.Registrations?.Count(r => r.Status == "Đã đăng ký") ?? 0,
             Image = a.ActivityImages?.Select(i => i.ImageUrl).ToList() ?? new(),
             RegistrationOpenDate = a.RegistrationOpenDate,
             RegistrationDeadLine = a.RegistrationDeadLine

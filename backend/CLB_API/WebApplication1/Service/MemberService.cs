@@ -119,14 +119,14 @@ namespace ClubManagement.API.Service
             if (member == null) return null;
             if (dto.FullName != null) member.FullName = dto.FullName;
             if (dto.ClassName != null) member.ClassName = dto.ClassName;
-            if (dto.Faculty != null) member.ClassName = dto.ClassName;
-            if (dto.Position != null) member.Position = dto.Faculty;
+            if (dto.Faculty != null) member.Faculty = dto.Faculty;
+            if (dto.Position != null) member.Position = dto.Position;
             if (dto.Status != null)
             {
                 member.Status = dto.Status;
                 if (member.User != null)
                 {
-                    member.User.IsActive = dto.Status == "Activite";
+                    member.User.IsActive = dto.Status == "Active";
                 }
             }
                 if (dto.Phone != null && member.User !=null)
@@ -142,7 +142,7 @@ namespace ClubManagement.API.Service
        public async Task<bool> DeactivateAsync (int memberId)
         {
             var member = await _context.Members.Include(m => m.User)
-                .FirstAsync(m => m.MemberID == memberId);
+                .FirstOrDefaultAsync(m => m.MemberID == memberId);
             if (member == null) return false;
             member.Status = "Inactive";
             if (member.User != null)
