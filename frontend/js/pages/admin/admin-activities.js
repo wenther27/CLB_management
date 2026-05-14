@@ -1,12 +1,93 @@
 // ================================================
-// admin-activities.js — FIXED VERSION
-// Fixes:
-// 1. saveAct() gửi registrationOpenDate thay vì registrationOpenTime
-// 2. openActModal form khớp đúng khung hình (layout giống ảnh)
-// 3. openActModalForEdit đọc đúng field từ API response
+// admin-activities.js — Flatpickr date format version
+// Hiển thị ngày giờ dạng dd/MM/yyyy HH:mm
+// Lưu API dạng yyyy-MM-ddTHH:mm:ss, không lệch ngày/tháng/giờ
 // ================================================
 
 let currentEditId = null;
+let flatpickrLoadPromise = null;
+
+function toDisplayDateTime(value) {
+  if (!value) return '';
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return '';
+
+  const dd = String(d.getDate()).padStart(2, '0');
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  const yyyy = d.getFullYear();
+  const hh = String(d.getHours()).padStart(2, '0');
+  const mi = String(d.getMinutes()).padStart(2, '0');
+
+  return `${dd}/${mm}/${yyyy} ${hh}:${mi}`;
+}
+
+function parseDisplayDateTime(value) {
+  if (!value) return null;
+
+  const m = value.trim().match(/^(\d{2})\/(\d{2})\/(\d{4})\s+(\d{2}):(\d{2})$/);
+  if (!m) return null;
+
+  const [, dd, mm, yyyy, hh, mi] = m;
+  const d = new Date(Number(yyyy), Number(mm) - 1, Number(dd), Number(hh), Number(mi), 0);
+
+  const isValid =
+    d.getFullYear() === Number(yyyy) &&
+    d.getMonth() === Number(mm) - 1 &&
+    d.getDate() === Number(dd) &&
+    d.getHours() === Number(hh) &&
+    d.getMinutes() === Number(mi);
+
+  if (!isValid) return null;
+  return `${yyyy}-${mm}-${dd}T${hh}:${mi}:00`;
+}
+
+function loadFlatpickrAssets() {
+  if (typeof flatpickr === 'function') return Promise.resolve();
+  if (flatpickrLoadPromise) return flatpickrLoadPromise;
+
+  flatpickrLoadPromise = new Promise((resolve, reject) => {
+    if (!document.querySelector('link[data-flatpickr-css]')) {
+      const link = document.createElement('link');
+      link.rel = 'stylesheet';
+      link.href = 'https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css';
+      link.dataset.flatpickrCss = 'true';
+      document.head.appendChild(link);
+    }
+
+    const existingScript = document.querySelector('script[data-flatpickr-js]');
+    if (existingScript) {
+      existingScript.addEventListener('load', resolve);
+      existingScript.addEventListener('error', reject);
+      return;
+    }
+
+    const script = document.createElement('script');
+    script.src = 'https://cdn.jsdelivr.net/npm/flatpickr';
+    script.dataset.flatpickrJs = 'true';
+    script.onload = resolve;
+    script.onerror = () => reject(new Error('Không tải được Flatpickr'));
+    document.head.appendChild(script);
+  });
+
+  return flatpickrLoadPromise;
+}
+
+async function initActivityDatePickers() {
+  try {
+    await loadFlatpickrAssets();
+    if (typeof flatpickr !== 'function') return;
+
+    flatpickr('.js-activity-datetime', {
+      enableTime: true,
+      time_24hr: true,
+      dateFormat: 'd/m/Y H:i',
+      allowInput: true,
+      minuteIncrement: 1,
+    });
+  } catch (e) {
+    console.warn(e.message);
+  }
+}
 
 async function loadActivitiesAdmin() {
   const tbody = document.getElementById('aBody');
@@ -54,20 +135,22 @@ async function loadActivitiesAdmin() {
       const openDateHtml = a.registrationOpenDate
         ? `<span style="font-size:12px;color:#1d4ed8"> ${Utils.formatDateTime(a.registrationOpenDate)}</span>`
         : '<span style="color:#111827;font-size:12px">Ngay khi tạo</span>';
+
       const safeId = a.activityID;
+
       return `
         <tr>
           <td style="color:#111827">${a.activityID}</td>
           <td>
-  <strong
-    class="act-name-link"
-    data-id="${safeId}"
-    style="cursor:pointer;color:#ff2d55;text-decoration:underline;text-underline-offset:2px"
-    title="Xem chi tiết"
-    onclick="window.showActivityDetail(${safeId})">
-    ${Utils.escapeHtml(a.activityName)}
-  </strong>
-</td>
+            <strong
+              class="act-name-link"
+              data-id="${safeId}"
+              style="cursor:pointer;color:#ff2d55;text-decoration:underline;text-underline-offset:2px"
+              title="Xem chi tiết"
+              onclick="window.showActivityDetail(${safeId})">
+              ${Utils.escapeHtml(a.activityName)}
+            </strong>
+          </td>
           <td style="color:#111827">${Utils.formatDateTime(a.time)}</td>
           <td style="font-size:12px">${openDateHtml}</td>
           <td style="font-size:12px">${deadlineHtml}</td>
@@ -93,41 +176,35 @@ async function loadActivitiesAdmin() {
           </td>
         </tr>`;
     }).join('');
-    
 
   } catch (e) {
     tbody.innerHTML = `<tr><td colspan="9" style="color:#ff2d55;padding:20px">${e.message}</td></tr>`;
-  
   }
 }
 
-// ── Modal tạo / sửa hoạt động — layout khớp khung hình ───────────────────────
 function openActModal(data = {}) {
   currentEditId = data.activityID || null;
 
-const tv  = toLocalInputValue(data.time);
-const rod = toLocalInputValue(data.registrationOpenDate);
-const rdl = toLocalInputValue(data.registrationDeadLine);
+  const tv = toDisplayDateTime(data.time);
+  const rod = toDisplayDateTime(data.registrationOpenDate);
+  const rdl = toDisplayDateTime(data.registrationDeadLine);
   const existingImages = (data.image || data.images || [])
     .map((url, i) => renderPreviewItem(url, i))
     .join('');
 
   openModal(data.activityID ? 'Chỉnh sửa hoạt động' : 'Tạo hoạt động mới', `
-    <!-- TÊN HOẠT ĐỘNG -->
     <div class="form-group">
       <label class="form-label">Tên hoạt động *</label>
       <input id="af-name" class="form-control" placeholder="Nhập tên hoạt động..."
              value="${Utils.escapeHtml(data.activityName || '')}">
     </div>
 
-    <!-- MÔ TẢ -->
     <div class="form-group">
       <label class="form-label">Mô tả</label>
       <textarea id="af-desc" class="form-control" style="min-height:90px"
                 placeholder="Mô tả hoạt động...">${Utils.escapeHtml(data.description || '')}</textarea>
     </div>
 
-    <!-- ĐỊA ĐIỂM + THỜI GIAN DIỄN RA (2 cột, khớp với hình) -->
     <div class="form-row">
       <div class="form-group">
         <label class="form-label">Địa điểm</label>
@@ -136,23 +213,25 @@ const rdl = toLocalInputValue(data.registrationDeadLine);
       </div>
       <div class="form-group">
         <label class="form-label">Thời gian diễn ra *</label>
-        <input type="datetime-local" id="af-time" class="form-control" value="${tv}">
+        <input type="text" id="af-time" class="form-control js-activity-datetime"
+               value="${tv}" placeholder="dd/mm/yyyy hh:mm">
       </div>
     </div>
 
     <div class="form-row">
       <div class="form-group">
         <label class="form-label">Ngày mở đăng ký</label>
-        <input type="datetime-local" id="af-reg-open" class="form-control" value="${rod}">
+        <input type="text" id="af-reg-open" class="form-control js-activity-datetime"
+               value="${rod}" placeholder="dd/mm/yyyy hh:mm">
         <div style="font-size:11px;color:#111827;margin-top:4px">Để trống = mở ngay khi tạo</div>
       </div>
       <div class="form-group">
         <label class="form-label">Hạn chót đăng ký</label>
-        <input type="datetime-local" id="af-reg-deadline" class="form-control" value="${rdl}">
+        <input type="text" id="af-reg-deadline" class="form-control js-activity-datetime"
+               value="${rdl}" placeholder="dd/mm/yyyy hh:mm">
       </div>
     </div>
 
-    <!-- GIỚI HẠN + TRẠNG THÁI (2 cột, khớp hình) -->
     <div class="form-row">
       <div class="form-group">
         <label class="form-label">Giới hạn người tham gia</label>
@@ -163,14 +242,13 @@ const rdl = toLocalInputValue(data.registrationDeadLine);
       <div class="form-group">
         <label class="form-label">Trạng thái</label>
         <select id="af-st" class="form-control">
-          <option value="Open"      ${(!data.status || data.status === 'Open') ? 'selected' : ''}>Đang mở</option>
-          <option value="Closed"    ${data.status === 'Closed' ? 'selected' : ''}>Đã đóng</option>
+          <option value="Open" ${(!data.status || data.status === 'Open') ? 'selected' : ''}>Đang mở</option>
+          <option value="Closed" ${data.status === 'Closed' ? 'selected' : ''}>Đã đóng</option>
           <option value="Cancelled" ${data.status === 'Cancelled' ? 'selected' : ''}>Đã hủy</option>
         </select>
       </div>
     </div>
 
-    <!-- ẢNH HOẠT ĐỘNG -->
     <div class="form-group">
       <label class="form-label">
         Ảnh hoạt động
@@ -202,7 +280,6 @@ const rdl = toLocalInputValue(data.registrationDeadLine);
       <div id="af-uploadStatus" style="font-size:12px;color:#111827;margin-top:8px"></div>
     </div>
 
-    <!-- NÚT TẠO / CẬP NHẬT -->
     <button type="button" onclick="saveAct(${data.activityID || 0})"
       class="btn-primary w-100" style="padding:11px;margin-top:4px;font-size:15px">
       <i class="fa-solid fa-floppy-disk"></i>
@@ -213,52 +290,64 @@ const rdl = toLocalInputValue(data.registrationDeadLine);
   window._actImageUrls = data.image
     ? [...data.image]
     : (data.images ? [...data.images] : []);
+
+  initActivityDatePickers();
 }
 
-// ── openActModalForEdit — đọc đúng field từ API response ─────────────────────
 function openActModalForEdit(activityData) {
   openActModal({
-    activityID:           activityData.activityID,
-    activityName:         activityData.activityName,
-    description:          activityData.description,
-    location:             activityData.location,
-    maxParticipants:      activityData.maxParticipants,
-    time:                 activityData.time,
-    status:               activityData.status,
+    activityID: activityData.activityID,
+    activityName: activityData.activityName,
+    description: activityData.description,
+    location: activityData.location,
+    maxParticipants: activityData.maxParticipants,
+    time: activityData.time,
+    status: activityData.status,
     registrationOpenDate: activityData.registrationOpenDate,
     registrationDeadLine: activityData.registrationDeadLine,
-    image:                activityData.image || activityData.images || [],
+    image: activityData.image || activityData.images || [],
   });
 }
 
 async function saveAct(id) {
-  const timeVal     = document.getElementById('af-time')?.value;
-  const deadlineVal = document.getElementById('af-reg-deadline')?.value;
-  const openVal     = document.getElementById('af-reg-open')?.value;
-  const nameEl      = document.getElementById('af-name');
+  const timeInput = document.getElementById('af-time')?.value;
+  const deadlineInput = document.getElementById('af-reg-deadline')?.value;
+  const openInput = document.getElementById('af-reg-open')?.value;
+
+  const timeVal = parseDisplayDateTime(timeInput);
+  const deadlineVal = parseDisplayDateTime(deadlineInput);
+  const openVal = parseDisplayDateTime(openInput);
+  const nameEl = document.getElementById('af-name');
 
   if (!nameEl?.value.trim()) {
     Toast.error('Vui lòng nhập tên hoạt động');
     return;
   }
   if (!timeVal) {
-    Toast.error('Vui lòng chọn thời gian diễn ra');
+    Toast.error('Vui lòng chọn thời gian diễn ra đúng định dạng dd/mm/yyyy hh:mm');
+    return;
+  }
+  if (openInput && !openVal) {
+    Toast.error('Ngày mở đăng ký sai định dạng dd/mm/yyyy hh:mm');
+    return;
+  }
+  if (deadlineInput && !deadlineVal) {
+    Toast.error('Hạn chót đăng ký sai định dạng dd/mm/yyyy hh:mm');
     return;
   }
 
   const d = {
-    activityName:         nameEl.value.trim(),
-    description:          document.getElementById('af-desc')?.value.trim() || null,
-    location:             document.getElementById('af-loc')?.value.trim()  || null,
-    maxParticipants:      parseInt(document.getElementById('af-max')?.value) || null,
-    time: timeVal ? timeVal + ':00' : null,
-    registrationOpenDate: openVal ? openVal + ':00' : null,
-    registrationDeadLine: deadlineVal ? deadlineVal + ':00' : null,
-    status:               document.getElementById('af-st')?.value || 'Open',
-    imageUrls:            window._actImageUrls || [],
+    activityName: nameEl.value.trim(),
+    description: document.getElementById('af-desc')?.value.trim() || null,
+    location: document.getElementById('af-loc')?.value.trim() || null,
+    maxParticipants: parseInt(document.getElementById('af-max')?.value) || null,
+    time: timeVal,
+    registrationOpenDate: openVal,
+    registrationDeadLine: deadlineVal,
+    status: document.getElementById('af-st')?.value || 'Open',
+    imageUrls: window._actImageUrls || [],
   };
 
-  // Validate frontend
   if (d.registrationDeadLine && new Date(d.registrationDeadLine) >= new Date(d.time)) {
     Toast.error('Hạn chót đăng ký phải trước thời gian diễn ra hoạt động');
     return;
@@ -285,11 +374,10 @@ async function saveAct(id) {
   }
 }
 
-// ── toggleActivityStatus ──────────────────────────────────────────────────────
 async function toggleActivityStatus(activityId, newStatus) {
   const msgs = {
     Closed: { confirm: 'Khóa hoạt động? Người dùng sẽ không thể đăng ký.', success: 'Đã khóa hoạt động' },
-    Open:   { confirm: 'Mở lại hoạt động? Người dùng có thể đăng ký.',     success: 'Đã mở hoạt động'  },
+    Open: { confirm: 'Mở lại hoạt động? Người dùng có thể đăng ký.', success: 'Đã mở hoạt động' },
   };
   const m = msgs[newStatus];
   if (!m || !confirm(m.confirm)) return;
@@ -297,15 +385,15 @@ async function toggleActivityStatus(activityId, newStatus) {
   try {
     const cur = (await API.getActivity(activityId)).data;
     await API.updateActivity(activityId, {
-      activityName:         cur.activityName,
-      description:          cur.description         || null,
-      location:             cur.location            || null,
-      maxParticipants:      cur.maxParticipants      || null,
-      time:                 cur.time,
+      activityName: cur.activityName,
+      description: cur.description || null,
+      location: cur.location || null,
+      maxParticipants: cur.maxParticipants || null,
+      time: cur.time,
       registrationOpenDate: cur.registrationOpenDate || null,
       registrationDeadLine: cur.registrationDeadLine || null,
-      status:               newStatus,
-      imageUrls:            cur.image || [],
+      status: newStatus,
+      imageUrls: cur.image || [],
     });
     Toast.success(m.success);
     loadActivitiesAdmin();
@@ -315,7 +403,6 @@ async function toggleActivityStatus(activityId, newStatus) {
   }
 }
 
-// ── deleteActivity ────────────────────────────────────────────────────────────
 async function deleteActivity(activityId) {
   if (!confirm('Xóa hoạt động này? Hành động không thể hoàn tác!')) return;
   try {
@@ -328,7 +415,6 @@ async function deleteActivity(activityId) {
   }
 }
 
-// ── Upload ảnh (giữ nguyên từ bản gốc) ───────────────────────────────────────
 function renderPreviewItem(url, index) {
   const src = url.startsWith('http') ? url : `http://localhost:5190${url}`;
   const uniqueId = `img-wrap-${Date.now()}-${index}`;
@@ -352,12 +438,18 @@ function removeImage(url, wrapId) {
 function handleDragOver(e) {
   e.preventDefault();
   const dz = document.getElementById('af-dropzone');
-  if (dz) { dz.style.borderColor = '#ff2d55'; dz.style.background = 'rgba(255,45,85,0.05)'; }
+  if (dz) {
+    dz.style.borderColor = '#ff2d55';
+    dz.style.background = 'rgba(255,45,85,0.05)';
+  }
 }
 
 function handleDragLeave(e) {
   const dz = document.getElementById('af-dropzone');
-  if (dz) { dz.style.borderColor = '#e2e8f0'; dz.style.background = 'transparent'; }
+  if (dz) {
+    dz.style.borderColor = '#e2e8f0';
+    dz.style.background = 'transparent';
+  }
 }
 
 function handleDrop(e) {
@@ -375,7 +467,10 @@ function handleFileSelect(e) {
 
 async function uploadImages(files) {
   const remaining = 5 - (window._actImageUrls || []).length;
-  if (remaining <= 0) { Toast.error('Đã đủ 5 ảnh, vui lòng xóa bớt trước'); return; }
+  if (remaining <= 0) {
+    Toast.error('Đã đủ 5 ảnh, vui lòng xóa bớt trước');
+    return;
+  }
 
   const toUpload = files.slice(0, remaining);
   if (files.length > remaining) Toast.info(`Chỉ upload thêm ${remaining} ảnh`);
@@ -386,7 +481,10 @@ async function uploadImages(files) {
   let successCount = 0;
 
   for (const file of toUpload) {
-    if (file.size > 5 * 1024 * 1024) { Toast.error(`"${file.name}" quá 5MB`); continue; }
+    if (file.size > 5 * 1024 * 1024) {
+      Toast.error(`"${file.name}" quá 5MB`);
+      continue;
+    }
 
     try {
       const formData = new FormData();
@@ -417,8 +515,8 @@ async function uploadImages(files) {
         div.innerHTML = renderPreviewItem(url, idx);
         preview.appendChild(div.firstElementChild);
       }
-      successCount++;
 
+      successCount++;
     } catch (e) {
       Toast.error(`Lỗi upload "${file.name}": ${e.message}`);
     }
@@ -431,6 +529,7 @@ async function uploadImages(files) {
     setTimeout(() => { if (status) status.innerHTML = ''; }, 3000);
   }
 }
+
 function attachActivityTableListeners() {
   document.querySelectorAll('.act-name-link').forEach(el => {
     el.onclick = function() {
@@ -444,23 +543,23 @@ function attachActivityTableListeners() {
       try {
         const r = await API.getActivity(id);
         openActModal(r.data);
-      } catch(e) {
+      } catch (e) {
         Toast.error(e.message);
       }
     };
   });
 }
-// Export
-window.loadActivitiesAdmin    = loadActivitiesAdmin;
-window.openActModal           = openActModal;
-window.openActModalForEdit    = openActModalForEdit;
-window.saveAct                = saveAct;
-window.toggleActivityStatus   = toggleActivityStatus;
-window.deleteActivity         = deleteActivity;
-window.removeImage            = removeImage;
-window.handleDragOver         = handleDragOver;
-window.handleDragLeave        = handleDragLeave;
-window.handleDrop             = handleDrop;
-window.handleFileSelect       = handleFileSelect;
-window.uploadImages           = uploadImages;
-window.renderPreviewItem      = renderPreviewItem;
+
+window.loadActivitiesAdmin = loadActivitiesAdmin;
+window.openActModal = openActModal;
+window.openActModalForEdit = openActModalForEdit;
+window.saveAct = saveAct;
+window.toggleActivityStatus = toggleActivityStatus;
+window.deleteActivity = deleteActivity;
+window.removeImage = removeImage;
+window.handleDragOver = handleDragOver;
+window.handleDragLeave = handleDragLeave;
+window.handleDrop = handleDrop;
+window.handleFileSelect = handleFileSelect;
+window.uploadImages = uploadImages;
+window.renderPreviewItem = renderPreviewItem;

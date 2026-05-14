@@ -2813,7 +2813,7 @@ footer ul li a:hover { color: white; }
 }
 
 .act-status-closed {
-  background: rgba(100,116,139,0.90);
+  background: rgba(220,38,38,0.92);
   color: #ffffff;
 }
 
@@ -3351,9 +3351,9 @@ footer ul li a:hover { color: white; }
   backdrop-filter: blur(8px);
 }
 .act-status-open      { background: rgba(22,163,74,0.90);  color: #fff; }
-.act-status-closed    { background: rgba(100,116,139,0.90); color: #fff; }
+.act-status-closed    { background: rgba(220,38,38,0.92);  color: #fff; }
 .act-status-cancelled { background: rgba(220,38,38,0.90);  color: #fff; }
-.act-status-ended     { background: rgba(71,85,105,0.90);  color: #fff; }
+.act-status-ended     { background: rgba(37,99,235,0.92);  color: #fff; }
  
 .act-registered-chip {
   position: absolute; top: 12px; right: 12px;
@@ -3422,10 +3422,10 @@ footer ul li a:hover { color: white; }
   gap: 5px; padding: 9px 12px; border-radius: 10px;
   font-size: 12px; font-weight: 600;
 }
-.act-status-tag.closed    { background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; }
+.act-status-tag.closed    { background: #fee2e2; color: #dc2626; border: 1px solid #fecaca; }
 .act-status-tag.full      { background: #fee2e2; color: #dc2626; border: 1px solid #fecaca; }
 .act-status-tag.cancelled { background: #f1f5f9; color: #64748b; border: 1px solid #e2e8f0; }
-.act-status-tag.ended     { background: #f8fafc; color: #475569; border: 1px solid #e2e8f0; }
+.act-status-tag.ended     { background: #dbeafe; color: #1d4ed8; border: 1px solid #bfdbfe; }
 .act-status-tag.not-open  { background: #dbeafe; color: #1d4ed8; border: 1px solid #bfdbfe; }
 
 /* ================================================

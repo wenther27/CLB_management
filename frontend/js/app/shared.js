@@ -265,7 +265,7 @@ async function showActivityDetail(activityId, options = {}) {
       ${a.description ? `
         <div style="margin-bottom:20px">
           <div style="font-size:11px;color:#000000;margin-bottom:8px"><i class="fa-solid fa-clipboard-list"></i> Mô tả</div>
-          <div style="font-size:14px;color:#000000;line-height:1.75;white-space:pre-wrap">${Utils.escapeHtml(a.description)}</div>
+           <div style="font-size:14px;color:#000000;line-height:1.75;white-space:pre-wrap;overflow-wrap:anywhere;word-break:break-word;max-width:100%">${Utils.escapeHtml(a.description)}</div>
         </div>
       ` : ''}
 
@@ -474,17 +474,22 @@ function printCertificate() {
   win.document.close();
 }
 
+
 // ── Tải chứng nhận dạng ảnh ──────────────────────────────────────────────────
 async function downloadCertificateAsImage(memberName, activityId) {
   // Dùng html2canvas nếu có, không thì fallback print
   if (typeof html2canvas === 'undefined') {
-    Toast.info('Đang mở trang in, chọn "Lưu thành PDF" để lưu chứng nhận');
-    printCertificate();
+    Toast.error('Thiếu thư viện html2canvas nên không thể tải ảnh chứng nhận');
     return;
   }
 
   try {
+     
     const certBox = document.getElementById('certModalBox');
+    if (!certBox){
+      Toast.error('Không tìm thấy nội dung chứng nhận để tải ảnh');
+      return;
+    }
     const canvas  = await html2canvas(certBox, { scale: 2, useCORS: true, backgroundColor: '#f0f4e8' });
     const link    = document.createElement('a');
     link.download = `chung-nhan-${memberName.replace(/\s+/g,'-')}-${activityId}.png`;
@@ -492,7 +497,8 @@ async function downloadCertificateAsImage(memberName, activityId) {
     link.click();
     Toast.success('Đã tải giấy chứng nhận!');
   } catch(e) {
-    printCertificate();
+    console.error(e);
+    Toast.error(e.message || 'Không thể tải ảnh chứng nhận');
   }
 }
 
