@@ -256,6 +256,8 @@ function openMemberModal(data = {}) {
         <select id="mf-dept" class="form-control">
           <option value="" ${!data.department ? 'selected' : ''}>-- Thành viên thường --</option>
           <option value="BCN" ${data.department === 'BCN' ? 'selected' : ''}>Ban Chủ Nhiệm</option>
+          <option value="BTT" ${data.department === 'BTT' ? 'selected' : ''}>Ban Truyền Thông</option>
+          <option value="BPT" ${data.department === 'BPT' ? 'selected' : ''}>Ban Phong Trào</option>
         </select>
       </div>
       <div class="form-group">
@@ -345,7 +347,7 @@ async function saveMember(id) {
     position:     document.getElementById('mf-pos').value.trim()          || null,
     status:       document.getElementById('mf-st').value,
     // Gửi "" khi chọn thành viên thường để backend biết cần set NULL
-    department:   deptValue,   // "" hoặc "BCN"
+    department:   deptValue,   // "", "BCN", "BTT" hoặc "BPT"
     displayOrder: parseInt(document.getElementById('mf-order')?.value) || 0,
     avatarUrl:    document.getElementById('mf-avatar')?.value.trim()      || null,
     contactEmail: document.getElementById('mf-contact-email')?.value.trim() || null,

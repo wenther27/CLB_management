@@ -666,9 +666,9 @@ async function saveAvatar() {
     canvas.toBlob(async (blob) => {
       try {
         const formData = new FormData();
-        formData.append('file', blob, 'avatar.jpg');
+        formData.append('thumbnail', blob, 'avatar.jpg');
 
-        const res = await fetch('http://localhost:5190/api/upload/image', {
+        const res = await fetch('http://localhost:5190/api/upload/avatar', {
           method: 'POST',
           headers: { 'Authorization': `Bearer ${Auth.getToken()}` },
           body: formData,
@@ -676,7 +676,8 @@ async function saveAvatar() {
 
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
-        const avatarUrl = data.data;
+        const avatarUrl = data.data?.avatarUrl;
+        if (!avatarUrl) throw new Error('Không nhận được URL ảnh đại diện');
 
         await request('PUT', '/members/me/avatar', { avatarUrl }, true);
 

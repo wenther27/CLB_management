@@ -45,7 +45,7 @@ namespace ClubManagement.API.Controllers
             // Thứ tự ưu tiên department
             var departmentOrder = new List<string>
             {
-                "BCN", "Truyền thông", "Phong trào"
+                "BCN", "BTT", "BPT"
             };
 
             var grouped = members
