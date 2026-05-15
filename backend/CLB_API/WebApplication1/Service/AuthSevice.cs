@@ -56,6 +56,7 @@ namespace ClubManagement.API.AuthService
         {
             var user = await _context.Users
                 .Include(u => u.Role)
+                .Include(u => u.Member)
                 .FirstOrDefaultAsync(u => u.Username == dto.Username && u.IsActive);
 
             if (user == null || !BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash))
@@ -67,7 +68,8 @@ namespace ClubManagement.API.AuthService
                 Username = user.Username,
                 Email = user.Email,
                 Role = user.Role?.RoleName ?? "Member",
-                UserID = user.UserID.ToString()
+                UserID = user.UserID.ToString(),
+                AvatarUrl = user.Member?.AvatarUrl ?? user.AvatarUrl
             };
         }
 
@@ -164,7 +166,8 @@ namespace ClubManagement.API.AuthService
                 Username = user.Username,
                 Email = user.Email,
                 Role = user.Role?.RoleName ?? "Member",
-                UserID = user.UserID.ToString()
+                UserID = user.UserID.ToString(),
+                AvatarUrl = user.Member?.AvatarUrl ?? user.AvatarUrl
             };
         }
 

@@ -14,7 +14,11 @@
 
         public string ? Username {  get; set; }
         public string ? Email { get; set; }
+        public string? ContactEmail { get; set; }
         public string ? Phone { get; set; }
         public string ? RoleName { get; set; }
+        public string? Department { get; set; }
+        public int DisplayOrder { get; set; }
+        public string? AvatarUrl { get; set; }
     }
 }

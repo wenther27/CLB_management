@@ -37,4 +37,7 @@ public class User
 
     public ICollection <AuditLog> ? AuditLogs { get; set; }
     public DateTime CreatedDate { get; internal set; }
+
+    [MaxLength(500)]
+    public string? AvatarUrl { get; set; }
 }

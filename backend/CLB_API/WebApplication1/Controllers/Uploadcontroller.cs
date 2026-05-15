@@ -6,7 +6,6 @@ namespace ClubManagement.API.Controllers
 {
     [ApiController]
     [Route("api/upload")]
-    [Authorize(Roles = "Admin,ExecutiveBoard")]
     public class UploadController : ControllerBase
     {
         private readonly IWebHostEnvironment _env;
@@ -18,7 +17,48 @@ namespace ClubManagement.API.Controllers
             _env = env;
         }
 
+        private string EnsureWebRoot()
+        {
+            var webRoot = _env.WebRootPath;
+            if (!string.IsNullOrEmpty(webRoot)) return webRoot;
+
+            webRoot = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
+            if (!Directory.Exists(webRoot))
+                Directory.CreateDirectory(webRoot);
+            return webRoot;
+        }
+
+        private static string? ValidateFile(IFormFile? file)
+        {
+            if (file == null || file.Length == 0)
+                return "Vui lòng chọn file ảnh";
+            if (file.Length > MaxFileSize)
+                return "File quá lớn, tối đa 5MB";
+
+            var ext = Path.GetExtension(file.FileName).ToLowerInvariant();
+            return AllowedExtensions.Contains(ext)
+                ? null
+                : "Chỉ chấp nhận ảnh .jpg, .jpeg, .png, .webp, .gif";
+        }
+
+        private async Task<string> SaveFileAsync(IFormFile file, string subFolder)
+        {
+            var uploadFolder = Path.Combine(EnsureWebRoot(), "uploads", subFolder);
+            if (!Directory.Exists(uploadFolder))
+                Directory.CreateDirectory(uploadFolder);
+
+            var ext = Path.GetExtension(file.FileName).ToLowerInvariant();
+            var fileName = $"{Guid.NewGuid()}{ext}";
+            var filePath = Path.Combine(uploadFolder, fileName);
+
+            using var stream = new FileStream(filePath, FileMode.Create);
+            await file.CopyToAsync(stream);
+
+            return $"/uploads/{subFolder}/{fileName}";
+        }
+
         [HttpPost("image")]
+        [Authorize(Roles = "Admin,ExecutiveBoard")]
         [ApiExplorerSettings(IgnoreApi = true)]
         public async Task<IActionResult> UploadImage([FromForm] IFormFile file)
         {
@@ -27,48 +67,11 @@ namespace ClubManagement.API.Controllers
                 Console.WriteLine("=== UPLOAD START ===");
                 Console.WriteLine($"File: {file?.FileName}, Size: {file?.Length}");
 
-                if (file == null || file.Length == 0)
-                {
-                    return BadRequest(ApiResponse<string>.Fail("Vui lòng chọn file ảnh"));
-                }
+                var error = ValidateFile(file);
+                if (error != null)
+                    return BadRequest(ApiResponse<string>.Fail(error));
 
-                if (file.Length > MaxFileSize)
-                {
-                    return BadRequest(ApiResponse<string>.Fail("File quá lớn, tối đa 5MB"));
-                }
-
-                var ext = Path.GetExtension(file.FileName).ToLowerInvariant();
-                if (!AllowedExtensions.Contains(ext))
-                {
-                    return BadRequest(ApiResponse<string>.Fail("Chỉ chấp nhận ảnh .jpg, .jpeg, .png, .webp, .gif"));
-                }
-
-                // Xử lý thư mục wwwroot an toàn
-                var webRoot = _env.WebRootPath;
-                if (string.IsNullOrEmpty(webRoot))
-                {
-                    webRoot = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
-                    if (!Directory.Exists(webRoot))
-                    {
-                        Directory.CreateDirectory(webRoot);
-                    }
-                }
-
-                var uploadFolder = Path.Combine(webRoot, "uploads", "activities");
-                if (!Directory.Exists(uploadFolder))
-                {
-                    Directory.CreateDirectory(uploadFolder);
-                }
-
-                var fileName = $"{Guid.NewGuid()}{ext}";
-                var filePath = Path.Combine(uploadFolder, fileName);
-
-                using (var stream = new FileStream(filePath, FileMode.Create))
-                {
-                    await file.CopyToAsync(stream);
-                }
-
-                var url = $"/uploads/activities/{fileName}";
+                var url = await SaveFileAsync(file!, "activities");
                 Console.WriteLine($"Upload success: {url}");
 
                 return Ok(new
@@ -83,6 +86,30 @@ namespace ClubManagement.API.Controllers
             {
                 Console.WriteLine($"ERROR: {ex.Message}");
                 Console.WriteLine($"STACK: {ex.StackTrace}");
+                return StatusCode(500, ApiResponse<string>.Fail($"Lỗi server: {ex.Message}"));
+            }
+        }
+
+        [HttpPost("avatar")]
+        [Authorize]
+        public async Task<IActionResult> UploadAvatar([FromForm] IFormFile thumbnail)
+        {
+            try
+            {
+                var error = ValidateFile(thumbnail);
+                if (error != null)
+                    return BadRequest(ApiResponse<string>.Fail(error));
+
+                var avatarUrl = await SaveFileAsync(thumbnail, "avatars/thumbs");
+                return Ok(new
+                {
+                    success = true,
+                    data = new { avatarUrl },
+                    message = "Upload ảnh đại diện thành công"
+                });
+            }
+            catch (Exception ex)
+            {
                 return StatusCode(500, ApiResponse<string>.Fail($"Lỗi server: {ex.Message}"));
             }
         }

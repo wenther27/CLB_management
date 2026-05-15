@@ -69,6 +69,20 @@ namespace ClubManagement.API.Controllers
             return Ok(ApiResponse<MemberDTO>.Ok(result, "Cập nhật profile thành công"));
         }
 
+        // PUT /api/members/me/avatar
+        [HttpPut("me/avatar")]
+        public async Task<IActionResult> UpdateMyAvatar([FromBody] UpdateAvatarDTO dto)
+        {
+            if (string.IsNullOrWhiteSpace(dto.AvatarUrl))
+                return BadRequest(ApiResponse<string>.Fail("avatarUrl không được để trống"));
+
+            var result = await _memberService.UpdateAvatarAsync(GetUserId(), dto);
+            if (result == null)
+                return NotFound(ApiResponse<string>.Fail("Không tìm thấy thành viên"));
+
+            return Ok(ApiResponse<MemberDTO>.Ok(result, "Cập nhật ảnh đại diện thành công"));
+        }
+
         // PUT /api/members/{id}  → Admin cập nhật (kể cả Position, Status)
         [HttpPut("{id:int}")]
         [Authorize(Roles = "Admin")]

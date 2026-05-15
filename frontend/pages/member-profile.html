@@ -17,7 +17,7 @@
       <a href="../pages/index.html">Trang chủ</a>
       <a href="../pages/activities.html">Hoạt động</a>
       <a href="../pages/posts.html">Tin Tức</a>
-      <a href="../pages/member-profile.html" class="active">Thành Viên</a>
+      <a href="../pages/members.html" class="active">Thành Viên</a>
     </nav>
     <div class="nav-right" id="navActions"></div>
   </div>
@@ -55,8 +55,24 @@
             <div class="profile-card" style="margin-bottom:16px">
               <div class="profile-cover"></div>
               <div class="profile-avatar-wrap">
-                <div class="profile-avatar" id="avatarInitials">?</div>
+              <div style="position:relative;display:inline-block">
+                <div class="profile-avatar" id="avatarDisplay">
+                  <span id="avatarInitials">?</span>
+                </div>
+                <button onclick="openAvatarEditor()" style="
+                  position:absolute;bottom:4px;right:4px;
+                  width:28px;height:28px;border-radius:50%;
+                  background:#ff2d55;border:2px solid #111827;
+                  color:white;font-size:11px;cursor:pointer;
+                  display:flex;align-items:center;justify-content:center;
+                  transition:transform 0.2s"
+                  onmouseover="this.style.transform='scale(1.1)'"
+                  onmouseout="this.style.transform='scale(1)'"
+                  title="Thay đổi ảnh đại diện">
+                  <i class="fa-solid fa-camera"></i>
+                </button>
               </div>
+            </div>
               <div class="profile-info">
                 <div class="profile-name" id="profileName">—</div>
                 <div class="profile-sub" id="profileSub">Thành viên CLB</div>
@@ -108,8 +124,7 @@
 
           <!-- Cột phải: Tabs nội dung -->
           <div>
-            <!-- Tab buttons -->
-            <div style="display:flex;gap:4px;background:#ffffff;border-radius:10px;padding:5px;margin-bottom:24px;border:1px solid #e2e8f0">
+            <div style="display:flex;gap:4px;background:#111827;border-radius:10px;padding:5px;margin-bottom:24px;border:1px solid rgba(255,255,255,0.06)">
               <button class="tab-btn active" id="tab-history" onclick="showTab('history')"
                 style="flex:1;padding:9px;border:none;border-radius:7px;background:rgba(255,45,85,0.15);
                        color:#ff2d55;cursor:pointer;font-size:13px;font-weight:700;font-family:Arial,sans-serif;
@@ -162,19 +177,7 @@
                 </div>
                 <div class="form-group">
                   <label class="form-label">Khoa</label>
-                  <select id="edit-faculty" class="form-control" aria-label="Chọn khoa">
-                    <option value="">-- Chọn khoa --</option>
-                    <option value="Điện tử - Viễn thông">Điện tử - Viễn thông</option>
-                    <option value="Công nghệ thông tin">Công nghệ thông tin</option>
-                    <option value="Cơ khí">Cơ khí</option>
-                    <option value="Xây dựng">Xây dựng</option>
-                    <option value="Kiến trúc">Kiến trúc</option>
-                    <option value="Hóa">Hóa</option>
-                    <option value="Môi trường">Môi trường</option>
-                    <option value="Điện">Điện</option>
-                    <option value="Cơ khí giao thông">Cơ khí giao thông</option>
-                    <option value="Khoa học công nghệ tiên tiến">Khoa học công nghệ tiên tiến</option>
-                  </select>
+                  <input id="edit-faculty" class="form-control" placeholder="Điện tử - Viễn thông">
                 </div>
               </div>
               <button onclick="saveProfile()" class="btn-primary" style="padding:11px 24px">
@@ -197,7 +200,6 @@
                 <label class="form-label">Xác nhận mật khẩu mới *</label>
                 <input type="password" id="pwd-confirm" class="form-control" placeholder="Nhập lại mật khẩu mới">
               </div>
-              <!-- Strength bar -->
               <div id="pwdStrengthWrap" style="margin:-8px 0 14px;display:none">
                 <div style="display:flex;gap:4px;margin-bottom:4px">
                   <div class="ps-bar" style="height:3px;flex:1;border-radius:2px;background:#1e293b;transition:background 0.3s"></div>
@@ -228,13 +230,82 @@
   </div>
 </footer>
 
-<!-- Detail modal (dùng shared.js) -->
+<!-- Detail modal -->
 <div class="modal-overlay" id="detailModal">
   <div class="modal" style="max-width:640px" id="detailBody"></div>
 </div>
 
+<!-- Avatar Editor Modal -->
+<div id="avatarEditorModal" style="
+  display:none;position:fixed;inset:0;z-index:5000;
+  background:rgba(0,0,0,0.85);backdrop-filter:blur(8px);
+  align-items:center;justify-content:center">
+
+  <div style="
+    background:#111827;border:1px solid rgba(255,255,255,0.09);
+    border-radius:20px;padding:28px;width:90%;max-width:440px;
+    position:relative">
+
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+      <div style="font-size:17px;font-weight:700">Chỉnh sửa ảnh đại diện</div>
+      <button onclick="closeAvatarEditor()" style="
+        width:30px;height:30px;border-radius:50%;background:#1e293b;
+        border:1px solid rgba(255,255,255,0.08);color:#94a3b8;
+        cursor:pointer;font-size:14px;display:flex;
+        align-items:center;justify-content:center">✕</button>
+    </div>
+
+    <!-- Vùng crop -->
+    <div style="position:relative;margin-bottom:20px">
+      <div id="cropContainer" style="
+        width:100%;height:320px;background:#0a0f1c;
+        border-radius:12px;overflow:hidden;position:relative;
+        cursor:grab;user-select:none">
+        <img id="cropImage" style="
+          position:absolute;transform-origin:center center;
+          max-width:none;display:none;pointer-events:none" draggable="false">
+        <!-- Overlay tròn -->
+        <div style="
+          position:absolute;inset:0;
+          display:flex;align-items:center;justify-content:center;
+          pointer-events:none">
+          <div style="
+            width:220px;height:220px;border-radius:50%;
+            border:3px solid #ff2d55;
+            box-shadow:0 0 0 9999px rgba(0,0,0,0.55)">
+          </div>
+        </div>
+      </div>
+      <input type="file" id="avatarFileInput" accept="image/*"
+             style="display:none" onchange="handleAvatarFile(event)">
+    </div>
+
+    <!-- Controls -->
+    <div style="margin-bottom:20px">
+      <label style="font-size:12px;color:#64748b;margin-bottom:8px;display:block">
+        <i class="fa-solid fa-magnifying-glass"></i> Phóng to / Thu nhỏ
+      </label>
+      <input type="range" id="zoomSlider" min="0.5" max="3" step="0.01" value="1"
+             oninput="applyTransform()"
+             style="width:100%;accent-color:#ff2d55">
+    </div>
+
+    <div style="display:flex;gap:10px">
+      <button onclick="document.getElementById('avatarFileInput').click()"
+        class="btn-outline" style="flex:1;padding:10px;font-size:13px">
+        <i class="fa-solid fa-upload"></i> Chọn ảnh khác
+      </button>
+      <button onclick="saveAvatar()"
+        class="btn-primary" style="flex:1;padding:10px;font-size:13px">
+        <i class="fa-solid fa-check"></i> Xác nhận lưu
+      </button>
+    </div>
+
+    <div id="avatarSaveStatus" style="text-align:center;margin-top:12px;font-size:13px"></div>
+  </div>
+</div>
+
 <script src="../js/app/shared.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <script src="../js/app/api.js"></script>
 <script src="../js/app/auth-modal.js"></script>
 <script src="../js/pages/member-profile.js"></script>
@@ -244,6 +315,11 @@
 let _profile = null;
 let _regPage = 1;
 const _regPageSize = 6;
+
+// ── Avatar Editor state ───────────────────────────────────────────────────────
+let _drag = { active: false, startX: 0, startY: 0 };
+let _imgNaturalW = 0, _imgNaturalH = 0;
+let _currentZoom = 1, _currentX = 0, _currentY = 0;
 
 // ── Khởi động ─────────────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', async () => {
@@ -257,10 +333,53 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('profileView').style.display = 'block';
   await Promise.all([loadProfile(), loadRegistrations()]);
 
-  // Password strength
   document.getElementById('pwd-new').addEventListener('input', function() {
     checkPwdStrength(this.value);
   });
+
+  // ── Drag kéo ảnh (bọc trong DOMContentLoaded để đảm bảo element tồn tại) ──
+  const cropContainer = document.getElementById('cropContainer');
+
+  cropContainer.addEventListener('mousedown', e => {
+    e.preventDefault();
+    _drag.active = true;
+    _drag.startX = e.clientX - _currentX;
+    _drag.startY = e.clientY - _currentY;
+    cropContainer.style.cursor = 'grabbing';
+  });
+
+  document.addEventListener('mousemove', e => {
+    if (!_drag.active) return;
+    _currentX = e.clientX - _drag.startX;
+    _currentY = e.clientY - _drag.startY;
+    const img = document.getElementById('cropImage');
+    img.style.left = _currentX + 'px';
+    img.style.top  = _currentY + 'px';
+  });
+
+  document.addEventListener('mouseup', () => {
+    _drag.active = false;
+    cropContainer.style.cursor = 'grab';
+  });
+
+  // Touch support
+  cropContainer.addEventListener('touchstart', e => {
+    const t = e.touches[0];
+    _drag.active = true;
+    _drag.startX = t.clientX - _currentX;
+    _drag.startY = t.clientY - _currentY;
+  });
+  cropContainer.addEventListener('touchmove', e => {
+    if (!_drag.active) return;
+    e.preventDefault();
+    const t = e.touches[0];
+    _currentX = t.clientX - _drag.startX;
+    _currentY = t.clientY - _drag.startY;
+    const img = document.getElementById('cropImage');
+    img.style.left = _currentX + 'px';
+    img.style.top  = _currentY + 'px';
+  }, { passive: false });
+  cropContainer.addEventListener('touchend', () => { _drag.active = false; });
 });
 
 // ── Load profile ──────────────────────────────────────────────────────────────
@@ -275,25 +394,31 @@ async function loadProfile() {
 }
 
 function renderProfile(p) {
-  // Avatar initials
   const initials = (p.fullName || p.username || '?')
     .split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
-  document.getElementById('avatarInitials').textContent = initials;
+
+  const display = document.getElementById('avatarDisplay');
+  if (display) {
+    if (p.avatarUrl) {
+      const src = p.avatarUrl.startsWith('http')
+        ? p.avatarUrl : 'http://localhost:5190' + p.avatarUrl;
+      display.innerHTML = `<img src="${src}"
+        style="width:100%;height:100%;object-fit:cover;border-radius:50%">`;
+    } else {
+      display.innerHTML = `<span id="avatarInitials">${initials}</span>`;
+    }
+  }
+
   document.getElementById('profileName').textContent = p.fullName || p.username || '—';
   document.getElementById('profileSub').textContent = p.position || p.roleName || 'Thành viên CLB';
-
-  // Badge trạng thái
   document.getElementById('profileStatusBadge').innerHTML = Utils.statusLabel(p.status || 'Active');
-
-  // Info rows
-  document.getElementById('infoEmail').textContent    = p.email    || '—';
-  document.getElementById('infoPhone').textContent    = p.phone    || 'Chưa cập nhật';
-  document.getElementById('infoClass').textContent    = p.className || 'Chưa cập nhật';
-  document.getElementById('infoFaculty').textContent  = p.faculty  || 'Chưa cập nhật';
-  document.getElementById('infoPosition').textContent = p.position || 'Thành viên';
+  document.getElementById('infoEmail').textContent    = p.email      || '—';
+  document.getElementById('infoPhone').textContent    = p.phone      || 'Chưa cập nhật';
+  document.getElementById('infoClass').textContent    = p.className  || 'Chưa cập nhật';
+  document.getElementById('infoFaculty').textContent  = p.faculty    || 'Chưa cập nhật';
+  document.getElementById('infoPosition').textContent = p.position   || 'Thành viên';
   document.getElementById('infoJoinDate').textContent = Utils.formatDate(p.joinDate);
 
-  // Điền form edit sẵn
   document.getElementById('edit-fullname').value = p.fullName  || '';
   document.getElementById('edit-phone').value    = p.phone     || '';
   document.getElementById('edit-class').value    = p.className || '';
@@ -338,23 +463,22 @@ async function loadRegistrations(page = 1) {
         <div style="display:flex;align-items:center;gap:8px">
           ${Utils.statusLabel(reg.status)}
           <button onclick="showActivityDetail(${reg.activityID})"
-            style="background:none;border:1px solid #e2e8f0;color:#64748b;
+            style="background:none;border:1px solid rgba(255,255,255,0.1);color:#94a3b8;
                    padding:5px 10px;border-radius:6px;cursor:pointer;font-size:12px;
                    font-family:Arial,sans-serif;transition:all 0.2s"
             onmouseover="this.style.borderColor='#ff2d55';this.style.color='#ff2d55'"
-            onmouseout="this.style.borderColor='#e2e8f0';this.style.color='#64748b'">
+            onmouseout="this.style.borderColor='rgba(255,255,255,0.1)';this.style.color='#94a3b8'">
             <i class="fa-solid fa-eye"></i>
           </button>
         </div>
       </div>`).join('');
 
-    // Phân trang
     const pag = document.getElementById('regPagination');
     if (totalPages <= 1) { pag.innerHTML = ''; return; }
     pag.innerHTML = Array.from({length: totalPages}, (_, i) => i + 1).map(p => `
       <button onclick="loadRegistrations(${p})" style="
         padding:6px 12px;border-radius:6px;font-size:12px;font-family:Arial,sans-serif;cursor:pointer;
-        border:1px solid ${p === page ? '#ff2d55' : '#e2e8f0'};
+        border:1px solid ${p === page ? '#ff2d55' : 'rgba(255,255,255,0.1)'};
         background:${p === page ? 'rgba(255,45,85,0.15)' : 'transparent'};
         color:${p === page ? '#ff2d55' : '#64748b'}">${p}</button>
     `).join('');
@@ -370,7 +494,7 @@ function showTab(tab) {
     document.getElementById('content-' + t).style.display = t === tab ? 'block' : 'none';
     const btn = document.getElementById('tab-' + t);
     if (t === tab) {
-      btn.style.background = '#fff1f3';
+      btn.style.background = 'rgba(255,45,85,0.15)';
       btn.style.color = '#ff2d55';
     } else {
       btn.style.background = 'transparent';
@@ -443,6 +567,142 @@ function checkPwdStrength(val) {
   const lbl = document.getElementById('pwdStrengthLabel');
   lbl.textContent = labels[score-1] || '';
   lbl.style.color = colors[score-1] || '#475569';
+}
+
+// ── Avatar Editor ─────────────────────────────────────────────────────────────
+function openAvatarEditor() {
+  const modal = document.getElementById('avatarEditorModal');
+  modal.style.display = 'flex';
+  const current = document.getElementById('cropImage');
+  if (_profile?.avatarUrl && current.style.display === 'none') {
+    loadImageToCrop(_profile.avatarUrl.startsWith('http')
+      ? _profile.avatarUrl
+      : 'http://localhost:5190' + _profile.avatarUrl);
+  }
+}
+
+function closeAvatarEditor() {
+  document.getElementById('avatarEditorModal').style.display = 'none';
+}
+
+function handleAvatarFile(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  loadImageToCrop(URL.createObjectURL(file));
+}
+
+function loadImageToCrop(src) {
+  const img = document.getElementById('cropImage');
+  img.onload = () => {
+    _imgNaturalW = img.naturalWidth;
+    _imgNaturalH = img.naturalHeight;
+    img.style.display = 'block';
+    _currentZoom = 1;
+    _currentX = 0;
+    _currentY = 0;
+    document.getElementById('zoomSlider').value = 1;
+    centerImage();
+  };
+  img.src = src;
+}
+
+function centerImage() {
+  const container = document.getElementById('cropContainer');
+  const cw = container.offsetWidth;
+  const ch = container.offsetHeight;
+  const scale = Math.max(cw / _imgNaturalW, ch / _imgNaturalH) * _currentZoom;
+  const w = _imgNaturalW * scale;
+  const h = _imgNaturalH * scale;
+  _currentX = (cw - w) / 2;
+  _currentY = (ch - h) / 2;
+  applyTransform();
+}
+
+function applyTransform() {
+  _currentZoom = parseFloat(document.getElementById('zoomSlider').value);
+  const img = document.getElementById('cropImage');
+  const container = document.getElementById('cropContainer');
+  const cw = container.offsetWidth;
+  const ch = container.offsetHeight;
+  const scale = Math.max(cw / _imgNaturalW, ch / _imgNaturalH) * _currentZoom;
+  const w = _imgNaturalW * scale;
+  const h = _imgNaturalH * scale;
+  img.style.width  = w + 'px';
+  img.style.height = h + 'px';
+  img.style.left   = _currentX + 'px';
+  img.style.top    = _currentY + 'px';
+}
+
+async function saveAvatar() {
+  const img = document.getElementById('cropImage');
+  if (!img.src || img.style.display === 'none') {
+    Toast.error('Vui lòng chọn ảnh trước');
+    return;
+  }
+
+  const status = document.getElementById('avatarSaveStatus');
+  status.innerHTML = '<span style="color:#f59e0b">⏳ Đang xử lý...</span>';
+
+  try {
+    const container = document.getElementById('cropContainer');
+    const cw = container.offsetWidth;
+    const ch = container.offsetHeight;
+    const circleSize = 220;
+    const cx = (cw - circleSize) / 2;
+    const cy = (ch - circleSize) / 2;
+
+    const canvas = document.createElement('canvas');
+    canvas.width  = circleSize;
+    canvas.height = circleSize;
+    const ctx = canvas.getContext('2d');
+
+    ctx.beginPath();
+    ctx.arc(circleSize/2, circleSize/2, circleSize/2, 0, Math.PI * 2);
+    ctx.clip();
+
+    const scale = Math.max(cw / _imgNaturalW, ch / _imgNaturalH) * _currentZoom;
+    ctx.drawImage(img, _currentX - cx, _currentY - cy, _imgNaturalW * scale, _imgNaturalH * scale);
+
+    canvas.toBlob(async (blob) => {
+      try {
+        const formData = new FormData();
+        formData.append('file', blob, 'avatar.jpg');
+
+        const res = await fetch('http://localhost:5190/api/upload/image', {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${Auth.getToken()}` },
+          body: formData,
+        });
+
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        const avatarUrl = data.data;
+
+        await request('PUT', '/members/me/avatar', { avatarUrl }, true);
+
+        const user = Auth.getUser();
+        if (user) { user.avatarUrl = avatarUrl; Auth.setUser(user); }
+
+        updateAvatarDisplay(avatarUrl);
+        updateNavbar();
+        closeAvatarEditor();
+        Toast.success('Cập nhật ảnh đại diện thành công!');
+
+      } catch(err) {
+        status.innerHTML = `<span style="color:#ff2d55">❌ ${err.message}</span>`;
+      }
+    }, 'image/jpeg', 0.92);
+
+  } catch(e) {
+    status.innerHTML = `<span style="color:#ff2d55">❌ ${e.message}</span>`;
+  }
+}
+
+function updateAvatarDisplay(avatarUrl) {
+  const display = document.getElementById('avatarDisplay');
+  if (!display || !avatarUrl) return;
+  const src = avatarUrl.startsWith('http') ? avatarUrl : 'http://localhost:5190' + avatarUrl;
+  display.innerHTML = `<img src="${src}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`;
 }
 </script>
 

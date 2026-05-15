@@ -15,6 +15,7 @@ namespace ClubManagement.API.Service
         Task<MemberDTO?> GetByIdAsync(int memberId);
         Task<MemberDTO?> GetByUserIdAsync(int userId);
         Task<MemberDTO?> UpdateProfileAsync(int userId, UpdateProfileDTO dto);
+        Task<MemberDTO?> UpdateAvatarAsync(int userId, UpdateAvatarDTO dto);
         Task<MemberDTO?> AdminUpdateAsync(int memberId, UpdateMemberDTO dto);
         Task<bool> DeactivateAsync(int memberId);
         Task<bool> ChangePasswordAsync(int userId, ChangePasswordDTO dto);
@@ -39,8 +40,12 @@ namespace ClubManagement.API.Service
             JoinDate = m.JoinDate,
             Username = m.User?.Username,
             Email = m.User?.Email,
+            ContactEmail = m.ContactEmail,
             Phone = m.User?.Phone,
-            RoleName = m.User?.Role?.RoleName
+            RoleName = m.User?.Role?.RoleName,
+            Department = m.Department,
+            DisplayOrder = m.DisplayOrder,
+            AvatarUrl = m.AvatarUrl ?? m.User?.AvatarUrl
         };
         public async Task<PagedResultDTO<MemberDTO>> GetAllAsync(MemberQueryDTO query)
         {
@@ -111,6 +116,18 @@ namespace ClubManagement.API.Service
 
         }
 
+        public async Task<MemberDTO?> UpdateAvatarAsync(int userId, UpdateAvatarDTO dto)
+        {
+            var member = await _context.Members
+                .Include(m => m.User).ThenInclude(u => u!.Role)
+                .FirstOrDefaultAsync(m => m.UserID == userId);
+            if (member == null) return null;
+
+            member.AvatarUrl = dto.AvatarUrl;
+            await _context.SaveChangesAsync();
+            return MapToDTO(member);
+        }
+
         public async Task <MemberDTO?> AdminUpdateAsync (int memberId, UpdateMemberDTO dto)
         {
             var member = await _context.Members
@@ -134,6 +151,10 @@ namespace ClubManagement.API.Service
                     member.User.Phone = dto.Phone;
                     member.User.UpdatedAt = DateTime.UtcNow;
                 }
+                member.Department = string.IsNullOrEmpty(dto.Department) ? null : dto.Department;
+                if (dto.DisplayOrder.HasValue) member.DisplayOrder = dto.DisplayOrder.Value;
+                if (dto.AvatarUrl != null) member.AvatarUrl = dto.AvatarUrl == "" ? null : dto.AvatarUrl;
+                if (dto.ContactEmail != null) member.ContactEmail = dto.ContactEmail == "" ? null : dto.ContactEmail;
                 await _context.SaveChangesAsync();
                 return MapToDTO(member);
             
