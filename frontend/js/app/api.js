@@ -204,24 +204,88 @@ function updateNavbar() {
   const navActions = document.getElementById('navActions');
   if (!navActions) return;
   if (user){
+    const profileAvatar = user.avatarUrl
+  ? `<img src="${user.avatarUrl.startsWith('http')
+      ? user.avatarUrl
+      : 'http://localhost:5190' + user.avatarUrl}"
+      alt="Avatar"
+      style="width:40px;height:40px;border-radius:50%;object-fit:cover">`
+  : `<span style="
+      width:40px;height:40px;border-radius:50%;
+      display:inline-flex;align-items:center;justify-content:center;
+      background:#ff2d55;color:#fff;font-size:14px;font-weight:700">
+      ${(user.username || '?').slice(0, 2).toUpperCase()}
+    </span>`;
     let roleLabel = '';
     let roleClass = '';
-    if (user.role === 'Admin') {
-      navActions.innerHTML = `
-        <span class="navbar-user"><i class="fa-solid fa-crown" style="color: rgb(255, 212, 59);"></i> ${Utils.escapeHtml(user.username)} (${user.role})</span>
-        <a href="admin-dashboard.html" class="btn btn-gold btn-sm"><i class="fa-solid fa-user-gear" style="color: rgb(0, 0, 0);"></i> Quản trị</a>
-        <button onclick="logout()" class="btn btn-secondary btn-sm">Đăng xuất</button>
-      `;
-    } else if (user.role === 'ExecutiveBoard') {
-      navActions.innerHTML = `
-        <span class="navbar-user"><i class="fa-regular fa-clipboard" style="color: rgb(116, 192, 252);"></i> ${Utils.escapeHtml(user.username)} (${user.role})</span>
-        <a href="admin-dashboard.html" class="btn btn-gold btn-sm"><i class="fa-solid fa-user-gear" style="color: rgb(249, 0, 0);"></i>Quản trị</a>
-        <button onclick="logout()" class="btn btn-secondary btn-sm">Đăng xuất</button>
-      `;
-    } else if (user.role === 'Member') {
+  if (user.role === 'Admin') {
+  navActions.innerHTML = `
+    <span class="navbar-user">
+  <i class="fa-solid fa-crown" style="color: rgb(255, 212, 59);"></i>
+  ${Utils.escapeHtml(user.username)} (${user.role})
+</span>
+
+<a href="member-profile.html" title="Hồ sơ"
+   style="
+     width:44px;height:44px;
+     display:flex;align-items:center;justify-content:center;
+     padding:0;
+     border:1px solid #e2e8f0;
+     border-radius:50%;
+     background:#fff;
+     text-decoration:none;
+     overflow:hidden;
+   ">
+  ${profileAvatar}
+</a>
+
+<a href="admin-dashboard.html" class="btn btn-gold btn-sm">
+  <i class="fa-solid fa-user-gear" style="color: rgb(0, 0, 0);"></i> Quản trị
+</a>
+    <button onclick="logout()" class="btn btn-secondary btn-sm">Đăng xuất</button>
+  `;
+} else if (user.role === 'ExecutiveBoard') {
+  navActions.innerHTML = `
+    <span class="navbar-user">
+  <i class="fa-regular fa-clipboard" style="color: rgb(116, 192, 252);"></i>
+  ${Utils.escapeHtml(user.username)} (${user.role})
+</span>
+
+<a href="member-profile.html" title="Hồ sơ"
+   style="
+     width:44px;height:44px;
+     display:flex;align-items:center;justify-content:center;
+     padding:0;
+     border:1px solid #e2e8f0;
+     border-radius:50%;
+     background:#fff;
+     text-decoration:none;
+     overflow:hidden;
+   ">
+  ${profileAvatar}
+</a>
+
+<a href="admin-dashboard.html" class="btn btn-gold btn-sm">
+  <i class="fa-solid fa-user-gear" style="color: rgb(249, 0, 0);"></i> Quản trị
+</a>
+    <button onclick="logout()" class="btn btn-secondary btn-sm">Đăng xuất</button>
+  `;
+} else if (user.role === 'Member') {
       navActions.innerHTML = `
         <span class="navbar-user"><i class="fa-regular fa-user" style="color: rgb(251, 251, 251);"></i> ${Utils.escapeHtml(user.username)}</span>
-        <a href="member-profile.html" class="btn btn-secondary btn-sm">Hồ sơ</a>
+        <a href="member-profile.html" class="btn btn-secondary btn-sm" title="Hồ sơ"
+   style="
+     width:44px;height:44px;
+     display:flex;align-items:center;justify-content:center;
+     padding:0;
+     border:1px solid #e2e8f0;
+     border-radius:50%;
+     background:#fff;
+     text-decoration:none;
+     overflow:hidden;
+   ">
+  ${profileAvatar}
+</a>
         <button onclick="logout()" class="btn btn-secondary btn-sm">Đăng xuất</button>
       `;
     }

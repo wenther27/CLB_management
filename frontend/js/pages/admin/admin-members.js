@@ -95,8 +95,8 @@ async function viewMember(id) {
       </div>
 
       <div style="display:flex;align-items:center;gap:16px;margin-bottom:22px;
-                  padding:16px;background:#0a0f1c;border-radius:10px;
-                  border:1px solid rgba(255,255,255,0.06)">
+                  padding:16px;background:#f8fafc;border-radius:10px;
+                  border:1px solid #e2e8f0">
         <div style="width:56px;height:56px;border-radius:50%;background:#ff2d55;
                     display:flex;align-items:center;justify-content:center;
                     font-size:20px;font-weight:700;color:white;flex-shrink:0">${initials}</div>
@@ -117,13 +117,13 @@ async function viewMember(id) {
           ['fa-shield-halved',   'Vai trò',       m.roleName || 'Member'],
           ['fa-calendar-plus',   'Ngày tham gia', Utils.formatDate(m.joinDate)],
         ].map(([ico, lbl, val]) => `
-          <div style="background:#0a0f1c;border-radius:8px;padding:12px;
-                      border:1px solid rgba(255,255,255,0.05)">
-            <div style="font-size:11px;color:#334155;text-transform:uppercase;
+          <div style="background:#f8fafc;border-radius:8px;padding:12px;
+                      border:1px solid #e2e8f0">
+            <div style="font-size:11px;color:#64748b;text-transform:uppercase;
                         letter-spacing:.05em;margin-bottom:5px">
               <i class="fa-solid ${ico}" style="color:#475569;margin-right:5px"></i>${lbl}
             </div>
-            <div style="font-size:13px;color:#e2e8f0;font-weight:600">
+            <div style="font-size:13px;color:#0f172a;font-weight:600">
               ${Utils.escapeHtml(String(val || '—'))}
             </div>
           </div>`).join('')}
