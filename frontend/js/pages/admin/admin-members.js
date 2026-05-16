@@ -45,9 +45,9 @@ async function loadMembers() {
             </div>
           </div>
         </td>
-        <td style="color:#94a3b8;font-size:13px">${Utils.escapeHtml(m.className || '—')}</td>
-        <td style="color:#94a3b8;font-size:13px">${Utils.escapeHtml(m.faculty || '—')}</td>
-        <td style="color:#94a3b8;font-size:13px">${Utils.escapeHtml(m.position || 'Thành viên')}</td>
+        <td style="color:#000000;font-size:13px">${Utils.escapeHtml(m.className || '—')}</td>
+        <td style="color:#000000;font-size:13px">${Utils.escapeHtml(m.faculty || '—')}</td>
+        <td style="color:#000000;font-size:13px">${Utils.escapeHtml(m.position || 'Thành viên')}</td>
         <td>${Utils.statusLabel(m.status || 'Active')}</td>
         <td>
           <div style="display:flex;gap:6px">
@@ -179,7 +179,11 @@ const FACULTIES = [
 ];
 
 function openMemberModal(data = {}) {
-  const facultyOptions = FACULTIES.map(f => `
+  const facultyList = data.faculty && !FACULTIES.includes(data.faculty)
+    ? [data.faculty, ...FACULTIES]
+    : FACULTIES;
+
+  const facultyOptions = facultyList.map(f => `
     <option value="${f}" ${data.faculty === f ? 'selected' : ''}>${f}</option>
   `).join('');
 
@@ -193,12 +197,12 @@ function openMemberModal(data = {}) {
     <div class="form-row">
       <div class="form-group">
         <label class="form-label">Họ và tên *</label>
-        <input id="mf-name" class="form-control" placeholder="Nguyễn Văn A"
+        <input id="mf-name" class="form-control"
                value="${Utils.escapeHtml(data.fullName || '')}">
       </div>
       <div class="form-group">
         <label class="form-label">Số điện thoại</label>
-        <input id="mf-phone" class="form-control" placeholder="0901234567"
+        <input id="mf-phone" class="form-control"
                value="${Utils.escapeHtml(data.phone || '')}">
       </div>
     </div>
@@ -207,7 +211,6 @@ function openMemberModal(data = {}) {
     <div class="form-group">
       <label class="form-label">Email liên lạc</label>
       <input id="mf-contact-email" class="form-control"
-             placeholder="abc@gmail.com"
              value="${Utils.escapeHtml(data.contactEmail || '')}">
     </div>
 
@@ -215,7 +218,7 @@ function openMemberModal(data = {}) {
     <div class="form-row">
       <div class="form-group">
         <label class="form-label">Lớp</label>
-        <input id="mf-class" class="form-control" placeholder="22TCLC_DT1"
+        <input id="mf-class" class="form-control"
                value="${Utils.escapeHtml(data.className || '')}">
       </div>
       <div class="form-group">
@@ -232,7 +235,6 @@ function openMemberModal(data = {}) {
       <div class="form-group">
         <label class="form-label">Chức vụ</label>
         <input id="mf-pos" class="form-control"
-               placeholder="Chủ nhiệm, Trưởng ban..."
                value="${Utils.escapeHtml(data.position || '')}">
       </div>
       <div class="form-group">
@@ -263,7 +265,7 @@ function openMemberModal(data = {}) {
       <div class="form-group">
         <label class="form-label">Thứ tự hiển thị</label>
         <input type="number" id="mf-order" class="form-control"
-               placeholder="1, 2, 3..." min="1"
+               min="1"
                value="${data.displayOrder || ''}">
       </div>
     </div>

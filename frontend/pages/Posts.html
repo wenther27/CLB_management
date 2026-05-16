@@ -18,7 +18,7 @@
       <a href="../pages/index.html">Trang chủ</a>
       <a href="../pages/activities.html">Hoạt động</a>
       <a href="../pages/Posts.html" class="active">Tin Tức</a>
-      <a href="../pages/member-profile.html">Thành Viên</a>
+      <a href="../pages/members.html">Thành Viên</a>
     </nav>
     <div class="nav-right" id="navActions">
       <button class="login" onclick="AuthModal.open('login')">Đăng Nhập</button>
@@ -46,7 +46,10 @@
 
       <!-- Search bar -->
       <div class="posts-filter">
-        <input id="searchPost" placeholder="🔍 Tìm kiếm bài viết..." oninput="filterPosts()">
+        <div class="search-input-wrap">
+          <i class="fa-solid fa-magnifying-glass"></i>
+          <input id="searchPost" placeholder="Tìm kiếm bài viết..." oninput="filterPosts()">
+        </div>
         <span class="posts-count" id="postsCount"></span>
       </div>
 
@@ -56,11 +59,11 @@
         <div>
           <!-- Category tags -->
           <div style="margin-bottom:24px;display:flex;flex-wrap:wrap;gap:8px">
-            <span class="category-tag all active" onclick="filterByCategory('', this)">📰 Tất cả</span>
-            <span class="category-tag news" onclick="filterByCategory('Tin tức', this)">⭐ Tin tức</span>
-            <span class="category-tag notice" onclick="filterByCategory('Thông báo', this)">📢 Thông báo</span>
-            <span class="category-tag event" onclick="filterByCategory('Hoạt động', this)">🎯 Hoạt động</span>
-            <span class="category-tag recruit" onclick="filterByCategory('Tuyển thành viên', this)">🌟 Tuyển thành viên</span>
+            <span class="category-tag all active" onclick="filterByCategory('', this)"><i class="fa-solid fa-layer-group"></i> Tất cả</span>
+            <span class="category-tag news" onclick="filterByCategory('Tin tức', this)"><i class="fa-solid fa-newspaper"></i> Tin tức</span>
+            <span class="category-tag notice" onclick="filterByCategory('Thông báo', this)"><i class="fa-solid fa-bullhorn"></i> Thông báo</span>
+            <span class="category-tag event" onclick="filterByCategory('Hoạt động', this)"><i class="fa-solid fa-calendar-days"></i> Hoạt động</span>
+            <span class="category-tag recruit" onclick="filterByCategory('Tuyển thành viên', this)"><i class="fa-solid fa-user-plus"></i> Tuyển thành viên</span>
           </div>
 
           <div id="postsFeed">
@@ -94,7 +97,7 @@
 
           <!-- Giới thiệu -->
           <div class="sidebar-card" style="background:linear-gradient(135deg,rgba(232,33,58,0.05),rgba(15,76,129,0.03));border-color:rgba(232,33,58,0.15)">
-            <div style="font-size:32px;margin-bottom:10px;text-align:center">❤️</div>
+            <div style="font-size:28px;margin-bottom:10px;text-align:center;color:#e8213a"><i class="fa-solid fa-heart"></i></div>
             <div style="font-size:15px;font-weight:700;margin-bottom:6px;text-align:center;color:#111827">CLB CTXH DUT</div>
             <div style="font-size:12px;color:#6b7280;line-height:1.7;text-align:center">
               Câu lạc bộ Công tác Xã hội<br>

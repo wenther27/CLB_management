@@ -32,6 +32,7 @@ public class User
     public Member? Member { get; set; }
     public ICollection <ClubActivity> ? CreatedActivities { get; set; }
     public ICollection <Post> ? Posts { get; set; }
+    public ICollection<PostLike>? PostLikes { get; set; }
 
     public ICollection <Notification> ? Notifications { get; set; }
 

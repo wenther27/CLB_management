@@ -7,8 +7,6 @@
 // ── State ──────────────────────────────────────────────────────────────────────
 let allPosts = [];
 let currentCategory = '';
-let likedPosts = new Set(JSON.parse(localStorage.getItem('ctxh_liked_posts') || '[]'));
-let likeCounts = JSON.parse(localStorage.getItem('ctxh_like_counts') || '{}');
 
 // ── Bootstrap ─────────────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', async () => {
@@ -47,9 +45,9 @@ async function loadPosts() {
     if (feed) {
       feed.innerHTML = `
         <div style="text-align:center;padding:60px 20px;background:white;border-radius:20px">
-          <div style="font-size:3rem;margin-bottom:14px">📭</div>
+          <div style="font-size:2rem;margin-bottom:14px;color:#94a3b8"><i class="fa-regular fa-folder-open"></i></div>
           <p style="color:#e8213a;margin-bottom:14px">${e.message}</p>
-          <button class="btn-outline" onclick="loadPosts()" style="padding:10px 24px">🔄 Thử lại</button>
+          <button class="btn-outline" onclick="loadPosts()" style="padding:10px 24px"><i class="fa-solid fa-rotate-right"></i> Thử lại</button>
         </div>`;
     }
   }
@@ -76,7 +74,7 @@ function renderFeed() {
   if (!filtered.length) {
     feed.innerHTML = `
       <div style="text-align:center;padding:60px 20px;background:white;border-radius:20px">
-        <div style="font-size:3rem;margin-bottom:14px">🔍</div>
+        <div style="font-size:2rem;margin-bottom:14px;color:#94a3b8"><i class="fa-solid fa-magnifying-glass"></i></div>
         <p style="color:#475569">Không tìm thấy bài viết phù hợp</p>
         <button class="btn-outline" style="margin-top:12px;padding:10px 24px" onclick="clearFilters()">Xóa bộ lọc</button>
       </div>`;
@@ -90,8 +88,9 @@ function renderFeed() {
 function renderPostCard(p) {
   const catCfg = getCatConfig(p.category);
   const initials = getInitials(p.authorName || 'CLB');
-  const likeCount = likeCounts[p.postID] || 0;
-  const isLiked = likedPosts.has(p.postID);
+  const authorAvatarHtml = buildAuthorAvatar(p.authorAvatarUrl, initials);
+  const likeCount = p.likeCount || 0;
+  const isLiked = p.isLikedByCurrentUser === true;
 
   // Xử lý nội dung
   const CONTENT_LIMIT = 350;
@@ -114,7 +113,7 @@ function renderPostCard(p) {
     <div class="post-reactions-summary">
       <div class="reactions-left" onclick="toggleLike(${p.postID})">
         <div class="reaction-emoji-stack">
-          <div class="reaction-emoji">❤️</div>
+          <div class="reaction-emoji"><i class="fa-solid fa-heart"></i></div>
         </div>
         <span class="reactions-count">${likeCount} người thích</span>
       </div>
@@ -126,7 +125,7 @@ function renderPostCard(p) {
   <article class="post-card" id="post-${p.postID}">
     <!-- Header -->
     <div class="post-header">
-      <div class="post-avatar">${initials}</div>
+      ${authorAvatarHtml}
       <div class="post-author-info">
         <div class="post-author-name">${escapeHtml(p.authorName || 'CLB CTXH DUT')}</div>
         <div class="post-meta-row">
@@ -188,14 +187,6 @@ function buildImagesGrid(images) {
     return `<img src="${src}" alt="Hình ảnh bài viết" onclick="event.stopPropagation(); openLightbox('${src}')" loading="lazy" onerror="this.style.display='none'">`;
   }).join('');
   
-  // Style đặc biệt cho 3 ảnh
-  if (count === 3) {
-    return `<div class="${cls}" style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
-      <div style="grid-row:span 2">${imgs.split('</div>')[0]}</div>
-      <div style="display:flex;flex-direction:column;gap:6px">${imgs.split('</div>').slice(1).join('</div>')}</div>
-    </div>`;
-  }
-  
   return `<div class="${cls}">${imgs}</div>`;
 }
 
@@ -218,38 +209,46 @@ function toggleReadMore(postId) {
 }
 
 // ── Like / Unlike ─────────────────────────────────────────────────────────────
-function toggleLike(postId) {
+async function toggleLike(postId) {
   const btn = document.getElementById(`like-btn-${postId}`);
   const lbl = document.getElementById(`like-label-${postId}`);
 
   if (!Auth.isLoggedIn()) {
-    Toast.info('Đăng nhập để thả ❤️ bài viết');
+    Toast.info('Đăng nhập để thích bài viết');
     setTimeout(() => AuthModal.open('login'), 600);
     return;
   }
 
-  const wasLiked = likedPosts.has(postId);
+  const post = allPosts.find(p => p.postID === postId);
+  if (!post) return;
 
-  if (wasLiked) {
-    likedPosts.delete(postId);
-    likeCounts[postId] = Math.max(0, (likeCounts[postId] || 1) - 1);
-    if (btn) btn.classList.remove('liked');
-    if (lbl) lbl.textContent = 'Thích';
-    Toast.info('Đã bỏ thích bài viết');
-  } else {
-    likedPosts.add(postId);
-    likeCounts[postId] = (likeCounts[postId] || 0) + 1;
-    if (btn) btn.classList.add('liked');
-    if (lbl) lbl.textContent = 'Đã thích';
-    Toast.success('❤️ Đã thích bài viết!');
+  if (btn) btn.disabled = true;
+
+  try {
+    const response = post.isLikedByCurrentUser
+      ? await API.unlikePost(postId)
+      : await API.likePost(postId);
+    const updated = response.data;
+
+    Object.assign(post, updated);
+    if (btn) {
+      btn.classList.toggle('liked', post.isLikedByCurrentUser === true);
+      btn.querySelector('.btn-icon').innerHTML = post.isLikedByCurrentUser
+        ? '<i class="fa-solid fa-heart"></i>'
+        : '<i class="fa-regular fa-heart"></i>';
+    }
+    if (lbl) lbl.textContent = post.isLikedByCurrentUser ? 'Đã thích' : 'Thích';
+
+    Toast[post.isLikedByCurrentUser ? 'success' : 'info'](
+      post.isLikedByCurrentUser ? 'Đã thích bài viết!' : 'Đã bỏ thích bài viết'
+    );
+    updateReactionsSummary(postId);
+    renderSidebar();
+  } catch (e) {
+    Toast.error(e.message);
+  } finally {
+    if (btn) btn.disabled = false;
   }
-
-  // Lưu localStorage
-  localStorage.setItem('ctxh_liked_posts', JSON.stringify([...likedPosts]));
-  localStorage.setItem('ctxh_like_counts', JSON.stringify(likeCounts));
-
-  // Cập nhật UI
-  updateReactionsSummary(postId);
 }
 
 // ── Cập nhật reactions summary ─────────────────────────────────────────────────
@@ -257,7 +256,8 @@ function updateReactionsSummary(postId) {
   const articleEl = document.getElementById(`post-${postId}`);
   if (!articleEl) return;
 
-  const count = likeCounts[postId] || 0;
+  const post = allPosts.find(p => p.postID === postId);
+  const count = post?.likeCount || 0;
   
   // Xóa summary cũ
   const existingSummary = articleEl.querySelector('.post-reactions-summary');
@@ -276,7 +276,7 @@ function updateReactionsSummary(postId) {
       <div class="post-reactions-summary">
         <div class="reactions-left" onclick="toggleLike(${postId})">
           <div class="reaction-emoji-stack">
-            <div class="reaction-emoji">❤️</div>
+            <div class="reaction-emoji"><i class="fa-solid fa-heart"></i></div>
           </div>
           <span class="reactions-count">${count} người thích</span>
         </div>
@@ -311,12 +311,17 @@ function renderSidebar() {
   const cats = {};
   allPosts.forEach(p => { cats[p.category] = (cats[p.category] || 0) + 1; });
 
-  const catIco = { 'Tin tức': '📰', 'Thông báo': '📢', 'Hoạt động': '🎯', 'Tuyển thành viên': '⭐' };
+  const catIco = {
+    'Tin tức': '<i class="fa-solid fa-newspaper"></i>',
+    'Thông báo': '<i class="fa-solid fa-bullhorn"></i>',
+    'Hoạt động': '<i class="fa-solid fa-calendar-days"></i>',
+    'Tuyển thành viên': '<i class="fa-solid fa-user-plus"></i>'
+  };
   const catCls = { 'Tin tức': 'badge-gold', 'Thông báo': 'badge-blue', 'Hoạt động': 'badge-open', 'Tuyển thành viên': 'badge-red' };
 
   const catHtml = Object.entries(cats).map(([name, cnt]) => `
     <div class="category-list-item" onclick="filterByCategory('${name}', null)">
-      <span style="font-size:13px;color:#334155">${catIco[name] || '📁'} ${name}</span>
+      <span style="font-size:13px;color:#334155">${catIco[name] || '<i class="fa-solid fa-folder"></i>'} ${name}</span>
       <span class="badge ${catCls[name] || 'badge-closed'}" style="font-size:11px">${cnt}</span>
     </div>`).join('');
 
@@ -327,8 +332,8 @@ function renderSidebar() {
 
   // Trending (most liked)
   const trending = [...allPosts].sort((a, b) => {
-    const likesA = likeCounts[a.postID] || 0;
-    const likesB = likeCounts[b.postID] || 0;
+    const likesA = a.likeCount || 0;
+    const likesB = b.likeCount || 0;
     return likesB - likesA;
   }).slice(0, 5);
 
@@ -426,14 +431,30 @@ function getInitials(name) {
   return (name || 'C').split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
 }
 
+function buildAuthorAvatar(avatarUrl, initials) {
+  if (!avatarUrl) return `<div class="post-avatar">${initials}</div>`;
+
+  const src = avatarUrl.startsWith('http')
+    ? avatarUrl
+    : `http://localhost:5190${avatarUrl.startsWith('/') ? avatarUrl : '/' + avatarUrl}`;
+
+  return `
+    <div class="post-avatar post-avatar-image-wrap">
+      <img class="post-avatar-image"
+           src="${src}"
+           alt="Ảnh đại diện người đăng"
+           onerror="this.parentElement.innerHTML='${initials}'">
+    </div>`;
+}
+
 function getCatConfig(cat) {
   const map = {
-    'Tin tức':          { cls: 'badge-gold',  ico: '📰' },
-    'Thông báo':        { cls: 'badge-blue',  ico: '📢' },
-    'Hoạt động':        { cls: 'badge-open',  ico: '🎯' },
-    'Tuyển thành viên': { cls: 'badge-red',   ico: '⭐' },
+    'Tin tức':          { cls: 'badge-gold',  ico: 'fa-newspaper' },
+    'Thông báo':        { cls: 'badge-blue',  ico: 'fa-bullhorn' },
+    'Hoạt động':        { cls: 'badge-open',  ico: 'fa-calendar-days' },
+    'Tuyển thành viên': { cls: 'badge-red',   ico: 'fa-user-plus' },
   };
-  return map[cat] || { cls: 'badge-closed', ico: '📁' };
+  return map[cat] || { cls: 'badge-closed', ico: 'fa-folder' };
 }
 
 // Export to window

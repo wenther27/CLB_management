@@ -27,12 +27,10 @@ async function loadPostsAdmin() {
     };
     const catIco = { 'Tin tức':'📰', 'Thông báo':'📢', 'Hoạt động':'🎯', 'Tuyển thành viên':'⭐' };
 
-    // Đọc like counts từ localStorage
-    const likeCounts = JSON.parse(localStorage.getItem('ctxh_like_counts') || '{}');
 
     tbody.innerHTML = list.map(p => {
       const preview = (p.content || '').slice(0, 60) + (p.content?.length > 60 ? '...' : '');
-      const likeCount = likeCounts[p.postID] || 0;
+      const likeCount = p.likeCount || 0;
       const imgCount = (p.images || []).length;
 
       return `

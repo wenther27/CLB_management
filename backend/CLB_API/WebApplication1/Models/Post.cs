@@ -29,6 +29,7 @@ namespace ClubManagement.API.Models
         [ForeignKey ("CreateBy")]
         public User ? User { get; set; }
         public ICollection <PostImage> ? postImages { get; set; }
+        public ICollection<PostLike>? PostLikes { get; set; }
 
     }
 }

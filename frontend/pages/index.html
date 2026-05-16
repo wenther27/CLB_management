@@ -250,6 +250,15 @@ function truncate(str, n) {
   if (!str) return '';
   return str.length > n ? str.slice(0, n) + '…' : str;
 }
+function resolveImageUrl(url) {
+  if (!url) return '';
+
+  if (url.startsWith('http')) return url;
+  if (url.startsWith('/uploads')) return `http://localhost:5190${url}`;
+  if (url.startsWith('uploads')) return `http://localhost:5190/${url}`;
+
+  return `http://localhost:5190${url.startsWith('/') ? url : '/' + url}`;
+}
 
 // ── Render activity card sáng + đầy đủ thông tin ────────────────────────────
 // Đồng bộ với Activity.js renderCard — dùng chung userRegistrations map
@@ -404,7 +413,7 @@ function renderPostCardHome(post) {
   };
   const cat = catMap[post.category] || { cls: 'default', ico: '📁', badge: 'default', label: post.category || 'Tin tức' };
   const initials = (post.authorName || 'CLB').split(' ').map(w => w[0]).join('').toUpperCase().slice(0,2);
-
+  const coverImage = resolveImageUrl(post.images?.[0]);
   const dateStr = post.createdDate || post.publishedDate;
   let dateLabel = '—';
   if (dateStr) {
@@ -415,8 +424,11 @@ function renderPostCardHome(post) {
   return `
   <div class="post-card-home" onclick="openPostModal(${post.postID})">
     <div class="post-card-thumb post-cat-${cat.cls}">
-      <span style="font-size:2rem">${cat.ico}</span>
-    </div>
+  ${coverImage
+    ? `<img src="${coverImage}" alt="${escHtml(post.title || 'Ảnh bài viết')}" class="post-card-thumb-img">`
+    : `<span style="font-size:2rem">${cat.ico}</span>`
+  }
+</div>
     <div class="post-card-body">
       <span class="post-badge post-badge-${cat.badge}">${cat.label}</span>
       <div class="post-card-title">${escHtml(post.title || truncate(post.content, 55))}</div>
@@ -529,16 +541,30 @@ async function openPostModal(postId) {
   try {
     const res = await API.getPost(postId);
     const post = res.data;
-    body.innerHTML = `
-      <div class="modal-header">
-        <span class="badge badge-gold">${escHtml(post.category || 'Tin tức')}</span>
-        <button class="modal-close" onclick="document.getElementById('postModal').classList.remove('open')">✕</button>
-      </div>
-      ${post.title ? `<div style="font-size:19px;font-weight:700;margin-bottom:10px;color:#0f172a">${escHtml(post.title)}</div>` : ''}
-      <div style="font-size:12px;color:#94a3b8;margin-bottom:16px">
-        ✍️ ${escHtml(post.authorName || 'CLB CTXH DUT')} &nbsp;·&nbsp; 📅 ${fmtDT(post.createdDate)}
-      </div>
-      <div style="color:#334155;line-height:1.85;white-space:pre-wrap;font-size:14px">${escHtml(post.content)}</div>`;
+    const modalImages = (post.images || [])
+  .map(url => resolveImageUrl(url))
+  .filter(Boolean);
+
+const modalImagesHtml = modalImages.length
+  ? `
+    <div class="post-modal-images">
+      ${modalImages.map(src => `
+        <img src="${src}" alt="${escHtml(post.title || 'Ảnh bài viết')}">
+      `).join('')}
+    </div>
+  `
+  : '';
+  body.innerHTML = `
+  <div class="modal-header">
+    <span class="badge badge-gold">${escHtml(post.category || 'Tin tức')}</span>
+    <button class="modal-close" onclick="document.getElementById('postModal').classList.remove('open')">✕</button>
+  </div>
+  ${post.title ? `<div style="font-size:19px;font-weight:700;margin-bottom:10px;color:#0f172a">${escHtml(post.title)}</div>` : ''}
+  <div style="font-size:12px;color:#94a3b8;margin-bottom:16px">
+    ✍️ ${escHtml(post.authorName || 'CLB CTXH DUT')} &nbsp;·&nbsp; 📅 ${fmtDT(post.createdDate)}
+  </div>
+  ${modalImagesHtml}
+  <div style="color:#334155;line-height:1.85;white-space:pre-wrap;font-size:14px">${escHtml(post.content)}</div>`;
   } catch (err) {
     body.innerHTML = `<div style="padding:40px;text-align:center;color:#e8213a">Lỗi: ${err.message}</div>`;
   }

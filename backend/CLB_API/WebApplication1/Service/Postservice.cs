@@ -9,8 +9,8 @@ namespace ClubManagement.API.Service
 {
     public interface IPostService
     {
-        Task<PagedResultDTO<PostDTO>> GetAllAsync(PostQueryDTO query);
-        Task<PostDTO?> GetByIdAsync(int id);
+        Task<PagedResultDTO<PostDTO>> GetAllAsync(PostQueryDTO query, int? currentUserId = null);
+        Task<PostDTO?> GetByIdAsync(int id, int? currentUserId = null);
         Task<PostDTO?> CreateAsync(CreatePostDTO dto, int authorUserId);
         Task<PostDTO?> UpdateAsync(int id, UpdatePostDTO dto, int requestUserId, string requestUserRole);
         Task<bool> PublishAsync(int id, int requestUserId, string requestUserRole);
@@ -19,6 +19,8 @@ namespace ClubManagement.API.Service
         Task<PagedResultDTO<PostDTO>> GetMyPostsAsync(int userId, int page, int pageSize);
         Task<PostStatsDTO> GetStatsAsync();
         Task IncrementViewAsync(int id);
+        Task<PostDTO?> LikeAsync(int id, int userId);
+        Task<PostDTO?> UnlikeAsync(int id, int userId);
     }
 
     public class PostService : IPostService
@@ -30,11 +32,13 @@ namespace ClubManagement.API.Service
             _context = context;
         }
 
-        public async Task<PagedResultDTO<PostDTO>> GetAllAsync(PostQueryDTO query)
+        public async Task<PagedResultDTO<PostDTO>> GetAllAsync(PostQueryDTO query, int? currentUserId = null)
         {
             var q = _context.Posts
                 .Include(p => p.User)
+                    .ThenInclude(u => u.Member)
                 .Include(p => p.postImages)
+                .Include(p => p.PostLikes)
                 .AsQueryable();
 
             // Chỉ Published cho public
@@ -67,7 +71,7 @@ namespace ClubManagement.API.Service
                 .ThenByDescending(p => p.createdDate)
                 .Skip((query.Page - 1) * query.PageSize)
                 .Take(query.PageSize)
-                .Select(p => MapToDTO(p))
+                .Select(p => MapToDTO(p, currentUserId))
                 .ToListAsync();
 
             return new PagedResultDTO<PostDTO>
@@ -79,14 +83,16 @@ namespace ClubManagement.API.Service
             };
         }
 
-        public async Task<PostDTO?> GetByIdAsync(int id)
+        public async Task<PostDTO?> GetByIdAsync(int id, int? currentUserId = null)
         {
             var post = await _context.Posts
                 .Include(p => p.User)
+                    .ThenInclude(u => u.Member)
                 .Include(p => p.postImages)
+                .Include(p => p.PostLikes)
                 .FirstOrDefaultAsync(p => p.PostID == id);
 
-            return post == null ? null : MapToDTO(post);
+            return post == null ? null : MapToDTO(post, currentUserId);
         }
 
         public async Task<PostDTO?> CreateAsync(CreatePostDTO dto, int authorUserId)
@@ -122,6 +128,7 @@ namespace ClubManagement.API.Service
         {
             var post = await _context.Posts
                 .Include(p => p.User)
+                    .ThenInclude(u => u.Member)
                 .Include(p => p.postImages)
                 .FirstOrDefaultAsync(p => p.PostID == id);
 
@@ -194,6 +201,7 @@ namespace ClubManagement.API.Service
         {
             var q = _context.Posts
                 .Include(p => p.User)
+                    .ThenInclude(u => u.Member)
                 .Include(p => p.postImages)
                 .Where(p => p.CreateBy == userId);
 
@@ -234,6 +242,47 @@ namespace ClubManagement.API.Service
             }
         }
 
+        public async Task<PostDTO?> LikeAsync(int id, int userId)
+        {
+            var post = await _context.Posts
+                .Include(p => p.User)
+                    .ThenInclude(u => u.Member)
+                .Include(p => p.postImages)
+                .Include(p => p.PostLikes)
+                .FirstOrDefaultAsync(p => p.PostID == id && p.status == "Published");
+
+            if (post == null) return null;
+
+            if (!post.PostLikes!.Any(l => l.UserID == userId))
+            {
+                post.PostLikes.Add(new PostLike { PostID = id, UserID = userId });
+                await _context.SaveChangesAsync();
+            }
+
+            return MapToDTO(post, userId);
+        }
+
+        public async Task<PostDTO?> UnlikeAsync(int id, int userId)
+        {
+            var post = await _context.Posts
+                .Include(p => p.User)
+                    .ThenInclude(u => u.Member)
+                .Include(p => p.postImages)
+                .Include(p => p.PostLikes)
+                .FirstOrDefaultAsync(p => p.PostID == id && p.status == "Published");
+
+            if (post == null) return null;
+
+            var like = post.PostLikes!.FirstOrDefault(l => l.UserID == userId);
+            if (like != null)
+            {
+                _context.PostLikes.Remove(like);
+                await _context.SaveChangesAsync();
+            }
+
+            return MapToDTO(post, userId);
+        }
+
         private static int EstimateReadTime(string content)
         {
             if (string.IsNullOrWhiteSpace(content)) return 1;
@@ -241,7 +290,7 @@ namespace ClubManagement.API.Service
             return Math.Max(1, (int)Math.Ceiling(wordCount / 200.0));
         }
 
-        private static PostDTO MapToDTO(Post p) => new()
+        private static PostDTO MapToDTO(Post p, int? currentUserId = null) => new()
         {
             PostID = p.PostID,
             Title = p.Title,
@@ -256,9 +305,13 @@ namespace ClubManagement.API.Service
             ReadTime = p.ReadTime,
             CreatedDate = p.createdDate,
             UpdatedDate = p.UpdateTime,
-            AuthorName = p.User?.Username ?? "BTC",
+            AuthorName = p.User?.Member?.FullName ?? p.User?.Username ?? "BTC",
             AuthorId = p.CreateBy ?? 0,
-            Images = p.postImages?.Select(i => i.ImageUrl).ToList() ?? new List<string>()
+            AuthorAvatarUrl = p.User?.Member?.AvatarUrl ?? p.User?.AvatarUrl,
+            Images = p.postImages?.Select(i => i.ImageUrl).ToList() ?? new List<string>(),
+            LikeCount = p.PostLikes?.Count ?? 0,
+            IsLikedByCurrentUser = currentUserId.HasValue
+                && (p.PostLikes?.Any(l => l.UserID == currentUserId.Value) ?? false)
         };
     }
 }

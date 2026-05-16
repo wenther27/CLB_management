@@ -17,7 +17,10 @@
         public DateTime? UpdatedDate { get; set; }
         public string ? AuthorName { get; set; }
         public int ? AuthorId { get; set; }
+        public string? AuthorAvatarUrl { get; set; }
         public List <string > ? Images { get; set; }
+        public int LikeCount { get; set; }
+        public bool IsLikedByCurrentUser { get; set; }
 
     }
 }

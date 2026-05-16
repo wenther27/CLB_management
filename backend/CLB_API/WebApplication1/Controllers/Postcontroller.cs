@@ -23,6 +23,12 @@ namespace ClubManagement.API.Controllers
         private int GetUserId() =>
             int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "0");
 
+        private int? GetOptionalUserId()
+        {
+            var rawId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            return int.TryParse(rawId, out var userId) && userId > 0 ? userId : null;
+        }
+
         private string GetUserRole() =>
             User.FindFirstValue(ClaimTypes.Role) ?? "Member";
 
@@ -31,7 +37,7 @@ namespace ClubManagement.API.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> GetAll([FromQuery] PostQueryDTO query)
         {
-            var result = await _postService.GetAllAsync(query);
+            var result = await _postService.GetAllAsync(query, GetOptionalUserId());
             return Ok(ApiResponse<PagedResultDTO<PostDTO>>.Ok(result, "Lấy danh sách bài viết thành công"));
         }
 
@@ -40,7 +46,7 @@ namespace ClubManagement.API.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> GetById(int id)
         {
-            var result = await _postService.GetByIdAsync(id);
+            var result = await _postService.GetByIdAsync(id, GetOptionalUserId());
             if (result == null)
                 return NotFound(ApiResponse<string>.Fail("Không tìm thấy bài viết"));
             return Ok(ApiResponse<PostDTO>.Ok(result, "Lấy bài viết thành công"));
@@ -131,6 +137,26 @@ namespace ClubManagement.API.Controllers
         {
             await _postService.IncrementViewAsync(id);
             return Ok(ApiResponse<string>.Ok("OK", "OK"));
+        }
+
+        [HttpPost("{id:int}/like")]
+        [Authorize]
+        public async Task<IActionResult> Like(int id)
+        {
+            var result = await _postService.LikeAsync(id, GetUserId());
+            if (result == null)
+                return NotFound(ApiResponse<string>.Fail("Không tìm thấy bài viết"));
+            return Ok(ApiResponse<PostDTO>.Ok(result, "Đã thích bài viết"));
+        }
+
+        [HttpDelete("{id:int}/like")]
+        [Authorize]
+        public async Task<IActionResult> Unlike(int id)
+        {
+            var result = await _postService.UnlikeAsync(id, GetUserId());
+            if (result == null)
+                return NotFound(ApiResponse<string>.Fail("Không tìm thấy bài viết"));
+            return Ok(ApiResponse<PostDTO>.Ok(result, "Đã bỏ thích bài viết"));
         }
     }
 }

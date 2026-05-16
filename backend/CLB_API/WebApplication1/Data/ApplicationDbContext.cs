@@ -17,6 +17,7 @@ namespace ClubManagement.API.Data
         public DbSet<AuditLog> AuditLogs { get; set; }
         public DbSet<ActivityImage> ActivityImages { get; set; }
         public DbSet<PostImage> PostImages { get; set; }
+        public DbSet<PostLike> PostLikes { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -25,6 +26,10 @@ namespace ClubManagement.API.Data
      
             modelBuilder.Entity<Registrations>()
                 .HasIndex(r => new { r.MemberID, r.ActivityID })
+                .IsUnique();
+
+            modelBuilder.Entity<PostLike>()
+                .HasIndex(l => new { l.PostID, l.UserID })
                 .IsUnique();
 
   

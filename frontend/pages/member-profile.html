@@ -124,7 +124,7 @@
 
           <!-- Cột phải: Tabs nội dung -->
           <div>
-            <div style="display:flex;gap:4px;background:#111827;border-radius:10px;padding:5px;margin-bottom:24px;border:1px solid rgba(255,255,255,0.06)">
+            <div style="display:flex;gap:4px;background:#fff;border-radius:10px;padding:5px;margin-bottom:24px;border:1px solid #e2e8f0">
               <button class="tab-btn active" id="tab-history" onclick="showTab('history')"
                 style="flex:1;padding:9px;border:none;border-radius:7px;background:rgba(255,45,85,0.15);
                        color:#ff2d55;cursor:pointer;font-size:13px;font-weight:700;font-family:Arial,sans-serif;
@@ -133,13 +133,13 @@
               </button>
               <button class="tab-btn" id="tab-edit" onclick="showTab('edit')"
                 style="flex:1;padding:9px;border:none;border-radius:7px;background:transparent;
-                       color:#64748b;cursor:pointer;font-size:13px;font-weight:700;font-family:Arial,sans-serif;
+                       color:#0f172a;cursor:pointer;font-size:13px;font-weight:700;font-family:Arial,sans-serif;
                        transition:all 0.2s">
                 <i class="fa-solid fa-user-pen"></i> Chỉnh sửa
               </button>
               <button class="tab-btn" id="tab-password" onclick="showTab('password')"
                 style="flex:1;padding:9px;border:none;border-radius:7px;background:transparent;
-                       color:#64748b;cursor:pointer;font-size:13px;font-weight:700;font-family:Arial,sans-serif;
+                       color:#0f172a;cursor:pointer;font-size:13px;font-weight:700;font-family:Arial,sans-serif;
                        transition:all 0.2s">
                 <i class="fa-solid fa-key"></i> Mật khẩu
               </button>
@@ -190,15 +190,16 @@
               <div style="font-size:15px;font-weight:700;margin-bottom:20px">Đổi mật khẩu</div>
               <div class="form-group">
                 <label class="form-label">Mật khẩu hiện tại *</label>
-                <input type="password" id="pwd-current" class="form-control" placeholder="••••••••">
+              <input type="password" id="pwd-current" class="form-control password-hint"
+       placeholder="Nhập mật khẩu hiện tại" autocomplete="off">
               </div>
               <div class="form-group">
                 <label class="form-label">Mật khẩu mới *</label>
-                <input type="password" id="pwd-new" class="form-control" placeholder="Tối thiểu 6 ký tự">
+                <input type="password" id="pwd-new" class="form-control password-hint" placeholder="Tối thiểu 6 ký tự">
               </div>
               <div class="form-group">
                 <label class="form-label">Xác nhận mật khẩu mới *</label>
-                <input type="password" id="pwd-confirm" class="form-control" placeholder="Nhập lại mật khẩu mới">
+                <input type="password" id="pwd-confirm" class="form-control password-hint" placeholder="Nhập lại mật khẩu mới">
               </div>
               <div id="pwdStrengthWrap" style="margin:-8px 0 14px;display:none">
                 <div style="display:flex;gap:4px;margin-bottom:4px">
@@ -463,7 +464,7 @@ async function loadRegistrations(page = 1) {
         <div style="display:flex;align-items:center;gap:8px">
           ${Utils.statusLabel(reg.status)}
           <button onclick="showActivityDetail(${reg.activityID})"
-            style="background:none;border:1px solid rgba(255,255,255,0.1);color:#94a3b8;
+            style="background:#fff;border:1px solid #e2e8f0;color:#0f172a;
                    padding:5px 10px;border-radius:6px;cursor:pointer;font-size:12px;
                    font-family:Arial,sans-serif;transition:all 0.2s"
             onmouseover="this.style.borderColor='#ff2d55';this.style.color='#ff2d55'"
@@ -501,6 +502,11 @@ function showTab(tab) {
       btn.style.color = '#64748b';
     }
   });
+    if (tab === 'password') {
+    document.getElementById('pwd-current').value = '';
+    document.getElementById('pwd-new').value = '';
+    document.getElementById('pwd-confirm').value = '';
+  }
 }
 
 // ── Lưu profile ───────────────────────────────────────────────────────────────

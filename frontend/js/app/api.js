@@ -95,6 +95,8 @@ getAuditLogs: (params = '') => request('GET', `/users/audit-logs${params}`, null
   createPost: (data) => post('/posts', data),
   updatePost: (id, data) => put(`/posts/${id}`, data),
   deletePost: (id) => del(`/posts/${id}`),
+  likePost: (id) => post(`/posts/${id}/like`, null),
+  unlikePost: (id) => del(`/posts/${id}/like`),
 
   // Notifications
   getNotifications: () => request('GET', '/notifications', null, true),
