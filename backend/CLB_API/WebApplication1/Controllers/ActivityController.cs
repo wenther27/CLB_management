@@ -128,6 +128,26 @@ namespace ClubManagement.API.Controllers
                 result, "Lấy danh sách đăng ký thành công"));
         }
 
+        [HttpPatch("registrations/{registrationId:int}/attendance")]
+        [Authorize(Roles = "Admin,ExecutiveBoard")]
+        public async Task<IActionResult> UpdateAttendance(int registrationId, [FromBody] AttendanceUpdateDTO dto)
+        {
+            var (success, errorMessage) = await _activityService.UpdateAttendanceAsync(registrationId, dto.IsAttended, GetUserId());
+            if (!success)
+                return BadRequest(ApiResponse<string>.Fail(errorMessage ?? "Kh?ng th? c?p nh?t ?i?m danh"));
+            return Ok(ApiResponse<string>.Ok("Updated", "C?p nh?t ?i?m danh th?nh c?ng"));
+        }
+
+        [HttpPatch("{id:int}/attendance")]
+        [Authorize(Roles = "Admin,ExecutiveBoard")]
+        public async Task<IActionResult> UpdateAllAttendance(int id, [FromBody] AttendanceUpdateDTO dto)
+        {
+            var (success, count, errorMessage) = await _activityService.UpdateAllAttendanceAsync(id, dto.IsAttended, GetUserId());
+            if (!success)
+                return BadRequest(ApiResponse<string>.Fail(errorMessage ?? "Kh?ng th? c?p nh?t ?i?m danh"));
+            return Ok(ApiResponse<int>.Ok(count, "C?p nh?t ?i?m danh th?nh c?ng"));
+        }
+
         [HttpGet("my-registrations")]
         [Authorize]
         public async Task<IActionResult> GetMyRegistrations(

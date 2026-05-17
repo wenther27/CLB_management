@@ -201,7 +201,7 @@ function openMemberModal(data = {}) {
                value="${Utils.escapeHtml(data.fullName || '')}">
       </div>
       <div class="form-group">
-        <label class="form-label">Số điện thoại</label>
+        <label class="form-label">Số điện thoại *</label>
         <input id="mf-phone" class="form-control"
                value="${Utils.escapeHtml(data.phone || '')}">
       </div>
@@ -209,7 +209,7 @@ function openMemberModal(data = {}) {
 
     <!-- Email liên lạc (full width) -->
     <div class="form-group">
-      <label class="form-label">Email liên lạc</label>
+      <label class="form-label">Email liên lạc *</label>
       <input id="mf-contact-email" class="form-control"
              value="${Utils.escapeHtml(data.contactEmail || '')}">
     </div>
@@ -217,12 +217,12 @@ function openMemberModal(data = {}) {
     <!-- Hàng 2: Lớp | Khoa -->
     <div class="form-row">
       <div class="form-group">
-        <label class="form-label">Lớp</label>
+        <label class="form-label">Lớp *</label>
         <input id="mf-class" class="form-control"
                value="${Utils.escapeHtml(data.className || '')}">
       </div>
       <div class="form-group">
-        <label class="form-label">Khoa</label>
+        <label class="form-label">Khoa *</label>
         <select id="mf-fac" class="form-control">
           <option value="" ${!data.faculty ? 'selected' : ''}>-- Chọn Khoa --</option>
           ${facultyOptions}
@@ -230,13 +230,25 @@ function openMemberModal(data = {}) {
       </div>
     </div>
 
-    <!-- Hàng 3: Chức vụ | Trạng thái -->
+    <!-- Hàng 3: Ngày sinh | Chức vụ -->
     <div class="form-row">
       <div class="form-group">
-        <label class="form-label">Chức vụ</label>
-        <input id="mf-pos" class="form-control"
-               value="${Utils.escapeHtml(data.position || '')}">
+        <label class="form-label">Ngày sinh</label>
+        <input type="date" id="mf-birth" class="form-control"
+               value="${data.birthDate ? String(data.birthDate).slice(0, 10) : ''}">
       </div>
+      <div class="form-group">
+        <label class="form-label">Chức vụ</label>
+        <select id="mf-pos" class="form-control">
+          <option value="Thành viên" ${(data.position === 'Thành viên' || !data.position) ? 'selected' : ''}>Thành viên</option>
+          <option value="Phó Ban" ${data.position === 'Phó Ban' ? 'selected' : ''}>Phó Ban</option>
+          <option value="Trưởng Ban" ${data.position === 'Trưởng Ban' ? 'selected' : ''}>Trưởng Ban</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Hàng 4: Trạng thái | Ban -->
+    <div class="form-row">
       <div class="form-group">
         <label class="form-label">Trạng thái</label>
         <select id="mf-st" class="form-control">
@@ -245,10 +257,6 @@ function openMemberModal(data = {}) {
           <option value="Suspended" ${data.status === 'Suspended' ? 'selected' : ''}>Tạm đình chỉ</option>
         </select>
       </div>
-    </div>
-
-    <!-- Hàng 4: Ban | Thứ tự hiển thị — cùng form-row để canh chỉnh ngay ngắn -->
-    <div class="form-row">
       <div class="form-group">
         <label class="form-label">
           Ban
@@ -273,7 +281,10 @@ function openMemberModal(data = {}) {
     <!-- Vùng ảnh đại diện — ẩn mặc định, chỉ hiện khi Ban có giá trị (BCN) -->
     <div id="mf-board-fields" style="${data.department ? '' : 'display:none'}">
       <div class="form-group" style="margin-top:8px">
-        <label class="form-label">Ảnh đại diện</label>
+        <label class="form-label">Ảnh hiển thị trên trang thành viên</label>
+        <div style="font-size:12px;color:#64748b;margin:-2px 0 10px">
+          Có thể chọn ảnh riêng dạng dọc/hình chữ nhật, không cần trùng với avatar tài khoản.
+        </div>
 
         <!-- Dropzone kéo thả — ẩn khi đã có ảnh sẵn -->
         <div id="mf-dropzone"
@@ -300,8 +311,8 @@ function openMemberModal(data = {}) {
         <!-- Preview ảnh tròn — căn giữa, chỉ hiện khi đã có ảnh -->
         <div id="mf-preview" style="display:flex; justify-content:center; width:100%; margin-top:12px">
           ${data.avatarUrl ? `
-            <div id="mf-img-wrap" style="position:relative; width:100px; height:100px;
-                 border-radius:50%; overflow:hidden;
+            <div id="mf-img-wrap" style="position:relative; width:160px; height:210px;
+                 border-radius:12px; overflow:hidden;
                  border:3px solid #ff2d55; flex-shrink:0; box-shadow:0 4px 12px rgba(0,0,0,0.3)">
               <img src="${avatarSrc}" style="width:100%; height:100%; object-fit:cover">
               <button onclick="removeMemberImage()"
@@ -346,7 +357,8 @@ async function saveMember(id) {
     phone:        document.getElementById('mf-phone').value.trim()        || null,
     className:    document.getElementById('mf-class').value.trim()        || null,
     faculty:      document.getElementById('mf-fac').value                 || null,
-    position:     document.getElementById('mf-pos').value.trim()          || null,
+    birthDate:    document.getElementById('mf-birth').value               || null,
+    position:     document.getElementById('mf-pos').value                 || 'Thành viên',
     status:       document.getElementById('mf-st').value,
     // Gửi "" khi chọn thành viên thường để backend biết cần set NULL
     department:   deptValue,   // "", "BCN", "BTT" hoặc "BPT"
@@ -355,7 +367,22 @@ async function saveMember(id) {
     contactEmail: document.getElementById('mf-contact-email')?.value.trim() || null,
   };
 
-  if (!d.fullName) { Toast.error('Vui lòng nhập họ tên'); return; }
+  const requiredFields = [
+    { value: d.fullName,     label: 'Họ và tên' },
+    { value: d.phone,        label: 'Số điện thoại' },
+    { value: d.contactEmail, label: 'Gmail' },
+    { value: d.className,    label: 'Lớp' },
+    { value: d.faculty,      label: 'Khoa' },
+  ];
+
+  const missingFields = requiredFields
+    .filter(field => !field.value)
+    .map(field => field.label);
+
+  if (missingFields.length) {
+    Toast.error(`Vui lòng nhập đầy đủ: ${missingFields.join(', ')}`);
+    return;
+  }
 
   try {
     if (id) {
@@ -459,6 +486,14 @@ function removeMemberImage() {
 }
 
 async function uploadMemberImage(file) {
+  const allowedExtensions = ['jpg', 'jpeg', 'png', 'webp', 'gif'];
+  const fileExtension = file.name.split('.').pop()?.toLowerCase();
+
+  if (!allowedExtensions.includes(fileExtension)) {
+    Toast.error('Chỉ chấp nhận ảnh JPG, JPEG, PNG, WEBP hoặc GIF');
+    return;
+  }
+
   if (file.size > 5 * 1024 * 1024) {
     Toast.error('File quá 5MB');
     return;
@@ -477,7 +512,10 @@ async function uploadMemberImage(file) {
       body: formData,
     });
 
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    if (!res.ok) {
+      const errorData = await res.json().catch(() => null);
+      throw new Error(errorData?.message || errorData?.data || `HTTP ${res.status}`);
+    }
     const data = await res.json();
     if (!data?.data) throw new Error('Không nhận được URL ảnh');
 
@@ -495,7 +533,7 @@ async function uploadMemberImage(file) {
     const src = url.startsWith('http') ? url : `http://localhost:5190${url}`;
     const div = document.createElement('div');
     div.id = 'mf-img-wrap';
-    div.style.cssText = 'position:relative;width:80px;height:80px;border-radius:50%;overflow:hidden;border:2px solid rgba(255,255,255,0.1);flex-shrink:0';
+    div.style.cssText = 'position:relative;width:160px;height:210px;border-radius:12px;overflow:hidden;border:2px solid rgba(255,255,255,0.1);flex-shrink:0';
     div.innerHTML = `
       <img src="${src}" style="width:100%;height:100%;object-fit:cover">
       <button onclick="removeMemberImage()"

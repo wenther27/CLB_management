@@ -719,12 +719,14 @@ async function showRegistrationsList(activityId, activityName) {
   modal.onclick = (e) => { if (e.target === modal) closeRegistrationsModal(); };
 
   try {
-    const r   = await API.getActivityRegistrations(activityId, 1, 100);
+    const [r, activityRes] = await Promise.all([
+      API.getActivityRegistrations(activityId, 1, 100),
+      API.getActivity(activityId),
+    ]);
     const list = r.data?.items || [];
-    const attendance = getAttendanceData(activityId);
-
-    // Đếm đã điểm danh
-    const attendedCount = list.filter(reg => attendance[reg.memberID] || attendance[reg.registrationID]).length;
+    const activity = activityRes.data;
+    const attendanceAllowed = new Date(activity.time) <= new Date();
+    const attendedCount = list.filter(reg => reg.isAttended).length;
 
     if (!list.length) {
       body.innerHTML = '<div style="padding:40px;text-align:center;color:#111827">Chưa có ai đăng ký</div>';
@@ -747,6 +749,7 @@ async function showRegistrationsList(activityId, activityName) {
           </div>
           <div style="display:flex;gap:8px">
             <button onclick="attendAll(${activityId})"
+              ${attendanceAllowed ? '' : 'disabled'}
               style="padding:7px 14px;background:#166534;border:none;border-radius:6px;
                      color:white;font-size:12px;font-weight:700;cursor:pointer;
                      font-family:'Be Vietnam Pro',Arial,sans-serif;
@@ -755,6 +758,7 @@ async function showRegistrationsList(activityId, activityName) {
               <i class="fa-solid fa-check-double"></i> Điểm danh tất cả
             </button>
             <button onclick="clearAllAttendance(${activityId})"
+              ${attendanceAllowed ? '' : 'disabled'}
               style="padding:7px 14px;background:transparent;border:1px solid #dc2626;
                      border-radius:6px;color:#dc2626;font-size:12px;font-weight:700;
                      cursor:pointer;font-family:'Be Vietnam Pro',Arial,sans-serif"
@@ -763,6 +767,12 @@ async function showRegistrationsList(activityId, activityName) {
             </button>
           </div>
         </div>
+
+        ${attendanceAllowed ? '' : `
+          <div style="margin-bottom:14px;padding:10px 12px;background:#fef3c7;border:1px solid #fcd34d;
+                      border-radius:8px;color:#92400e;font-size:12px;font-weight:600">
+            Chỉ có thể điểm danh sau khi hoạt động bắt đầu (${Utils.formatDateTime(activity.time)}).
+          </div>`}
 
         <!-- Bảng danh sách -->
         <table style="width:100%;border-collapse:collapse">
@@ -784,9 +794,8 @@ async function showRegistrationsList(activityId, activityName) {
           </thead>
           <tbody id="regTableBody">
             ${list.map((reg, idx) => {
-              // Key điểm danh dùng memberID (hoặc registrationID nếu memberID không có)
               const attKey = reg.memberID || reg.registrationID;
-              const attended = !!attendance[attKey];
+              const attended = reg.isAttended === true;
               return `
               <tr id="reg-row-${attKey}" style="border-bottom:1px solid #f1f5f9;transition:background 0.2s"
                   onmouseover="this.style.background='#f8f9fc'"
@@ -820,7 +829,8 @@ async function showRegistrationsList(activityId, activityName) {
                     <input type="checkbox"
                            id="att-${attKey}"
                            ${attended ? 'checked' : ''}
-                           onchange="handleAttendanceToggle(${activityId}, ${attKey}, this)"
+                           ${attendanceAllowed ? '' : 'disabled'}
+                           onchange="handleAttendanceToggle(${activityId}, ${reg.registrationID}, ${attKey}, this)"
                            style="width:18px;height:18px;cursor:pointer;accent-color:#166534;
                                   border-radius:4px">
                     <span id="att-text-${attKey}"
@@ -841,79 +851,68 @@ async function showRegistrationsList(activityId, activityName) {
 }
 
 // ── Toggle điểm danh từ checkbox ──────────────────────────────────────────────
-function handleAttendanceToggle(activityId, attKey, checkbox) {
+async function handleAttendanceToggle(activityId, registrationId, attKey, checkbox) {
   const attended = checkbox.checked;
-
-  // Cập nhật localStorage
-  const data = getAttendanceData(activityId);
-  data[attKey] = attended;
-  saveAttendanceData(activityId, data);
-
-  // Cập nhật UI realtime
-  const textEl   = document.getElementById(`att-text-${attKey}`);
-  const avatarEl = document.getElementById(`avatar-${attKey}`);
-  const labelEl  = checkbox.closest('label');
-
-  if (textEl)   textEl.textContent = attended ? 'Đã điểm danh' : 'Chưa điểm danh';
-  if (textEl)   textEl.style.color = attended ? '#166534' : '#94a3b8';
-  if (avatarEl) avatarEl.style.background = attended ? '#dcfce7' : '#f1f5f9';
-  if (avatarEl) avatarEl.style.color      = attended ? '#166534' : '#94a3b8';
-  if (labelEl) {
-    labelEl.style.background = attended ? 'rgba(22,101,52,0.08)' : 'rgba(100,116,139,0.06)';
-    labelEl.setAttribute('onmouseover', `this.style.background='${attended ? 'rgba(22,101,52,0.15)' : 'rgba(100,116,139,0.12)'}'`);
-    labelEl.setAttribute('onmouseout',  `this.style.background='${attended ? 'rgba(22,101,52,0.08)' : 'rgba(100,116,139,0.06)'}'`);
+  try {
+    await API.updateRegistrationAttendance(registrationId, attended);
+    updateAttendanceRowUi(attKey, attended, checkbox);
+    updateAttendanceCounterFromDom();
+    Toast.success(attended ? 'Đã điểm danh' : 'Đã bỏ điểm danh');
+  } catch (e) {
+    checkbox.checked = !attended;
+    Toast.error(e.message || 'Không thể cập nhật điểm danh');
   }
-
-  // Cập nhật counter
-  updateAttendanceCounter(activityId);
-
-  Toast.success(attended ? 'Đã điểm danh' : 'Đã bỏ điểm danh');
 }
 
-// ── Điểm danh tất cả ─────────────────────────────────────────────────────────
-function attendAll(activityId) {
+async function attendAll(activityId) {
   if (!confirm('Điểm danh tất cả thành viên trong danh sách?')) return;
-  const checkboxes = document.querySelectorAll(`input[id^="att-"]`);
-  checkboxes.forEach(cb => {
-    if (!cb.checked) {
+  try {
+    await API.updateAllAttendance(activityId, true);
+    document.querySelectorAll(`input[id^="att-"]`).forEach(cb => {
       cb.checked = true;
       const attKey = cb.id.replace('att-', '');
-      handleAttendanceToggle(activityId, attKey, cb);
-    }
-  });
-  Toast.success('Đã điểm danh tất cả thành viên!');
+      updateAttendanceRowUi(attKey, true, cb);
+    });
+    updateAttendanceCounterFromDom();
+    Toast.success('Đã điểm danh tất cả thành viên!');
+  } catch (e) {
+    Toast.error(e.message || 'Không thể điểm danh tất cả');
+  }
 }
 
-// ── Xóa tất cả điểm danh ─────────────────────────────────────────────────────
-function clearAllAttendance(activityId) {
+async function clearAllAttendance(activityId) {
   if (!confirm('Đặt lại tất cả điểm danh? Hành động này không thể hoàn tác.')) return;
-  saveAttendanceData(activityId, {});
-  const checkboxes = document.querySelectorAll(`input[id^="att-"]`);
-  checkboxes.forEach(cb => {
-    if (cb.checked) {
+  try {
+    await API.updateAllAttendance(activityId, false);
+    document.querySelectorAll(`input[id^="att-"]`).forEach(cb => {
       cb.checked = false;
       const attKey = cb.id.replace('att-', '');
-
-      const textEl   = document.getElementById(`att-text-${attKey}`);
-      const avatarEl = document.getElementById(`avatar-${attKey}`);
-      const labelEl  = cb.closest('label');
-
-      if (textEl)   { textEl.textContent = 'Chưa điểm danh'; textEl.style.color = '#94a3b8'; }
-      if (avatarEl) { avatarEl.style.background = '#f1f5f9'; avatarEl.style.color = '#94a3b8'; }
-      if (labelEl)  { labelEl.style.background = 'rgba(100,116,139,0.06)'; }
-    }
-  });
-  const badge = document.getElementById('attendedCountBadge');
-  if (badge) badge.textContent = '0';
-  Toast.info('Đã đặt lại tất cả điểm danh');
+      updateAttendanceRowUi(attKey, false, cb);
+    });
+    updateAttendanceCounterFromDom();
+    Toast.info('Đã đặt lại tất cả điểm danh');
+  } catch (e) {
+    Toast.error(e.message || 'Không thể đặt lại điểm danh');
+  }
 }
 
-// ── Cập nhật counter điểm danh ───────────────────────────────────────────────
-function updateAttendanceCounter(activityId) {
-  const data = getAttendanceData(activityId);
-  const count = Object.values(data).filter(Boolean).length;
+function updateAttendanceRowUi(attKey, attended, checkbox) {
+  const textEl   = document.getElementById(`att-text-${attKey}`);
+  const avatarEl = document.getElementById(`avatar-${attKey}`);
+  const labelEl  = checkbox?.closest('label');
+  if (textEl)   { textEl.textContent = attended ? 'Đã điểm danh' : 'Chưa điểm danh'; textEl.style.color = attended ? '#166534' : '#94a3b8'; }
+  if (avatarEl) { avatarEl.style.background = attended ? '#dcfce7' : '#f1f5f9'; avatarEl.style.color = attended ? '#166534' : '#94a3b8'; }
+  if (labelEl)  { labelEl.style.background = attended ? 'rgba(22,101,52,0.08)' : 'rgba(100,116,139,0.06)'; }
+}
+
+function updateAttendanceCounterFromDom() {
+  const count = document.querySelectorAll('input[id^="att-"]:checked').length;
   const badge = document.getElementById('attendedCountBadge');
   if (badge) badge.textContent = count;
+}
+
+function updateAttendanceCounter(activityId) {
+  updateAttendanceCounterFromDom();
 }
 
 function closeRegistrationsModal() {
@@ -957,7 +956,7 @@ async function showMyRegistrations() {
         </div>
         <div style="display:flex;flex-direction:column;gap:12px">
           ${list.map(reg => {
-            const attended = user ? isAttended(reg.activityID, user.userID) : false;
+            const attended = reg.isAttended === true;
             const actDate  = reg.registerDate ? new Date(reg.registerDate) : null;
             const isPast   = actDate && actDate <= new Date();
             return `

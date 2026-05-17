@@ -8,5 +8,6 @@
         public string ? Faculty {  get; set; }
         public string ? Position { get; set; }
         public string ? Status { get; set; }
+        public DateTime? BirthDate { get; set; }
     }
 }

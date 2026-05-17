@@ -11,6 +11,7 @@
         public string ? Position { get; set; } // chức vụ
         public string ? Status { get; set; }
         public DateTime JoinDate { get; set; }
+        public DateTime? BirthDate { get; set; }
 
         public string ? Username {  get; set; }
         public string ? Email { get; set; }

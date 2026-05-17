@@ -93,6 +93,10 @@
                     <span class="val" id="infoClass">—</span>
                   </div>
                   <div class="info-row">
+                    <span class="lbl"><i class="fa-solid fa-cake-candles"></i></span>
+                    <span class="val" id="infoBirthDate">—</span>
+                  </div>
+                  <div class="info-row">
                     <span class="lbl"><i class="fa-solid fa-building-columns"></i></span>
                     <span class="val" id="infoFaculty">—</span>
                   </div>
@@ -179,6 +183,12 @@
                   <label class="form-label">Khoa</label>
                   <input id="edit-faculty" class="form-control" placeholder="Điện tử - Viễn thông">
                 </div>
+              <div class="form-row" style="margin-bottom:14px">
+                <div class="form-group">
+                  <label class="form-label">Ngày sinh</label>
+                  <input type="date" id="edit-birthdate" class="form-control">
+                </div>
+              </div>
               </div>
               <button onclick="saveProfile()" class="btn-primary" style="padding:11px 24px">
                 <i class="fa-solid fa-floppy-disk"></i> Lưu thay đổi
@@ -416,14 +426,16 @@ function renderProfile(p) {
   document.getElementById('infoEmail').textContent    = p.email      || '—';
   document.getElementById('infoPhone').textContent    = p.phone      || 'Chưa cập nhật';
   document.getElementById('infoClass').textContent    = p.className  || 'Chưa cập nhật';
+  document.getElementById('infoBirthDate').textContent = p.birthDate ? Utils.formatDate(p.birthDate) : 'Chưa cập nhật';
   document.getElementById('infoFaculty').textContent  = p.faculty    || 'Chưa cập nhật';
   document.getElementById('infoPosition').textContent = p.position   || 'Thành viên';
   document.getElementById('infoJoinDate').textContent = Utils.formatDate(p.joinDate);
 
   document.getElementById('edit-fullname').value = p.fullName  || '';
   document.getElementById('edit-phone').value    = p.phone     || '';
-  document.getElementById('edit-class').value    = p.className || '';
-  document.getElementById('edit-faculty').value  = p.faculty   || '';
+  document.getElementById('edit-class').value     = p.className || '';
+  document.getElementById('edit-birthdate').value = p.birthDate ? String(p.birthDate).slice(0, 10) : '';
+  document.getElementById('edit-faculty').value   = p.faculty   || '';
 }
 
 // ── Load lịch sử đăng ký ─────────────────────────────────────────────────────
@@ -516,6 +528,7 @@ async function saveProfile() {
     phone:     document.getElementById('edit-phone').value.trim()    || null,
     className: document.getElementById('edit-class').value.trim()    || null,
     faculty:   document.getElementById('edit-faculty').value.trim()  || null,
+    birthDate: document.getElementById('edit-birthdate').value        || null,
   };
 
   if (!dto.fullName) { Toast.error('Vui lòng nhập họ tên'); return; }

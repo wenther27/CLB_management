@@ -168,23 +168,49 @@
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
         <div class="am-group">
           <label class="am-label">Họ và tên *</label>
-          <input id="am-reg-fullname" class="am-input" placeholder="Nguyễn Văn A">
+          <input id="am-reg-fullname" class="am-input" placeholder="Nhập họ và tên">
         </div>
         <div class="am-group">
           <label class="am-label">Lớp</label>
-          <input id="am-reg-class" class="am-input" placeholder="22TCLC_DT1">
+          <input id="am-reg-class" class="am-input" placeholder="Nhập lớp">
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div class="am-group">
+          <label class="am-label">Ngày sinh</label>
+          <input id="am-reg-birthdate" class="am-input" type="date">
+        </div>
+        <div class="am-group">
+          <label class="am-label">Khoa *</label>
+          <select id="am-reg-faculty" class="am-input">
+            <option value="">Chọn khoa</option>
+            <option>Cơ khí</option>
+            <option>Công nghệ thông tin</option>
+            <option>Cơ khí giao thông</option>
+            <option>Công nghệ Nhiệt - Điện lạnh</option>
+            <option>Điện</option>
+            <option>Điện tử - Viễn thông</option>
+            <option>Hóa</option>
+            <option>Xây dựng Cầu - Đường</option>
+            <option>Xây dựng Dân dụng &amp; Công nghiệp</option>
+            <option>Xây dựng Công trình Thủy</option>
+            <option>Môi trường</option>
+            <option>Quản lý dự án</option>
+            <option>Khoa học Công nghệ tiên tiến</option>
+          </select>
         </div>
       </div>
 
       <div class="am-group">
         <label class="am-label">Tên đăng nhập *</label>
-        <input id="am-reg-username" class="am-input" placeholder="vana123">
+        <input id="am-reg-username" class="am-input" placeholder="Nhập tên đăng nhập">
       </div>
       <div class="am-group">
         <label class="am-label">
           Email * <span style="font-weight:400;text-transform:none;color:#e8213a">(nhận mã OTP)</span>
         </label>
-        <input id="am-reg-email" class="am-input" type="email" placeholder="vana@gmail.com">
+        <input id="am-reg-email" class="am-input" type="email" placeholder="Nhập email">
       </div>
 
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
@@ -565,8 +591,11 @@
       const password = document.getElementById('am-reg-pwd')?.value;
       const confirm  = document.getElementById('am-reg-confirm')?.value;
       const className = document.getElementById('am-reg-class')?.value.trim();
+      const birthDate = document.getElementById('am-reg-birthdate')?.value || null;
+      const faculty = document.getElementById('am-reg-faculty')?.value || '';
 
       if (!fullName) { toast('Vui lòng nhập họ tên', 'error'); return; }
+      if (!faculty) { toast('Vui lòng chọn khoa', 'error'); return; }
       if (!username || username.length < 3) { toast('Tên đăng nhập phải có ít nhất 3 ký tự', 'error'); return; }
       if (!email || !email.includes('@')) { toast('Email không hợp lệ', 'error'); return; }
       if (!password || password.length < 6) { toast('Mật khẩu phải có ít nhất 6 ký tự', 'error'); return; }
@@ -574,7 +603,7 @@
 
       setLoading('am-reg-btn', true);
       try {
-        await apiPost('/auth/send-otp', { fullName, username, email, password, className });
+        await apiPost('/auth/send-otp', { fullName, username, email, password, className, faculty, birthDate });
 
         _pendingEmail = email;
         _pendingPurpose = 'register';

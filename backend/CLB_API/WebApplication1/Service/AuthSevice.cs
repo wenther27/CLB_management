@@ -144,12 +144,13 @@ namespace ClubManagement.API.AuthService
             // Tạo Member profile
             var member = new Member
             {
-                UserID = user.UserID,
-                FullName = regDto.FullName,
-                ClassName = regDto.ClassName,
-                Faculty = regDto.Faculty,
-                Status = "Active",
-                JoinDate = DateTime.Now
+                 UserID = user.UserID,
+                 FullName = regDto.FullName,
+                 ClassName = regDto.ClassName,
+                 Faculty = regDto.Faculty,
+                 BirthDate = regDto.BirthDate,
+                 Status = "Active",
+                 JoinDate = DateTime.Now
             };
             _context.Members.Add(member);
             await _context.SaveChangesAsync();

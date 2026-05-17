@@ -7,5 +7,6 @@
         public string? ClassName { get; set; }
         public string? Faculty { get; set; }
         public string ? Phone { get; set; }
+        public DateTime? BirthDate { get; set; }
     }
 }

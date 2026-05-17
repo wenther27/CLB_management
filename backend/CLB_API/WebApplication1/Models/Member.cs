@@ -25,6 +25,7 @@ public class Member
     public string? Status { get; set; } 
     
     public DateTime JoinDate { get; set; } = DateTime.Now;
+    public DateTime? BirthDate { get; set; }
 
     [MaxLength(100)]
     public string? Department { get; set; }
@@ -39,8 +40,6 @@ public class Member
 
     [ForeignKey ("UserID")]
     public User ? User {  get; set; }
-
-
     public ICollection <Registrations> ?  Registrations { get; set; }
 
 

@@ -17,6 +17,9 @@ namespace ClubManagement.API.Models
         [MaxLength(100)]
 
         public string? Status { get; set; }
+        public bool IsAttended { get; set; } = false;
+        public DateTime? AttendedAt { get; set; }
+        public int? AttendedByUserID { get; set; }
 
         [ForeignKey("MemberID")]
         public Member? Member { get; set; }

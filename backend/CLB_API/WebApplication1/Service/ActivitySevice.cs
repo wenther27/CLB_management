@@ -20,6 +20,8 @@ namespace ClubManagement.API.Service
         Task<bool> HasUserRegisteredAsync(int activityId, int userId);
         Task<PagedResultDTO<RegistrationResponseDTO>> GetRegistrationsAsync(int activityId, int page, int pageSize);
         Task<PagedResultDTO<RegistrationResponseDTO>> GetMyRegistrationsAsync(int userId, int page, int pageSize);
+        Task<(bool Success, string? ErrorMessage)> UpdateAttendanceAsync(int registrationId, bool isAttended, int verifierUserId);
+        Task<(bool Success, int UpdatedCount, string? ErrorMessage)> UpdateAllAttendanceAsync(int activityId, bool isAttended, int verifierUserId);
         Task<int> AutoCloseExpiredActivitiesAsync();
     }
 
@@ -264,7 +266,9 @@ namespace ClubManagement.API.Service
                 MemberName = member.FullName,
                 ActivityName = activity.ActivityName,
                 RegisterDate = registration.RegisterDate,
-                Status = registration.Status
+                Status = registration.Status,
+                IsAttended = registration.IsAttended,
+                AttendedAt = registration.AttendedAt
             };
         }
 
@@ -318,7 +322,9 @@ namespace ClubManagement.API.Service
                     ActivityID = r.ActivityID,
                     ActivityName = r.ClubActivity != null ? r.ClubActivity.ActivityName : "",
                     RegisterDate = r.RegisterDate,
-                    Status = r.Status
+                    Status = r.Status,
+                    IsAttended = r.IsAttended,
+                    AttendedAt = r.AttendedAt
                 }).ToListAsync();
 
             return new PagedResultDTO<RegistrationResponseDTO>
@@ -347,11 +353,52 @@ namespace ClubManagement.API.Service
                     ActivityID = r.ActivityID,
                     ActivityName = r.ClubActivity != null ? r.ClubActivity.ActivityName : "",
                     RegisterDate = r.RegisterDate,
-                    Status = r.Status
+                    Status = r.Status,
+                    IsAttended = r.IsAttended,
+                    AttendedAt = r.AttendedAt
                 }).ToListAsync();
 
             return new PagedResultDTO<RegistrationResponseDTO>
             { Items = items, TotalCount = total, Page = page, PageSize = pageSize };
+        }
+
+        public async Task<(bool Success, string? ErrorMessage)> UpdateAttendanceAsync(int registrationId, bool isAttended, int verifierUserId)
+        {
+            var registration = await _context.Registrations
+                .Include(r => r.ClubActivity)
+                .FirstOrDefaultAsync(r => r.RegistrationID == registrationId);
+            if (registration == null) return (false, "Kh?ng t?m th?y ??ng k?");
+
+            if (isAttended && registration.ClubActivity != null && registration.ClubActivity.time > DateTime.Now)
+                return (false, "Ch? ???c ?i?m danh sau khi ho?t ??ng b?t ??u");
+
+            registration.IsAttended = isAttended;
+            registration.AttendedAt = isAttended ? DateTime.Now : null;
+            registration.AttendedByUserID = isAttended ? verifierUserId : null;
+            await _context.SaveChangesAsync();
+            return (true, null);
+        }
+
+        public async Task<(bool Success, int UpdatedCount, string? ErrorMessage)> UpdateAllAttendanceAsync(int activityId, bool isAttended, int verifierUserId)
+        {
+            var activity = await _context.Activities.FindAsync(activityId);
+            if (activity == null) return (false, 0, "Kh?ng t?m th?y ho?t ??ng");
+            if (isAttended && activity.time > DateTime.Now)
+                return (false, 0, "Ch? ???c ?i?m danh sau khi ho?t ??ng b?t ??u");
+
+            var registrations = await _context.Registrations
+                .Where(r => r.ActivityID == activityId)
+                .ToListAsync();
+
+            foreach (var registration in registrations)
+            {
+                registration.IsAttended = isAttended;
+                registration.AttendedAt = isAttended ? DateTime.Now : null;
+                registration.AttendedByUserID = isAttended ? verifierUserId : null;
+            }
+
+            await _context.SaveChangesAsync();
+            return (true, registrations.Count, null);
         }
 
         private static ActivityDTO MapToDTO(ClubActivity a) => new()

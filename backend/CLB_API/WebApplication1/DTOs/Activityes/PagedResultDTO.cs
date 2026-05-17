@@ -27,5 +27,7 @@
         public DateTime RegisterDate { get; set; }
 
         public string Status { get; set; } = string.Empty;
+        public bool IsAttended { get; set; }
+        public DateTime? AttendedAt { get; set; }
     }
 }

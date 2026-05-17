@@ -88,6 +88,10 @@ getAuditLogs: (params = '') => request('GET', `/users/audit-logs${params}`, null
     get(`/activities/${activityId}/registrations?page=${page}&pageSize=${pageSize}`),
   getMyRegistrations: (page = 1, pageSize = 10) => 
     get(`/activities/my-registrations?page=${page}&pageSize=${pageSize}`),
+  updateRegistrationAttendance: (registrationId, isAttended) =>
+    request('PATCH', `/activities/registrations/${registrationId}/attendance`, { isAttended }, true),
+  updateAllAttendance: (activityId, isAttended) =>
+    request('PATCH', `/activities/${activityId}/attendance`, { isAttended }, true),
 
   // Posts
   getPosts: (params = '') => get(`/posts${params}`),

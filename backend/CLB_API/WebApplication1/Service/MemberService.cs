@@ -38,6 +38,7 @@ namespace ClubManagement.API.Service
             Position = m.Position,
             Status = m.Status,
             JoinDate = m.JoinDate,
+            BirthDate = m.BirthDate,
             Username = m.User?.Username,
             Email = m.User?.Email,
             ContactEmail = m.ContactEmail,
@@ -107,6 +108,7 @@ namespace ClubManagement.API.Service
             if (dto.FullName != null) member.FullName = dto.FullName;
             if (dto.ClassName != null) member.ClassName = dto.ClassName;
             if (dto.Faculty != null) member.Faculty = dto.Faculty;
+            if (dto.BirthDate.HasValue) member.BirthDate = dto.BirthDate.Value;
             if (dto.Phone != null && member.User != null)
             {
                 member.User.Phone = dto.Phone; member.User.UpdatedAt = DateTime.UtcNow;
@@ -137,6 +139,7 @@ namespace ClubManagement.API.Service
             if (dto.FullName != null) member.FullName = dto.FullName;
             if (dto.ClassName != null) member.ClassName = dto.ClassName;
             if (dto.Faculty != null) member.Faculty = dto.Faculty;
+            if (dto.BirthDate.HasValue) member.BirthDate = dto.BirthDate.Value;
             if (dto.Position != null) member.Position = dto.Position;
             if (dto.Status != null)
             {

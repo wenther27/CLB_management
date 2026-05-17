@@ -12,6 +12,7 @@ namespace ClubManagement.API.DTOs.Members
         public string? Faculty { get; set; }
         public string? ContactEmail { get; set; }
         public DateTime? JoinDate { get; set; }
+        public int ActivityCount { get; set; }
     }
 
     public class DepartmentGroupDTO

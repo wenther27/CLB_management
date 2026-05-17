@@ -18,6 +18,34 @@ namespace ClubManagement.API.Controllers
 
         // GET /api/member-board
         // Trả về danh sách nhóm theo Department, sắp xếp theo DisplayOrder
+        [HttpGet("featured")]
+        public async Task<IActionResult> GetFeaturedMembers()
+        {
+            var members = await _context.Members
+                .Include(m => m.User)
+                .Where(m => m.Status == "Active")
+                .Select(m => new MemberBoardDTO
+                {
+                    MemberID = m.MemberID,
+                    FullName = m.FullName,
+                    Position = m.Position,
+                    Department = m.Department,
+                    AvatarUrl = m.AvatarUrl ?? m.User!.AvatarUrl,
+                    DisplayOrder = m.DisplayOrder,
+                    Faculty = m.Faculty,
+                    JoinDate = m.JoinDate,
+                    ContactEmail = m.ContactEmail,
+                    ActivityCount = m.Registrations!.Count(r => r.IsAttended)
+                })
+                .Where(m => m.ActivityCount > 0)
+                .OrderByDescending(m => m.ActivityCount)
+                .ThenBy(m => m.FullName)
+                .Take(3)
+                .ToListAsync();
+
+            return Ok(new { success = true, data = members });
+        }
+
         [HttpGet]
         public async Task<IActionResult> GetMemberBoard()
         {
