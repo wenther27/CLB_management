@@ -18,6 +18,11 @@ namespace ClubManagement.API.Data
         public DbSet<ActivityImage> ActivityImages { get; set; }
         public DbSet<PostImage> PostImages { get; set; }
         public DbSet<PostLike> PostLikes { get; set; }
+        public DbSet<FundTransaction> FundTransactions { get; set; }
+        public DbSet<ActivityBudget> ActivityBudgets { get; set; }
+        public DbSet<FundCollectionPeriod> FundCollectionPeriods { get; set; }
+        public DbSet<FundContribution> FundContributions { get; set; }
+        public DbSet<SepayWebhookEvent> SepayWebhookEvents { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -31,6 +36,93 @@ namespace ClubManagement.API.Data
             modelBuilder.Entity<PostLike>()
                 .HasIndex(l => new { l.PostID, l.UserID })
                 .IsUnique();
+
+            modelBuilder.Entity<ActivityBudget>()
+                .HasIndex(b => b.ActivityID)
+                .IsUnique();
+
+            modelBuilder.Entity<ActivityBudget>()
+                .HasOne(b => b.CreatedByUser)
+                .WithMany()
+                .HasForeignKey(b => b.CreatedByUserID)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            modelBuilder.Entity<FundTransaction>()
+                .HasOne(t => t.CreatedByUser)
+                .WithMany()
+                .HasForeignKey(t => t.CreatedByUserID)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            modelBuilder.Entity<FundTransaction>()
+                .HasOne(t => t.ApprovedByUser)
+                .WithMany()
+                .HasForeignKey(t => t.ApprovedByUserID)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            modelBuilder.Entity<FundTransaction>()
+                .Property(t => t.Amount)
+                .HasPrecision(18, 2);
+
+            modelBuilder.Entity<ActivityBudget>()
+                .Property(b => b.PlannedAmount)
+                .HasPrecision(18, 2);
+
+            modelBuilder.Entity<FundCollectionPeriod>()
+                .HasIndex(p => new { p.Year, p.Month })
+                .IsUnique();
+
+            modelBuilder.Entity<FundCollectionPeriod>()
+                .Property(p => p.Amount)
+                .HasPrecision(18, 2);
+
+            modelBuilder.Entity<FundCollectionPeriod>()
+                .HasOne(p => p.CreatedByUser)
+                .WithMany()
+                .HasForeignKey(p => p.CreatedByUserID)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            modelBuilder.Entity<FundContribution>()
+                .HasIndex(c => new { c.FundCollectionPeriodID, c.MemberID })
+                .IsUnique();
+
+            modelBuilder.Entity<FundContribution>()
+                .HasIndex(c => c.PaymentCode)
+                .IsUnique();
+
+            modelBuilder.Entity<FundContribution>()
+                .HasIndex(c => c.SepayTransactionID)
+                .IsUnique()
+                .HasFilter("[SepayTransactionID] IS NOT NULL");
+
+            modelBuilder.Entity<FundContribution>()
+                .Property(c => c.ExpectedAmount)
+                .HasPrecision(18, 2);
+
+            modelBuilder.Entity<FundContribution>()
+                .HasOne(c => c.Member)
+                .WithMany()
+                .HasForeignKey(c => c.MemberID)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            modelBuilder.Entity<FundContribution>()
+                .HasOne(c => c.FundTransaction)
+                .WithMany()
+                .HasForeignKey(c => c.FundTransactionID)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            modelBuilder.Entity<SepayWebhookEvent>()
+                .HasIndex(e => e.SepayTransactionID)
+                .IsUnique();
+
+            modelBuilder.Entity<SepayWebhookEvent>()
+                .Property(e => e.TransferAmount)
+                .HasPrecision(18, 2);
+
+            modelBuilder.Entity<SepayWebhookEvent>()
+                .HasOne(e => e.FundContribution)
+                .WithMany()
+                .HasForeignKey(e => e.FundContributionID)
+                .OnDelete(DeleteBehavior.NoAction);
 
   
             modelBuilder.Entity<Role>().HasData(

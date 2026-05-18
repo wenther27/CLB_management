@@ -74,9 +74,13 @@ builder.Services.AddScoped<IMemberService, MemberService>();
 builder.Services.AddScoped<IPostService, PostService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IDashboardService, DashboardService>();
+builder.Services.AddScoped<IFundService, FundService>();
+builder.Services.AddScoped<IFundContributionService, FundContributionService>();
+builder.Services.AddHttpClient<ISepayTransactionSyncService, SepayTransactionSyncService>();
 
 // Background service: tự động khoá/mở hoạt động theo thời gian
 builder.Services.AddHostedService<ActivityAutoCloseService>();
+builder.Services.AddHostedService<SepayTransactionPollingService>();
 
 // ========== UPLOAD FILE ==========
 builder.Services.Configure<FormOptions>(options =>

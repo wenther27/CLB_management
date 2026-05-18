@@ -44,6 +44,7 @@ function showP(name) {
     members:    () => loadMembers?.(),
     activities: () => loadActivitiesAdmin?.(),
     posts:      () => loadPostsAdmin?.(),
+    funds:      () => FundPanel?.init(),
     users:      () => UsersPanel?.init(),
     logs:       () => LogsPanel?.init(),
   };

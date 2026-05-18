@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Quản trị – CTXH DUT</title>
 <link rel="stylesheet" href="../assets/css/style.css">
+<link rel="stylesheet" href="../assets/css/admin-funds.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
 <body>
@@ -41,6 +42,9 @@
       </button>
       <button class="adm-item" data-p="posts" onclick="showP('posts')">
         <span class="ico"><i class="fa-solid fa-newspaper"></i></span> Tin tức
+      </button>
+      <button class="adm-item" data-p="funds" onclick="showP('funds')">
+        <span class="ico"><i class="fa-solid fa-wallet"></i></span> Quỹ CLB
       </button>
 
       <div class="adm-group-lbl" style="margin-top:6px" id="adminGrpLbl">Admin</div>
@@ -219,6 +223,149 @@
       </div>
 
       <!-- USERS -->
+      <div class="adm-panel" id="p-funds">
+        <div class="adm-header">
+          <h2><i class="fa-solid fa-wallet"></i> Quản lý quỹ CLB</h2>
+          <button class="btn-primary btn-sm" onclick="FundPanel.openTransactionModal()">
+            <i class="fa-solid fa-plus"></i> Tạo giao dịch
+          </button>
+        </div>
+
+        <div class="fund-grid">
+          <section class="fund-overview-grid">
+            <div class="fund-card">
+              <div class="fund-card-label">Số dư hiện tại</div>
+              <div class="fund-card-value" id="fundBalance">—</div>
+            </div>
+            <div class="fund-card">
+              <div class="fund-card-label">Thu tháng này</div>
+              <div class="fund-card-value income" id="fundIncomeMonth">—</div>
+            </div>
+            <div class="fund-card">
+              <div class="fund-card-label">Chi tháng này</div>
+              <div class="fund-card-value expense" id="fundExpenseMonth">—</div>
+            </div>
+            <div class="fund-card">
+              <div class="fund-card-label">Chờ duyệt</div>
+              <div class="fund-card-value pending" id="fundPending">—</div>
+            </div>
+          </section>
+
+          <section class="fund-section">
+            <div class="fund-section-head">
+              <h3>Giao dịch</h3>
+              <div class="fund-toolbar compact">
+                <select id="fundTxStatus" aria-label="Lọc giao dịch theo trạng thái" onchange="FundPanel.loadTransactions()">
+                  <option value="">Tất cả trạng thái</option>
+                  <option value="Pending">Chờ duyệt</option>
+                  <option value="Approved">Đã duyệt</option>
+                  <option value="Rejected">Từ chối</option>
+                </select>
+                <select id="fundTxType" aria-label="Lọc giao dịch theo loại" onchange="FundPanel.loadTransactions()">
+                  <option value="">Tất cả loại</option>
+                  <option value="Income">Thu</option>
+                  <option value="Expense">Chi</option>
+                </select>
+              </div>
+            </div>
+            <div class="fund-section-body table-wrap">
+              <table>
+                <thead>
+                  <tr><th>ID</th><th>Loại</th><th>Số tiền</th><th>Danh mục</th><th>Hoạt động</th><th>Người thực hiện</th><th>Ngày</th><th>Trạng thái</th><th>Thao tác</th></tr>
+                </thead>
+                <tbody id="fundTxBody"></tbody>
+              </table>
+            </div>
+          </section>
+
+          <section class="fund-section">
+            <div class="fund-section-head">
+              <h3>Duyệt giao dịch</h3>
+            </div>
+            <div class="fund-section-body table-wrap">
+              <table>
+                <thead>
+                  <tr><th>ID</th><th>Loại</th><th>Số tiền</th><th>Danh mục</th><th>Người tạo</th><th>Thao tác</th></tr>
+                </thead>
+                <tbody id="fundApprovalBody"></tbody>
+              </table>
+            </div>
+          </section>
+
+          <section class="fund-section">
+            <div class="fund-section-head">
+              <h3>Ngân sách hoạt động</h3>
+              <button class="btn-outline btn-sm" onclick="FundPanel.openBudgetModal()">
+                <i class="fa-solid fa-plus"></i> Tạo ngân sách
+              </button>
+            </div>
+            <div class="fund-section-body">
+              <div class="fund-budget-list" id="fundBudgetList"></div>
+            </div>
+          </section>
+
+          <section class="fund-section">
+            <div class="fund-section-head">
+              <h3>Thu quỹ theo tháng</h3>
+              <button class="btn-outline btn-sm" onclick="FundContributionPanel.openPeriodModal()">
+                <i class="fa-solid fa-plus"></i> Mở tháng quỹ
+              </button>
+            </div>
+            <div class="fund-section-body table-wrap">
+              <table>
+                <thead>
+                  <tr><th>Tháng</th><th>Mỗi thành viên</th><th>Đã đóng</th><th>Đã thu</th><th>Còn thiếu</th><th>Hạn đóng</th><th>Trạng thái</th><th>Thao tác</th></tr>
+                </thead>
+                <tbody id="fundPeriodBody"></tbody>
+              </table>
+            </div>
+          </section>
+
+          <section class="fund-section">
+            <div class="fund-section-head">
+              <h3>Báo cáo</h3>
+              <div class="fund-toolbar compact">
+                <input id="fundReportYear" type="number" value="2026" min="2020" aria-label="Năm báo cáo quỹ" onchange="FundPanel.loadReport()">
+                <select id="fundReportMonth" aria-label="Tháng báo cáo quỹ" onchange="FundPanel.loadReport()">
+                  <option value="">Cả năm</option>
+                  <option value="1">Tháng 1</option><option value="2">Tháng 2</option>
+                  <option value="3">Tháng 3</option><option value="4">Tháng 4</option>
+                  <option value="5">Tháng 5</option><option value="6">Tháng 6</option>
+                  <option value="7">Tháng 7</option><option value="8">Tháng 8</option>
+                  <option value="9">Tháng 9</option><option value="10">Tháng 10</option>
+                  <option value="11">Tháng 11</option><option value="12">Tháng 12</option>
+                </select>
+                <button class="btn-outline btn-sm" onclick="FundPanel.exportReportExcel()">
+                  <i class="fa-solid fa-file-excel"></i> Xuất Excel
+                </button>
+              </div>
+            </div>
+            <div class="fund-section-body">
+              <div class="fund-overview-grid" style="margin-bottom:16px">
+                <div class="fund-card"><div class="fund-card-label">Tổng thu</div><div class="fund-card-value income" id="fundReportIncome">—</div></div>
+                <div class="fund-card"><div class="fund-card-label">Tổng chi</div><div class="fund-card-value expense" id="fundReportExpense">—</div></div>
+                <div class="fund-card"><div class="fund-card-label">Chênh lệch</div><div class="fund-card-value" id="fundReportNet">—</div></div>
+              </div>
+              <div class="fund-report-grid">
+                <div class="table-wrap">
+                  <table>
+                    <thead><tr><th>Danh mục</th><th>Thu</th><th>Chi</th></tr></thead>
+                    <tbody id="fundReportCategories"></tbody>
+                  </table>
+                </div>
+                <div class="table-wrap">
+                  <table>
+                    <thead><tr><th>Hoạt động</th><th>Chi phí</th></tr></thead>
+                    <tbody id="fundReportActivities"></tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
+      </div>
+
+      <!-- USERS -->
       <!-- FIX: Thêm filter bar + stats + pagination đầy đủ cho UsersPanel -->
       <div class="adm-panel" id="p-users">
         <div class="adm-header">
@@ -352,6 +499,8 @@
 <script src="../js/pages/admin/admin-members.js"></script>
 <script src="../js/pages/admin/admin-activities.js"></script>
 <script src="../js/pages/admin/admin-posts.js"></script>
+<script src="../js/pages/admin/admin-fund-contributions.js"></script>
+<script src="../js/pages/admin/admin-funds.js"></script>
 <script src="../js/pages/admin/admin-users-logs.js"></script>
 
 </body>

@@ -120,6 +120,9 @@
               <button onclick="showTab('password')" class="btn-outline" style="padding:10px">
                 <i class="fa-solid fa-lock"></i> Đổi mật khẩu
               </button>
+              <button onclick="showTab('fund')" class="btn-outline" style="padding:10px">
+                <i class="fa-solid fa-wallet"></i> Đóng quỹ
+              </button>
               <button onclick="logout()" class="btn-danger" style="padding:10px;width:100%;font-family:Arial,sans-serif;font-size:14px;border-radius:6px">
                 <i class="fa-solid fa-right-from-bracket"></i> Đăng xuất
               </button>
@@ -146,6 +149,12 @@
                        color:#0f172a;cursor:pointer;font-size:13px;font-weight:700;font-family:Arial,sans-serif;
                        transition:all 0.2s">
                 <i class="fa-solid fa-key"></i> Mật khẩu
+              </button>
+              <button class="tab-btn" id="tab-fund" onclick="showTab('fund')"
+                style="flex:1;padding:9px;border:none;border-radius:7px;background:transparent;
+                       color:#0f172a;cursor:pointer;font-size:13px;font-weight:700;font-family:Arial,sans-serif;
+                       transition:all 0.2s">
+                <i class="fa-solid fa-wallet"></i> Đóng quỹ
               </button>
             </div>
 
@@ -223,6 +232,11 @@
               <button onclick="changePassword()" class="btn-primary" style="padding:11px 24px">
                 <i class="fa-solid fa-lock"></i> Đổi mật khẩu
               </button>
+            </div>
+
+            <div id="content-fund" style="display:none">
+              <div style="font-size:15px;font-weight:700;margin-bottom:20px">Đóng quỹ CLB</div>
+              <div id="memberFundContent"></div>
             </div>
           </div>
         </div>
@@ -320,6 +334,7 @@
 <script src="../js/app/api.js"></script>
 <script src="../js/app/auth-modal.js"></script>
 <script src="../js/pages/member-profile.js"></script>
+<script src="../js/pages/member-fund.js"></script>
 
 <script>
 // ── Biến state ────────────────────────────────────────────────────────────────
@@ -503,7 +518,7 @@ async function loadRegistrations(page = 1) {
 
 // ── Tabs ──────────────────────────────────────────────────────────────────────
 function showTab(tab) {
-  ['history', 'edit', 'password'].forEach(t => {
+  ['history', 'edit', 'password', 'fund'].forEach(t => {
     document.getElementById('content-' + t).style.display = t === tab ? 'block' : 'none';
     const btn = document.getElementById('tab-' + t);
     if (t === tab) {
@@ -514,10 +529,13 @@ function showTab(tab) {
       btn.style.color = '#64748b';
     }
   });
-    if (tab === 'password') {
+  if (tab === 'password') {
     document.getElementById('pwd-current').value = '';
     document.getElementById('pwd-new').value = '';
     document.getElementById('pwd-confirm').value = '';
+  }
+  if (tab === 'fund') {
+    MemberFundPanel.init();
   }
 }
 

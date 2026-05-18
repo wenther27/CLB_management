@@ -102,6 +102,29 @@ getAuditLogs: (params = '') => request('GET', `/users/audit-logs${params}`, null
   likePost: (id) => post(`/posts/${id}/like`, null),
   unlikePost: (id) => del(`/posts/${id}/like`),
 
+  // Funds
+  getFundOverview: () => request('GET', '/funds/overview', null, true),
+  getFundTransactions: (params = '') => request('GET', `/funds/transactions${params}`, null, true),
+  createFundTransaction: (data) => post('/funds/transactions', data),
+  updateFundTransaction: (id, data) => put(`/funds/transactions/${id}`, data),
+  updateFundTransactionStatus: (id, status) =>
+    request('PATCH', `/funds/transactions/${id}/status`, { status }, true),
+  deleteFundTransaction: (id) => del(`/funds/transactions/${id}`),
+  getFundBudgets: () => request('GET', '/funds/budgets', null, true),
+  saveFundBudget: (data) => post('/funds/budgets', data),
+  updateFundBudget: (id, data) => put(`/funds/budgets/${id}`, data),
+  getFundReport: (params = '') => request('GET', `/funds/reports${params}`, null, true),
+
+  // Fund contributions
+  getFundCollectionPeriods: () => request('GET', '/fund-contributions/periods', null, true),
+  createFundCollectionPeriod: (data) => post('/fund-contributions/periods', data),
+  updateFundCollectionPeriodStatus: (id, status) =>
+    request('PATCH', `/fund-contributions/periods/${id}/status`, { status }, true),
+  getFundPeriodMembers: (id) => request('GET', `/fund-contributions/periods/${id}/members`, null, true),
+  getMyCurrentFundContribution: () => request('GET', '/fund-contributions/me/current', null, true),
+  getMyFundContributionHistory: () => request('GET', '/fund-contributions/me/history', null, true),
+  syncSepayTransactions: () => request('POST', '/fund-contributions/sepay/sync', null, true),
+
   // Notifications
   getNotifications: () => request('GET', '/notifications', null, true),
   sendNotification: (data) => post('/notifications', data),
@@ -124,7 +147,24 @@ getAuditLogs: (params = '') => request('GET', `/users/audit-logs${params}`, null
     
     const data = await res.json();
     return data;
-}
+},
+  uploadReceipt: async (file) => {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const token = Auth.getToken();
+    const res = await fetch(`${API_BASE}/upload/receipt`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${token}` },
+      body: formData
+    });
+
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      throw new Error(data.message || `HTTP ${res.status}`);
+    }
+    return data;
+  }
 };
 
 // ---- Toast Notifications ----

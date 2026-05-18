@@ -15,3 +15,5 @@ node_modules/
 
 # Logs
 *.log
+# Local build checks
+_fund_build_check/

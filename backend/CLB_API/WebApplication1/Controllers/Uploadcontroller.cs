@@ -90,6 +90,30 @@ namespace ClubManagement.API.Controllers
             }
         }
 
+        [HttpPost("receipt")]
+        [Authorize(Roles = "Admin,ExecutiveBoard")]
+        public async Task<IActionResult> UploadReceipt([FromForm] IFormFile file)
+        {
+            try
+            {
+                var error = ValidateFile(file);
+                if (error != null)
+                    return BadRequest(ApiResponse<string>.Fail(error));
+
+                var url = await SaveFileAsync(file!, "fund-receipts");
+                return Ok(new
+                {
+                    success = true,
+                    data = url,
+                    message = "Upload minh chứng thành công"
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ApiResponse<string>.Fail($"Lỗi server: {ex.Message}"));
+            }
+        }
+
         [HttpPost("avatar")]
         [Authorize]
         public async Task<IActionResult> UploadAvatar([FromForm] IFormFile thumbnail)

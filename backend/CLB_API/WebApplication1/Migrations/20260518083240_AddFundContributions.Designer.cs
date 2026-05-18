@@ -4,6 +4,7 @@ using ClubManagement.API.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ClubManagement.API.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260518083240_AddFundContributions")]
+    partial class AddFundContributions
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -34,7 +37,7 @@ namespace ClubManagement.API.Migrations
 
                     b.HasIndex("activitiesActivityID");
 
-                    b.ToTable("ClubActivityExecutiveBoard", (string)null);
+                    b.ToTable("ClubActivityExecutiveBoard");
                 });
 
             modelBuilder.Entity("ClubManagement.API.Models.ActivityBudget", b =>
@@ -72,7 +75,7 @@ namespace ClubManagement.API.Migrations
 
                     b.HasIndex("CreatedByUserID");
 
-                    b.ToTable("ActivityBudgets", (string)null);
+                    b.ToTable("ActivityBudgets");
                 });
 
             modelBuilder.Entity("ClubManagement.API.Models.ActivityImage", b =>
@@ -94,7 +97,7 @@ namespace ClubManagement.API.Migrations
 
                     b.HasIndex("ActivityID");
 
-                    b.ToTable("ActivityImages", (string)null);
+                    b.ToTable("ActivityImages");
                 });
 
             modelBuilder.Entity("ClubManagement.API.Models.AuditLog", b =>
@@ -126,7 +129,7 @@ namespace ClubManagement.API.Migrations
 
                     b.HasIndex("UserID");
 
-                    b.ToTable("AuditLogs", (string)null);
+                    b.ToTable("AuditLogs");
                 });
 
             modelBuilder.Entity("ClubManagement.API.Models.ClubActivity", b =>
@@ -179,7 +182,7 @@ namespace ClubManagement.API.Migrations
 
                     b.HasIndex("CreateBy");
 
-                    b.ToTable("Activities", (string)null);
+                    b.ToTable("Activities");
                 });
 
             modelBuilder.Entity("ClubManagement.API.Models.ExecutiveBoard", b =>
@@ -202,7 +205,7 @@ namespace ClubManagement.API.Migrations
 
                     b.HasIndex("userID");
 
-                    b.ToTable("ExecutiveBoard", (string)null);
+                    b.ToTable("ExecutiveBoard");
                 });
 
             modelBuilder.Entity("ClubManagement.API.Models.FundCollectionPeriod", b =>
@@ -244,7 +247,7 @@ namespace ClubManagement.API.Migrations
                     b.HasIndex("Year", "Month")
                         .IsUnique();
 
-                    b.ToTable("FundCollectionPeriods", (string)null);
+                    b.ToTable("FundCollectionPeriods");
                 });
 
             modelBuilder.Entity("ClubManagement.API.Models.FundContribution", b =>
@@ -311,7 +314,7 @@ namespace ClubManagement.API.Migrations
                     b.HasIndex("FundCollectionPeriodID", "MemberID")
                         .IsUnique();
 
-                    b.ToTable("FundContributions", (string)null);
+                    b.ToTable("FundContributions");
                 });
 
             modelBuilder.Entity("ClubManagement.API.Models.FundTransaction", b =>
@@ -375,7 +378,7 @@ namespace ClubManagement.API.Migrations
 
                     b.HasIndex("CreatedByUserID");
 
-                    b.ToTable("FundTransactions", (string)null);
+                    b.ToTable("FundTransactions");
                 });
 
             modelBuilder.Entity("ClubManagement.API.Models.Notification", b =>
@@ -407,7 +410,7 @@ namespace ClubManagement.API.Migrations
 
                     b.HasIndex("SenderID");
 
-                    b.ToTable("Notifications", (string)null);
+                    b.ToTable("Notifications");
                 });
 
             modelBuilder.Entity("ClubManagement.API.Models.Post", b =>
@@ -472,7 +475,7 @@ namespace ClubManagement.API.Migrations
 
                     b.HasIndex("ExecutiveBoardBoardID");
 
-                    b.ToTable("Posts", (string)null);
+                    b.ToTable("Posts");
                 });
 
             modelBuilder.Entity("ClubManagement.API.Models.PostImage", b =>
@@ -494,7 +497,7 @@ namespace ClubManagement.API.Migrations
 
                     b.HasIndex("PostID");
 
-                    b.ToTable("PostImages", (string)null);
+                    b.ToTable("PostImages");
                 });
 
             modelBuilder.Entity("ClubManagement.API.Models.PostLike", b =>
@@ -521,7 +524,7 @@ namespace ClubManagement.API.Migrations
                     b.HasIndex("PostID", "UserID")
                         .IsUnique();
 
-                    b.ToTable("PostLikes", (string)null);
+                    b.ToTable("PostLikes");
                 });
 
             modelBuilder.Entity("ClubManagement.API.Models.Registrations", b =>
@@ -561,7 +564,7 @@ namespace ClubManagement.API.Migrations
                     b.HasIndex("MemberID", "ActivityID")
                         .IsUnique();
 
-                    b.ToTable("Registrations", (string)null);
+                    b.ToTable("Registrations");
                 });
 
             modelBuilder.Entity("ClubManagement.API.Models.SepayWebhookEvent", b =>
@@ -603,7 +606,7 @@ namespace ClubManagement.API.Migrations
                     b.HasIndex("SepayTransactionID")
                         .IsUnique();
 
-                    b.ToTable("SepayWebhookEvents", (string)null);
+                    b.ToTable("SepayWebhookEvents");
                 });
 
             modelBuilder.Entity("Member", b =>
@@ -665,7 +668,7 @@ namespace ClubManagement.API.Migrations
                         .IsUnique()
                         .HasFilter("[UserID] IS NOT NULL");
 
-                    b.ToTable("Members", (string)null);
+                    b.ToTable("Members");
                 });
 
             modelBuilder.Entity("Role", b =>
@@ -688,7 +691,7 @@ namespace ClubManagement.API.Migrations
 
                     b.HasKey("RoleID");
 
-                    b.ToTable("Roles", (string)null);
+                    b.ToTable("Roles");
 
                     b.HasData(
                         new
@@ -767,7 +770,7 @@ namespace ClubManagement.API.Migrations
 
                     b.HasIndex("RoleID");
 
-                    b.ToTable("Users", (string)null);
+                    b.ToTable("Users");
                 });
 
             modelBuilder.Entity("ClubActivityExecutiveBoard", b =>

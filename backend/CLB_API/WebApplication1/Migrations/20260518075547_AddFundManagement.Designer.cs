@@ -4,6 +4,7 @@ using ClubManagement.API.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ClubManagement.API.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260518075547_AddFundManagement")]
+    partial class AddFundManagement
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -34,7 +37,7 @@ namespace ClubManagement.API.Migrations
 
                     b.HasIndex("activitiesActivityID");
 
-                    b.ToTable("ClubActivityExecutiveBoard", (string)null);
+                    b.ToTable("ClubActivityExecutiveBoard");
                 });
 
             modelBuilder.Entity("ClubManagement.API.Models.ActivityBudget", b =>
@@ -72,7 +75,7 @@ namespace ClubManagement.API.Migrations
 
                     b.HasIndex("CreatedByUserID");
 
-                    b.ToTable("ActivityBudgets", (string)null);
+                    b.ToTable("ActivityBudgets");
                 });
 
             modelBuilder.Entity("ClubManagement.API.Models.ActivityImage", b =>
@@ -94,7 +97,7 @@ namespace ClubManagement.API.Migrations
 
                     b.HasIndex("ActivityID");
 
-                    b.ToTable("ActivityImages", (string)null);
+                    b.ToTable("ActivityImages");
                 });
 
             modelBuilder.Entity("ClubManagement.API.Models.AuditLog", b =>
@@ -126,7 +129,7 @@ namespace ClubManagement.API.Migrations
 
                     b.HasIndex("UserID");
 
-                    b.ToTable("AuditLogs", (string)null);
+                    b.ToTable("AuditLogs");
                 });
 
             modelBuilder.Entity("ClubManagement.API.Models.ClubActivity", b =>
@@ -179,7 +182,7 @@ namespace ClubManagement.API.Migrations
 
                     b.HasIndex("CreateBy");
 
-                    b.ToTable("Activities", (string)null);
+                    b.ToTable("Activities");
                 });
 
             modelBuilder.Entity("ClubManagement.API.Models.ExecutiveBoard", b =>
@@ -202,116 +205,7 @@ namespace ClubManagement.API.Migrations
 
                     b.HasIndex("userID");
 
-                    b.ToTable("ExecutiveBoard", (string)null);
-                });
-
-            modelBuilder.Entity("ClubManagement.API.Models.FundCollectionPeriod", b =>
-                {
-                    b.Property<int>("FundCollectionPeriodID")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("FundCollectionPeriodID"));
-
-                    b.Property<decimal>("Amount")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("CreatedByUserID")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime?>("DueDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("Month")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
-
-                    b.Property<int>("Year")
-                        .HasColumnType("int");
-
-                    b.HasKey("FundCollectionPeriodID");
-
-                    b.HasIndex("CreatedByUserID");
-
-                    b.HasIndex("Year", "Month")
-                        .IsUnique();
-
-                    b.ToTable("FundCollectionPeriods", (string)null);
-                });
-
-            modelBuilder.Entity("ClubManagement.API.Models.FundContribution", b =>
-                {
-                    b.Property<int>("FundContributionID")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("FundContributionID"));
-
-                    b.Property<string>("BankContent")
-                        .HasMaxLength(1000)
-                        .HasColumnType("nvarchar(1000)");
-
-                    b.Property<string>("BankReferenceCode")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<decimal>("ExpectedAmount")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<int>("FundCollectionPeriodID")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("FundTransactionID")
-                        .HasColumnType("int");
-
-                    b.Property<int>("MemberID")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime?>("PaidAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("PaymentCode")
-                        .IsRequired()
-                        .HasMaxLength(25)
-                        .HasColumnType("nvarchar(25)");
-
-                    b.Property<long?>("SepayTransactionID")
-                        .HasColumnType("bigint");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
-
-                    b.HasKey("FundContributionID");
-
-                    b.HasIndex("FundTransactionID");
-
-                    b.HasIndex("MemberID");
-
-                    b.HasIndex("PaymentCode")
-                        .IsUnique();
-
-                    b.HasIndex("SepayTransactionID")
-                        .IsUnique()
-                        .HasFilter("[SepayTransactionID] IS NOT NULL");
-
-                    b.HasIndex("FundCollectionPeriodID", "MemberID")
-                        .IsUnique();
-
-                    b.ToTable("FundContributions", (string)null);
+                    b.ToTable("ExecutiveBoard");
                 });
 
             modelBuilder.Entity("ClubManagement.API.Models.FundTransaction", b =>
@@ -375,7 +269,7 @@ namespace ClubManagement.API.Migrations
 
                     b.HasIndex("CreatedByUserID");
 
-                    b.ToTable("FundTransactions", (string)null);
+                    b.ToTable("FundTransactions");
                 });
 
             modelBuilder.Entity("ClubManagement.API.Models.Notification", b =>
@@ -407,7 +301,7 @@ namespace ClubManagement.API.Migrations
 
                     b.HasIndex("SenderID");
 
-                    b.ToTable("Notifications", (string)null);
+                    b.ToTable("Notifications");
                 });
 
             modelBuilder.Entity("ClubManagement.API.Models.Post", b =>
@@ -472,7 +366,7 @@ namespace ClubManagement.API.Migrations
 
                     b.HasIndex("ExecutiveBoardBoardID");
 
-                    b.ToTable("Posts", (string)null);
+                    b.ToTable("Posts");
                 });
 
             modelBuilder.Entity("ClubManagement.API.Models.PostImage", b =>
@@ -494,7 +388,7 @@ namespace ClubManagement.API.Migrations
 
                     b.HasIndex("PostID");
 
-                    b.ToTable("PostImages", (string)null);
+                    b.ToTable("PostImages");
                 });
 
             modelBuilder.Entity("ClubManagement.API.Models.PostLike", b =>
@@ -521,7 +415,7 @@ namespace ClubManagement.API.Migrations
                     b.HasIndex("PostID", "UserID")
                         .IsUnique();
 
-                    b.ToTable("PostLikes", (string)null);
+                    b.ToTable("PostLikes");
                 });
 
             modelBuilder.Entity("ClubManagement.API.Models.Registrations", b =>
@@ -561,49 +455,7 @@ namespace ClubManagement.API.Migrations
                     b.HasIndex("MemberID", "ActivityID")
                         .IsUnique();
 
-                    b.ToTable("Registrations", (string)null);
-                });
-
-            modelBuilder.Entity("ClubManagement.API.Models.SepayWebhookEvent", b =>
-                {
-                    b.Property<int>("SepayWebhookEventID")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("SepayWebhookEventID"));
-
-                    b.Property<string>("Content")
-                        .HasMaxLength(1000)
-                        .HasColumnType("nvarchar(1000)");
-
-                    b.Property<int?>("FundContributionID")
-                        .HasColumnType("int");
-
-                    b.Property<bool>("IsMatched")
-                        .HasColumnType("bit");
-
-                    b.Property<DateTime>("ReceivedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("ReferenceCode")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<long>("SepayTransactionID")
-                        .HasColumnType("bigint");
-
-                    b.Property<decimal>("TransferAmount")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("decimal(18,2)");
-
-                    b.HasKey("SepayWebhookEventID");
-
-                    b.HasIndex("FundContributionID");
-
-                    b.HasIndex("SepayTransactionID")
-                        .IsUnique();
-
-                    b.ToTable("SepayWebhookEvents", (string)null);
+                    b.ToTable("Registrations");
                 });
 
             modelBuilder.Entity("Member", b =>
@@ -665,7 +517,7 @@ namespace ClubManagement.API.Migrations
                         .IsUnique()
                         .HasFilter("[UserID] IS NOT NULL");
 
-                    b.ToTable("Members", (string)null);
+                    b.ToTable("Members");
                 });
 
             modelBuilder.Entity("Role", b =>
@@ -688,7 +540,7 @@ namespace ClubManagement.API.Migrations
 
                     b.HasKey("RoleID");
 
-                    b.ToTable("Roles", (string)null);
+                    b.ToTable("Roles");
 
                     b.HasData(
                         new
@@ -767,7 +619,7 @@ namespace ClubManagement.API.Migrations
 
                     b.HasIndex("RoleID");
 
-                    b.ToTable("Users", (string)null);
+                    b.ToTable("Users");
                 });
 
             modelBuilder.Entity("ClubActivityExecutiveBoard", b =>
@@ -844,43 +696,6 @@ namespace ClubManagement.API.Migrations
                         .IsRequired();
 
                     b.Navigation("user");
-                });
-
-            modelBuilder.Entity("ClubManagement.API.Models.FundCollectionPeriod", b =>
-                {
-                    b.HasOne("User", "CreatedByUser")
-                        .WithMany()
-                        .HasForeignKey("CreatedByUserID")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.Navigation("CreatedByUser");
-                });
-
-            modelBuilder.Entity("ClubManagement.API.Models.FundContribution", b =>
-                {
-                    b.HasOne("ClubManagement.API.Models.FundCollectionPeriod", "Period")
-                        .WithMany("Contributions")
-                        .HasForeignKey("FundCollectionPeriodID")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("ClubManagement.API.Models.FundTransaction", "FundTransaction")
-                        .WithMany()
-                        .HasForeignKey("FundTransactionID")
-                        .OnDelete(DeleteBehavior.NoAction);
-
-                    b.HasOne("Member", "Member")
-                        .WithMany()
-                        .HasForeignKey("MemberID")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.Navigation("FundTransaction");
-
-                    b.Navigation("Member");
-
-                    b.Navigation("Period");
                 });
 
             modelBuilder.Entity("ClubManagement.API.Models.FundTransaction", b =>
@@ -978,16 +793,6 @@ namespace ClubManagement.API.Migrations
                     b.Navigation("Member");
                 });
 
-            modelBuilder.Entity("ClubManagement.API.Models.SepayWebhookEvent", b =>
-                {
-                    b.HasOne("ClubManagement.API.Models.FundContribution", "FundContribution")
-                        .WithMany()
-                        .HasForeignKey("FundContributionID")
-                        .OnDelete(DeleteBehavior.NoAction);
-
-                    b.Navigation("FundContribution");
-                });
-
             modelBuilder.Entity("Member", b =>
                 {
                     b.HasOne("User", "User")
@@ -1018,11 +823,6 @@ namespace ClubManagement.API.Migrations
             modelBuilder.Entity("ClubManagement.API.Models.ExecutiveBoard", b =>
                 {
                     b.Navigation("posts");
-                });
-
-            modelBuilder.Entity("ClubManagement.API.Models.FundCollectionPeriod", b =>
-                {
-                    b.Navigation("Contributions");
                 });
 
             modelBuilder.Entity("ClubManagement.API.Models.Post", b =>
