@@ -7,6 +7,10 @@ namespace ClubManagement.API.DTOs.FundContributions
         public int FundCollectionPeriodID { get; set; }
         public int Year { get; set; }
         public int Month { get; set; }
+        public string Title { get; set; } = string.Empty;
+        public string Category { get; set; } = string.Empty;
+        public int? ActivityID { get; set; }
+        public string? ActivityName { get; set; }
         public decimal Amount { get; set; }
         public string Status { get; set; } = string.Empty;
         public DateTime? DueDate { get; set; }
@@ -24,10 +28,20 @@ namespace ClubManagement.API.DTOs.FundContributions
         [Range(1, 12)]
         public int Month { get; set; }
 
+        [MaxLength(150)]
+        public string? Title { get; set; }
+
+        [MaxLength(120)]
+        public string? Category { get; set; }
+
+        public int? ActivityID { get; set; }
+
         [Range(0.01, double.MaxValue)]
         public decimal Amount { get; set; }
 
         public DateTime? DueDate { get; set; }
+
+        public List<int> MemberIDs { get; set; } = new();
     }
 
     public class UpdateFundCollectionPeriodStatusDTO
@@ -42,6 +56,10 @@ namespace ClubManagement.API.DTOs.FundContributions
         public int FundCollectionPeriodID { get; set; }
         public int Year { get; set; }
         public int Month { get; set; }
+        public string Title { get; set; } = string.Empty;
+        public string Category { get; set; } = string.Empty;
+        public int? ActivityID { get; set; }
+        public string? ActivityName { get; set; }
         public decimal ExpectedAmount { get; set; }
         public string PaymentCode { get; set; } = string.Empty;
         public string Status { get; set; } = string.Empty;

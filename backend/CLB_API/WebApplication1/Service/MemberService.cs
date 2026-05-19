@@ -32,6 +32,7 @@ namespace ClubManagement.API.Service
         {
             MemberID = m.MemberID,
             UserID = m.UserID,
+            StudentCode = m.StudentCode,
             FullName = m.FullName,
             ClassName = m.ClassName,
             Faculty = m.Faculty,
@@ -57,6 +58,7 @@ namespace ClubManagement.API.Service
             {
                 q = q.Where(m =>
                 m.FullName.Contains(query.Keyword) ||
+                (m.StudentCode != null && m.StudentCode.Contains(query.Keyword)) ||
                 (m.User != null && m.User.Username.Contains(query.Keyword)) ||
                 (m.User != null && m.User.Email.Contains(query.Keyword)));
             }

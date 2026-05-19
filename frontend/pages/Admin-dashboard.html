@@ -121,7 +121,10 @@
         <div class="adm-header">
           <h2><i class="fa-solid fa-user-group"></i> Quản lý thành viên</h2>
           <div style="display:flex;gap:8px">
-            <button class="btn-outline btn-sm" onclick="loadMemberStats()">
+            <button class="btn-outline btn-sm" onclick="openMemberApplicationsModal()">
+                <i class="fa-solid fa-file-signature"></i> Hồ sơ
+              </button>
+              <button class="btn-outline btn-sm" onclick="loadMemberStats()">
               <i class="fa-solid fa-chart-pie"></i> Thống kê
             </button>
             <button class="btn-primary btn-sm" onclick="openMemberModal()">
@@ -306,15 +309,15 @@
 
           <section class="fund-section">
             <div class="fund-section-head">
-              <h3>Thu quỹ theo tháng</h3>
+              <h3>Đợt thu quỹ</h3>
               <button class="btn-outline btn-sm" onclick="FundContributionPanel.openPeriodModal()">
-                <i class="fa-solid fa-plus"></i> Mở tháng quỹ
+                <i class="fa-solid fa-plus"></i> Tạo đợt thu
               </button>
             </div>
             <div class="fund-section-body table-wrap">
               <table>
                 <thead>
-                  <tr><th>Tháng</th><th>Mỗi thành viên</th><th>Đã đóng</th><th>Đã thu</th><th>Còn thiếu</th><th>Hạn đóng</th><th>Trạng thái</th><th>Thao tác</th></tr>
+                  <tr><th>Đợt thu</th><th>Kỳ</th><th>Mỗi thành viên</th><th>Đã nộp</th><th>Đã thu</th><th>Còn thiếu</th><th>Hạn nộp</th><th>Trạng thái</th><th>Thao tác</th></tr>
                 </thead>
                 <tbody id="fundPeriodBody"></tbody>
               </table>

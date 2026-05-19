@@ -11,6 +11,12 @@ namespace ClubManagement.API.Models
         public int Year { get; set; }
         public int Month { get; set; }
 
+        [Required, MaxLength(150)]
+        public string Title { get; set; } = string.Empty;
+
+        [Required, MaxLength(120)]
+        public string Category { get; set; } = "Đóng quỹ";
+
         [Column(TypeName = "decimal(18,2)")]
         public decimal Amount { get; set; }
 
@@ -18,6 +24,10 @@ namespace ClubManagement.API.Models
         public string Status { get; set; } = "Open";
 
         public DateTime? DueDate { get; set; }
+
+        public int? ActivityID { get; set; }
+        [ForeignKey(nameof(ActivityID))]
+        public ClubActivity? Activity { get; set; }
 
         public int CreatedByUserID { get; set; }
         [ForeignKey(nameof(CreatedByUserID))]

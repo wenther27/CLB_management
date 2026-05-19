@@ -8,6 +8,9 @@ public class Member
     public int MemberID { get; set; }
     public int ? UserID { get; set; }
 
+    [MaxLength(30)]
+    public string? StudentCode { get; set; }
+
     [Required]
     [MaxLength (100)]
     public string FullName { get; set; } = string.Empty;

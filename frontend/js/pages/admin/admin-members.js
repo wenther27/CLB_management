@@ -557,3 +557,174 @@ window.handleMemberDragLeave  = handleMemberDragLeave;
 window.handleMemberDrop       = handleMemberDrop;
 window.handleMemberFileSelect = handleMemberFileSelect;
 window.removeMemberImage      = removeMemberImage;
+
+
+// Member application review
+function applicationStatusBadge(status) {
+  const map = {
+    Pending: '<span class="badge badge-pending">Ch\u1edd duy\u1ec7t</span>',
+    Approved: '<span class="badge badge-active">\u0110\u00e3 duy\u1ec7t</span>',
+    Rejected: '<span class="badge badge-inactive">T\u1eeb ch\u1ed1i</span>'
+  };
+  return map[status] || `<span class="badge">${Utils.escapeHtml(status || '')}</span>`;
+}
+
+function formatApplicationDate(value) {
+  if (!value) return '\u2014';
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return '\u2014';
+  return d.toLocaleDateString('vi-VN');
+}
+
+async function openMemberApplicationsModal(status = 'Pending') {
+  openModal('H\u1ed3 s\u01a1 ch\u1edd duy\u1ec7t', `
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:14px;margin-bottom:16px">
+      <div style="color:#64748b;font-size:13px;line-height:1.55;max-width:720px">
+        Duy\u1ec7t h\u1ed3 s\u01a1 s\u1ebd t\u1ea1o t\u00e0i kho\u1ea3n v\u1edbi t\u00ean \u0111\u0103ng nh\u1eadp l\u00e0 MSSV v\u00e0 m\u1eadt kh\u1ea9u t\u1ea1m l\u00e0 ng\u00e0y sinh d\u1ea1ng ddMMyyyy.
+      </div>
+      <select id="appStatusFilter" class="form-control" style="width:180px;flex-shrink:0" onchange="openMemberApplicationsModal(this.value)">
+        <option value="Pending" ${status === 'Pending' ? 'selected' : ''}>Ch\u1edd duy\u1ec7t</option>
+        <option value="Approved" ${status === 'Approved' ? 'selected' : ''}>\u0110\u00e3 duy\u1ec7t</option>
+        <option value="Rejected" ${status === 'Rejected' ? 'selected' : ''}>T\u1eeb ch\u1ed1i</option>
+        <option value="" ${status === '' ? 'selected' : ''}>T\u1ea5t c\u1ea3</option>
+      </select>
+    </div>
+
+    <div style="display:flex;gap:10px;align-items:center;margin-bottom:14px">
+      <input id="memberApplicationSearch" class="form-control"
+        placeholder="T\u00ecm MSSV, h\u1ecd t\u00ean, l\u1edbp, khoa, email, S\u0110T..."
+        oninput="renderMemberApplicationsTable()"
+        style="flex:1">
+      <button class="btn-outline btn-sm" onclick="document.getElementById('memberApplicationSearch').value='';renderMemberApplicationsTable()">
+        <i class="fa-solid fa-xmark"></i> X\u00f3a
+      </button>
+    </div>
+
+    <div id="memberApplicationsBody" class="loading" style="padding:34px;text-align:center">
+      <div class="spinner" style="margin:auto"></div>
+    </div>
+  `, null);
+
+  const modal = document.getElementById('gModalInner');
+  if (modal) {
+    modal.classList.add('member-applications-modal');
+    modal.style.width = 'min(1680px, calc(100vw - 32px))';
+    modal.style.maxWidth = 'calc(100vw - 32px)';
+    modal.style.minHeight = 'min(760px, calc(100vh - 72px))';
+    modal.style.padding = '30px';
+  }
+
+  try {
+    const query = status ? `?status=${encodeURIComponent(status)}` : '';
+    const r = await API.getMemberApplications(query);
+    window._memberApplicationsCache = r.data || [];
+    renderMemberApplicationsTable();
+  } catch (e) {
+    const body = document.getElementById('memberApplicationsBody');
+    if (body) body.innerHTML = `<div style="color:#ff2d55;text-align:center;padding:24px">${Utils.escapeHtml(e.message)}</div>`;
+  }
+}
+
+function renderMemberApplicationsTable() {
+  const body = document.getElementById('memberApplicationsBody');
+  if (!body) return;
+  body.classList.remove('loading');
+  body.style.padding = '0';
+  body.style.textAlign = 'left';
+  body.style.width = '100%';
+
+  const keyword = (document.getElementById('memberApplicationSearch')?.value || '').trim().toLowerCase();
+  const source = window._memberApplicationsCache || [];
+  const list = !keyword ? source : source.filter(a => [
+    a.studentCode,
+    a.fullName,
+    a.className,
+    a.faculty,
+    a.contactEmail,
+    a.phone,
+    a.note,
+    a.status
+  ].some(v => String(v || '').toLowerCase().includes(keyword)));
+
+  if (!list.length) {
+    body.innerHTML = '<div style="padding:26px;text-align:center;color:#64748b">Kh\u00f4ng c\u00f3 h\u1ed3 s\u01a1 ph\u00f9 h\u1ee3p</div>';
+    return;
+  }
+
+  body.innerHTML = `
+    <div style="overflow:auto;border:1px solid #e2e8f0;border-radius:14px;max-height:64vh;width:100%">
+      <table style="width:100%;border-collapse:collapse;min-width:1480px">
+        <thead style="background:#f8fafc;position:sticky;top:0;z-index:1">
+          <tr>
+            <th style="padding:13px;text-align:left;white-space:nowrap">MSSV</th>
+            <th style="padding:13px;text-align:left;min-width:190px">H\u1ecd t\u00ean</th>
+            <th style="padding:13px;text-align:left;min-width:210px">Ghi ch\u00fa</th>
+            <th style="padding:13px;text-align:left;white-space:nowrap">L\u1edbp</th>
+            <th style="padding:13px;text-align:left;min-width:190px">Khoa</th>
+            <th style="padding:13px;text-align:left;white-space:nowrap">Ng\u00e0y sinh</th>
+            <th style="padding:13px;text-align:left;min-width:230px">Email</th>
+            <th style="padding:13px;text-align:left;white-space:nowrap">S\u0110T</th>
+            <th style="padding:13px;text-align:left;white-space:nowrap">Tr\u1ea1ng th\u00e1i</th>
+            <th style="padding:13px;text-align:left;min-width:170px">Thao t\u00e1c</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${list.map(a => `
+            <tr style="border-top:1px solid #edf2f7">
+              <td style="padding:13px;font-weight:800;white-space:nowrap">${Utils.escapeHtml(a.studentCode || '')}</td>
+              <td style="padding:13px">
+                <div style="font-weight:800">${Utils.escapeHtml(a.fullName || '')}</div>
+              </td>
+              <td style="padding:13px;color:#64748b;line-height:1.35">${Utils.escapeHtml(a.note || '\u2014')}</td>
+              <td style="padding:13px;white-space:nowrap">${Utils.escapeHtml(a.className || '\u2014')}</td>
+              <td style="padding:13px">${Utils.escapeHtml(a.faculty || '\u2014')}</td>
+              <td style="padding:13px;white-space:nowrap">${formatApplicationDate(a.birthDate)}</td>
+              <td style="padding:13px;font-weight:600">${Utils.escapeHtml(a.contactEmail || '\u2014')}</td>
+              <td style="padding:13px;white-space:nowrap">${Utils.escapeHtml(a.phone || '\u2014')}</td>
+              <td style="padding:13px">${applicationStatusBadge(a.status)}</td>
+              <td style="padding:13px">
+                ${a.status === 'Pending' ? `
+                  <div style="display:flex;gap:7px;flex-wrap:wrap">
+                    <button class="btn-primary btn-sm" onclick="approveMemberApplication(${a.memberApplicationID})">
+                      <i class="fa-solid fa-check"></i> Duy\u1ec7t
+                    </button>
+                    <button class="btn-danger btn-sm" onclick="rejectMemberApplication(${a.memberApplicationID})">
+                      <i class="fa-solid fa-xmark"></i> T\u1eeb ch\u1ed1i
+                    </button>
+                  </div>` : '\u2014'}
+              </td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    </div>`;
+}
+
+async function approveMemberApplication(id) {
+  if (!confirm('Duy\u1ec7t h\u1ed3 s\u01a1 n\u00e0y v\u00e0 t\u1ea1o t\u00e0i kho\u1ea3n th\u00e0nh vi\u00ean?')) return;
+  try {
+    await API.approveMemberApplication(id, {});
+    Toast.success('\u0110\u00e3 duy\u1ec7t h\u1ed3 s\u01a1 v\u00e0 t\u1ea1o t\u00e0i kho\u1ea3n. M\u1eadt kh\u1ea9u t\u1ea1m l\u00e0 ng\u00e0y sinh d\u1ea1ng ddMMyyyy.');
+    await openMemberApplicationsModal('Pending');
+    loadMembers();
+    loadStats();
+  } catch (e) {
+    Toast.error(e.message);
+  }
+}
+
+async function rejectMemberApplication(id) {
+  const reason = prompt('L\u00fd do t\u1eeb ch\u1ed1i h\u1ed3 s\u01a1 (c\u00f3 th\u1ec3 b\u1ecf tr\u1ed1ng):') || '';
+  try {
+    await API.rejectMemberApplication(id, { reviewNote: reason });
+    Toast.success('\u0110\u00e3 t\u1eeb ch\u1ed1i h\u1ed3 s\u01a1');
+    await openMemberApplicationsModal('Pending');
+  } catch (e) {
+    Toast.error(e.message);
+  }
+}
+
+window.openMemberApplicationsModal = openMemberApplicationsModal;
+window.approveMemberApplication = approveMemberApplication;
+window.rejectMemberApplication = rejectMemberApplication;
+window.renderMemberApplicationsTable = renderMemberApplicationsTable;

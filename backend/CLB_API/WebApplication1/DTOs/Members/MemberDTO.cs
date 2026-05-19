@@ -4,6 +4,7 @@
     {
         public int MemberID { get; set; }
         public int ?  UserID { get; set; }
+        public string? StudentCode { get; set; }
 
         public string FullName { get; set; } = string.Empty;
         public string ClassName { get; set; } = string.Empty;

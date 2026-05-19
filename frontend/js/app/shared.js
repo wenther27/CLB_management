@@ -704,12 +704,12 @@ async function showRegistrationsList(activityId, activityName) {
     modal.id = 'registrationsModal';
     modal.className = 'modal-overlay';
     modal.innerHTML = `
-      <div class="modal" style="max-width:760px">
+      <div class="modal" style="max-width:1080px;width:min(1080px,calc(100vw - 32px))">
         <div class="modal-header">
           <span style="font-size:1.2rem;font-weight:600">Danh sách đăng ký</span>
           <button class="modal-close" onclick="closeRegistrationsModal()">✕</button>
         </div>
-        <div id="registrationsBody" style="max-height:520px;overflow-y:auto"></div>
+        <div id="registrationsBody" style="max-height:620px;overflow:auto"></div>
       </div>`;
     document.body.appendChild(modal);
   }
@@ -775,13 +775,19 @@ async function showRegistrationsList(activityId, activityName) {
           </div>`}
 
         <!-- Bảng danh sách -->
-        <table style="width:100%;border-collapse:collapse">
+        <table style="width:100%;border-collapse:collapse;min-width:980px">
           <thead>
             <tr style="border-bottom:2px solid #e2e8f0;background:#f8f9fc">
               <th style="text-align:left;padding:10px 12px;font-size:11px;color:#475569;
                          font-weight:700;text-transform:uppercase;letter-spacing:0.05em">STT</th>
               <th style="text-align:left;padding:10px 12px;font-size:11px;color:#475569;
                          font-weight:700;text-transform:uppercase;letter-spacing:0.05em">Họ tên</th>
+              <th style="text-align:left;padding:10px 12px;font-size:11px;color:#475569;
+                         font-weight:700;text-transform:uppercase;letter-spacing:0.05em">MSSV</th>
+              <th style="text-align:left;padding:10px 12px;font-size:11px;color:#475569;
+                         font-weight:700;text-transform:uppercase;letter-spacing:0.05em">Lớp</th>
+              <th style="text-align:left;padding:10px 12px;font-size:11px;color:#475569;
+                         font-weight:700;text-transform:uppercase;letter-spacing:0.05em">Khoa</th>
               <th style="text-align:left;padding:10px 12px;font-size:11px;color:#475569;
                          font-weight:700;text-transform:uppercase;letter-spacing:0.05em">Ngày đăng ký</th>
               <th style="text-align:left;padding:10px 12px;font-size:11px;color:#475569;
@@ -814,6 +820,15 @@ async function showRegistrationsList(activityId, activityName) {
                     </div>
                     <div style="font-weight:600;font-size:13px">${Utils.escapeHtml(reg.memberName || '—')}</div>
                   </div>
+                </td>
+                <td style="padding:11px 12px;font-size:12px;font-weight:700;white-space:nowrap">
+                  ${Utils.escapeHtml(reg.studentCode || '—')}
+                </td>
+                <td style="padding:11px 12px;font-size:12px;white-space:nowrap">
+                  ${Utils.escapeHtml(reg.className || '—')}
+                </td>
+                <td style="padding:11px 12px;font-size:12px">
+                  ${Utils.escapeHtml(reg.faculty || '—')}
                 </td>
                 <td style="padding:11px 12px;font-size:12px;color:#64748b">
                   ${Utils.formatDateTime(reg.registerDate)}

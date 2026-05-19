@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Authentication.JwtBearer;
+﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
@@ -71,6 +71,7 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IOtpService, OtpService>();
 builder.Services.AddScoped<IActivityService, ActivityService>();
 builder.Services.AddScoped<IMemberService, MemberService>();
+builder.Services.AddScoped<IMemberApplicationService, MemberApplicationService>();
 builder.Services.AddScoped<IPostService, PostService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IDashboardService, DashboardService>();
@@ -78,7 +79,7 @@ builder.Services.AddScoped<IFundService, FundService>();
 builder.Services.AddScoped<IFundContributionService, FundContributionService>();
 builder.Services.AddHttpClient<ISepayTransactionSyncService, SepayTransactionSyncService>();
 
-// Background service: tự động khoá/mở hoạt động theo thời gian
+// Background service: tá»± Ä‘á»™ng khoÃ¡/má»Ÿ hoáº¡t Ä‘á»™ng theo thá»i gian
 builder.Services.AddHostedService<ActivityAutoCloseService>();
 builder.Services.AddHostedService<SepayTransactionPollingService>();
 
@@ -93,18 +94,19 @@ builder.Services.Configure<FormOptions>(options =>
 // ========== BUILD APP ==========
 var app = builder.Build();
 
-// Tạo thư mục uploads nếu chưa tồn tại
+// Táº¡o thÆ° má»¥c uploads náº¿u chÆ°a tá»“n táº¡i
 var uploadsFolder = Path.Combine(app.Environment.WebRootPath ?? "wwwroot", "uploads", "activities");
 if (!Directory.Exists(uploadsFolder))
     Directory.CreateDirectory(uploadsFolder);
 
 app.UseStaticFiles();
 
-// QUAN TRỌNG: thứ tự middleware
-// CORS → Authentication → Authorization → Controllers
+// QUAN TRá»ŒNG: thá»© tá»± middleware
+// CORS â†’ Authentication â†’ Authorization â†’ Controllers
 app.UseCors("AllowAll");
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+

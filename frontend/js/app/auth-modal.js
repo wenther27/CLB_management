@@ -44,26 +44,26 @@
     backdrop-filter:blur(8px);display:none;align-items:center;justify-content:center;
     opacity:0;transition:opacity 0.25s }
   #authModal.visible { opacity:1 }
-  #authBox { background:#ffffff;border-radius:20px;padding:36px 32px;width:100%;max-width:440px;
-    margin:16px;max-height:92vh;overflow-y:auto;
+  #authBox { background:#ffffff;border-radius:24px;padding:44px 46px;width:100%;max-width:620px;
+      margin:18px;max-height:92vh;overflow-y:auto;
     transform:scale(0.94) translateY(16px);transition:transform 0.25s;
     box-shadow:0 24px 64px rgba(0,0,0,0.18) }
   #authModal.visible #authBox { transform:scale(1) translateY(0) }
-  .am-input { width:100%;padding:11px 14px;border:1.5px solid #e5e7eb;border-radius:10px;
-    font-size:14px;color:#111827;background:#f9fafb;outline:none;
+  .am-input { width:100%;padding:14px 16px;border:1.5px solid #e5e7eb;border-radius:12px;
+      font-size:15px;color:#111827;background:#f9fafb;outline:none;
     transition:border-color 0.2s,box-shadow 0.2s;box-sizing:border-box;font-family:inherit }
   .am-input:focus { border-color:#e8213a;background:#fff;box-shadow:0 0 0 3px rgba(232,33,58,0.10) }
   .am-input::placeholder { color:#9ca3af }
-  .am-label { display:block;font-size:11px;font-weight:700;color:#6b7280;
-    text-transform:uppercase;letter-spacing:0.07em;margin-bottom:5px }
-  .am-group { margin-bottom:14px }
-  .am-btn-primary { width:100%;padding:12px;background:#e8213a;border:none;border-radius:10px;
-    color:#fff;font-size:15px;font-weight:700;cursor:pointer;
+  .am-label { display:block;font-size:12px;font-weight:700;color:#6b7280;
+      text-transform:uppercase;letter-spacing:0.07em;margin-bottom:7px }
+    .am-group { margin-bottom:16px }
+  .am-btn-primary { width:100%;padding:15px;background:#e8213a;border:none;border-radius:12px;
+      color:#fff;font-size:16px;font-weight:700;cursor:pointer;
     font-family:inherit;transition:background 0.2s,transform 0.15s;margin-bottom:6px }
   .am-btn-primary:hover { background:#c01830;transform:translateY(-1px) }
   .am-btn-primary:disabled { opacity:0.55;cursor:not-allowed;transform:none }
-  .am-btn-google { width:100%;padding:11px;background:#fff;border:1.5px solid #e5e7eb;
-    border-radius:10px;color:#374151;font-size:14px;font-weight:600;cursor:pointer;
+  .am-btn-google { width:100%;padding:14px;background:#fff;border:1.5px solid #e5e7eb;
+      border-radius:12px;color:#374151;font-size:15px;font-weight:600;cursor:pointer;
     font-family:inherit;display:flex;align-items:center;justify-content:center;gap:10px;
     transition:border-color 0.2s,box-shadow 0.2s;margin-bottom:18px }
   .am-btn-google:hover { border-color:#e8213a;box-shadow:0 2px 8px rgba(232,33,58,0.12) }
@@ -148,8 +148,8 @@
       </button>
 
       <div class="am-switch">
-        Chưa có tài khoản?
-        <button class="am-link-btn" onclick="AuthModal.show('register')">Đăng ký ngay</button>
+        Chưa là thành viên?
+        <button class="am-link-btn" onclick="AuthModal.show('register')">Nộp hồ sơ</button>
       </div>
     </div>
 
@@ -157,86 +157,71 @@
          PANEL: ĐĂNG KÝ (Bước 1)
          ════════════════════════════════ -->
     <div id="am-register" class="am-panel">
-      <h2 style="font-size:22px;font-weight:800;margin:0 0 4px;color:#111827">Tạo tài khoản</h2>
-      <p style="color:#6b7280;font-size:13px;margin:0 0 20px">Gia nhập CLB CTXH DUT!</p>
-
-      <button class="am-btn-google" onclick="AuthModal.loginGoogle()">
-        ${googleSVG()} Đăng ký bằng Google
-      </button>
-      <div class="am-divider">hoặc điền thông tin</div>
+      <h2 style="font-size:22px;font-weight:800;margin:0 0 4px;color:#111827">Nộp hồ sơ thành viên</h2>
+      <p style="color:#6b7280;font-size:13px;margin:0 0 20px;line-height:1.5">
+        Hồ sơ sẽ được gửi đến ban quản lý. Khi được duyệt, tài khoản sẽ được cấp theo MSSV.
+      </p>
 
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div class="am-group">
+          <label class="am-label">MSSV *</label>
+          <input id="am-reg-student-code" class="am-input" placeholder="Nhập mã số sinh viên" autocomplete="off">
+        </div>
         <div class="am-group">
           <label class="am-label">Họ và tên *</label>
           <input id="am-reg-fullname" class="am-input" placeholder="Nhập họ và tên">
         </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
         <div class="am-group">
           <label class="am-label">Lớp</label>
           <input id="am-reg-class" class="am-input" placeholder="Nhập lớp">
         </div>
-      </div>
-
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
         <div class="am-group">
-          <label class="am-label">Ngày sinh</label>
+          <label class="am-label">Ngày sinh *</label>
           <input id="am-reg-birthdate" class="am-input" type="date">
         </div>
-        <div class="am-group">
-          <label class="am-label">Khoa *</label>
-          <select id="am-reg-faculty" class="am-input">
-            <option value="">Chọn khoa</option>
-            <option>Cơ khí</option>
-            <option>Công nghệ thông tin</option>
-            <option>Cơ khí giao thông</option>
-            <option>Công nghệ Nhiệt - Điện lạnh</option>
-            <option>Điện</option>
-            <option>Điện tử - Viễn thông</option>
-            <option>Hóa</option>
-            <option>Xây dựng Cầu - Đường</option>
-            <option>Xây dựng Dân dụng &amp; Công nghiệp</option>
-            <option>Xây dựng Công trình Thủy</option>
-            <option>Môi trường</option>
-            <option>Quản lý dự án</option>
-            <option>Khoa học Công nghệ tiên tiến</option>
-          </select>
-        </div>
       </div>
 
       <div class="am-group">
-        <label class="am-label">Tên đăng nhập *</label>
-        <input id="am-reg-username" class="am-input" placeholder="Nhập tên đăng nhập">
-      </div>
-      <div class="am-group">
-        <label class="am-label">
-          Email * <span style="font-weight:400;text-transform:none;color:#e8213a">(nhận mã OTP)</span>
-        </label>
-        <input id="am-reg-email" class="am-input" type="email" placeholder="Nhập email">
+        <label class="am-label">Khoa *</label>
+        <select id="am-reg-faculty" class="am-input">
+          <option value="">Chọn khoa</option>
+          <option>Cơ khí</option>
+          <option>Công nghệ thông tin</option>
+          <option>Cơ khí giao thông</option>
+          <option>Công nghệ Nhiệt - Điện lạnh</option>
+          <option>Điện</option>
+          <option>Điện tử - Viễn thông</option>
+          <option>Hóa</option>
+          <option>Xây dựng Cầu - Đường</option>
+          <option>Xây dựng Dân dụng &amp; Công nghiệp</option>
+          <option>Xây dựng Công trình Thủy</option>
+          <option>Môi trường</option>
+          <option>Quản lý dự án</option>
+          <option>Khoa học Công nghệ tiên tiến</option>
+        </select>
       </div>
 
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
         <div class="am-group">
-          <label class="am-label">Mật khẩu *</label>
-          <div style="position:relative">
-            <input id="am-reg-pwd" class="am-input" type="password" placeholder="••••••"
-              style="padding-right:42px" oninput="checkPwdStrength(this.value,'reg-bars')">
-            <button onclick="togglePwd('am-reg-pwd',this)"
-              style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;
-                     border:none;cursor:pointer;font-size:16px;color:#9ca3af;padding:0">👁</button>
-          </div>
-          <div class="pwd-bars" id="reg-bars">
-            <div class="pwd-bar"></div><div class="pwd-bar"></div>
-            <div class="pwd-bar"></div><div class="pwd-bar"></div>
-          </div>
+          <label class="am-label">Email liên hệ *</label>
+          <input id="am-reg-email" class="am-input" type="email" placeholder="Nhập email">
         </div>
         <div class="am-group">
-          <label class="am-label">Nhập lại *</label>
-          <input id="am-reg-confirm" class="am-input" type="password" placeholder="••••••">
+          <label class="am-label">Số điện thoại</label>
+          <input id="am-reg-phone" class="am-input" placeholder="Nhập số điện thoại">
         </div>
       </div>
 
-      <button class="am-btn-primary" id="am-reg-btn" onclick="AuthModal.doSendRegisterOtp()"
-        style="margin-top:6px">
-        📧 Gửi mã xác thực OTP
+      <div class="am-group">
+        <label class="am-label">Ghi chú</label>
+        <textarea id="am-reg-note" class="am-input" rows="3" placeholder="Thông tin thêm nếu cần" style="resize:vertical;min-height:72px"></textarea>
+      </div>
+
+      <button class="am-btn-primary" id="am-reg-btn" onclick="AuthModal.doSubmitApplication()" style="margin-top:6px">
+        Gửi hồ sơ chờ duyệt
       </button>
 
       <div class="am-switch">
@@ -542,7 +527,7 @@
       document.querySelectorAll('.am-panel').forEach(p => p.classList.remove('active'));
       document.getElementById(`am-${panel}`)?.classList.add('active');
       const tags = {
-        login: 'Đăng nhập', register: 'Đăng ký', otp: 'Xác thực',
+        login: 'Đăng nhập', register: 'Nộp hồ sơ', otp: 'Xác thực',
         forgot: 'Quên mật khẩu', reset: 'Đặt lại mật khẩu', success: ''
       };
       const tagEl = document.getElementById('amModalTag');
@@ -584,44 +569,51 @@
     // ════════════════════════════════════════════════════════════════════════
     // ĐĂNG KÝ — Bước 1: Gửi OTP
     // ════════════════════════════════════════════════════════════════════════
-    async doSendRegisterOtp() {
+    async doSubmitApplication() {
+      const studentCode = document.getElementById('am-reg-student-code')?.value.trim().toUpperCase();
       const fullName = document.getElementById('am-reg-fullname')?.value.trim();
-      const username = document.getElementById('am-reg-username')?.value.trim();
-      const email    = document.getElementById('am-reg-email')?.value.trim();
-      const password = document.getElementById('am-reg-pwd')?.value;
-      const confirm  = document.getElementById('am-reg-confirm')?.value;
       const className = document.getElementById('am-reg-class')?.value.trim();
       const birthDate = document.getElementById('am-reg-birthdate')?.value || null;
       const faculty = document.getElementById('am-reg-faculty')?.value || '';
+      const contactEmail = document.getElementById('am-reg-email')?.value.trim();
+      const phone = document.getElementById('am-reg-phone')?.value.trim();
+      const note = document.getElementById('am-reg-note')?.value.trim();
 
+      if (!studentCode) { toast('Vui lòng nhập MSSV', 'error'); return; }
       if (!fullName) { toast('Vui lòng nhập họ tên', 'error'); return; }
+      if (!birthDate) { toast('Vui lòng nhập ngày sinh', 'error'); return; }
       if (!faculty) { toast('Vui lòng chọn khoa', 'error'); return; }
-      if (!username || username.length < 3) { toast('Tên đăng nhập phải có ít nhất 3 ký tự', 'error'); return; }
-      if (!email || !email.includes('@')) { toast('Email không hợp lệ', 'error'); return; }
-      if (!password || password.length < 6) { toast('Mật khẩu phải có ít nhất 6 ký tự', 'error'); return; }
-      if (password !== confirm) { toast('Mật khẩu xác nhận không khớp', 'error'); return; }
+      if (!contactEmail || !contactEmail.includes('@')) { toast('Email liên hệ không hợp lệ', 'error'); return; }
 
       setLoading('am-reg-btn', true);
       try {
-        await apiPost('/auth/send-otp', { fullName, username, email, password, className, faculty, birthDate });
+        await apiPost('/member-applications', {
+          studentCode,
+          fullName,
+          className,
+          birthDate,
+          faculty,
+          contactEmail,
+          phone,
+          note
+        });
 
-        _pendingEmail = email;
-        _pendingPurpose = 'register';
-
-        // Chuyển sang màn OTP
-        document.getElementById('am-otp-title').textContent = 'Xác thực đăng ký';
-        document.getElementById('am-otp-email-display').textContent = email;
-        document.getElementById('am-otp-back-btn').onclick = () => this.show('register');
-        resetOtpInputs();
-        startCountdown(600);
-        this.show('otp');
-
-        toast(`Mã OTP đã gửi đến ${email}. Kiểm tra hộp thư (kể cả Spam)!`, 'success');
+        document.getElementById('am-success-icon').textContent = '✅';
+        document.getElementById('am-success-title').textContent = 'Đã gửi hồ sơ';
+        document.getElementById('am-success-msg').textContent = 'Ban quản lý sẽ kiểm tra hồ sơ. Nếu được duyệt, tài khoản sẽ được cấp theo MSSV.';
+        document.getElementById('am-success-btn').textContent = 'Quay lại đăng nhập';
+        document.getElementById('am-success-btn').onclick = () => this.show('login');
+        this.show('success');
+        toast('Đã gửi hồ sơ chờ duyệt', 'success');
       } catch (e) {
-        toast(e.message, 'error');
+        toast(e.message || 'Không thể gửi hồ sơ', 'error');
       } finally {
-        setLoading('am-reg-btn', false, '📧 Gửi mã xác thực OTP');
+        setLoading('am-reg-btn', false, 'Gửi hồ sơ chờ duyệt');
       }
+    },
+
+    doSendRegisterOtp() {
+      return this.doSubmitApplication();
     },
 
     // ════════════════════════════════════════════════════════════════════════

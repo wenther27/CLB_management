@@ -262,8 +262,11 @@ namespace ClubManagement.API.Service
             {
                 RegistrationID = registration.RegistrationID,
                 MemberID = member.MemberID,
+                StudentCode = member.StudentCode,
                 ActivityID = activityId,
                 MemberName = member.FullName,
+                ClassName = member.ClassName,
+                Faculty = member.Faculty,
                 ActivityName = activity.ActivityName,
                 RegisterDate = registration.RegisterDate,
                 Status = registration.Status,
@@ -318,7 +321,10 @@ namespace ClubManagement.API.Service
                 {
                     RegistrationID = r.RegistrationID,
                     MemberID = r.MemberID,
+                    StudentCode = r.Member != null ? r.Member.StudentCode : null,
                     MemberName = r.Member != null ? r.Member.FullName : "",
+                    ClassName = r.Member != null ? r.Member.ClassName : null,
+                    Faculty = r.Member != null ? r.Member.Faculty : null,
                     ActivityID = r.ActivityID,
                     ActivityName = r.ClubActivity != null ? r.ClubActivity.ActivityName : "",
                     RegisterDate = r.RegisterDate,
@@ -349,7 +355,10 @@ namespace ClubManagement.API.Service
                 {
                     RegistrationID = r.RegistrationID,
                     MemberID = r.MemberID,
+                    StudentCode = member.StudentCode,
                     MemberName = member.FullName,
+                    ClassName = member.ClassName,
+                    Faculty = member.Faculty,
                     ActivityID = r.ActivityID,
                     ActivityName = r.ClubActivity != null ? r.ClubActivity.ActivityName : "",
                     RegisterDate = r.RegisterDate,

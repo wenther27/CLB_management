@@ -1,4 +1,4 @@
-using ClubManagement.API.Models;
+﻿using ClubManagement.API.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace ClubManagement.API.Data
@@ -23,6 +23,7 @@ namespace ClubManagement.API.Data
         public DbSet<FundCollectionPeriod> FundCollectionPeriods { get; set; }
         public DbSet<FundContribution> FundContributions { get; set; }
         public DbSet<SepayWebhookEvent> SepayWebhookEvents { get; set; }
+        public DbSet<MemberApplication> MemberApplications { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -68,8 +69,7 @@ namespace ClubManagement.API.Data
                 .HasPrecision(18, 2);
 
             modelBuilder.Entity<FundCollectionPeriod>()
-                .HasIndex(p => new { p.Year, p.Month })
-                .IsUnique();
+                .HasIndex(p => new { p.Year, p.Month });
 
             modelBuilder.Entity<FundCollectionPeriod>()
                 .Property(p => p.Amount)
@@ -79,6 +79,12 @@ namespace ClubManagement.API.Data
                 .HasOne(p => p.CreatedByUser)
                 .WithMany()
                 .HasForeignKey(p => p.CreatedByUserID)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            modelBuilder.Entity<FundCollectionPeriod>()
+                .HasOne(p => p.Activity)
+                .WithMany()
+                .HasForeignKey(p => p.ActivityID)
                 .OnDelete(DeleteBehavior.NoAction);
 
             modelBuilder.Entity<FundContribution>()
@@ -124,21 +130,32 @@ namespace ClubManagement.API.Data
                 .HasForeignKey(e => e.FundContributionID)
                 .OnDelete(DeleteBehavior.NoAction);
 
-  
+
+            modelBuilder.Entity<MemberApplication>()
+                .HasIndex(a => a.StudentCode);
+
+            modelBuilder.Entity<MemberApplication>()
+                .HasIndex(a => a.ContactEmail);
+
+            modelBuilder.Entity<MemberApplication>()
+                .HasOne(a => a.ReviewedByUser)
+                .WithMany()
+                .HasForeignKey(a => a.ReviewedByUserID)
+                .OnDelete(DeleteBehavior.NoAction);
             modelBuilder.Entity<Role>().HasData(
-                new Role { RoleID = 1, RoleName = "Admin", Description = "Quản trị viên hệ thống" },
-                new Role { RoleID = 2, RoleName = "ExecutiveBoard", Description = "Ban chủ nhiệm" },
-                new Role { RoleID = 3, RoleName = "Member", Description = "Thành viên" },
-                new Role { RoleID = 4, RoleName = "Guest", Description = "Khách" }
+                new Role { RoleID = 1, RoleName = "Admin", Description = "Qu\u1ea3n tr\u1ecb vi\u00ean h\u1ec7 th\u1ed1ng" },
+                new Role { RoleID = 2, RoleName = "ExecutiveBoard", Description = "Ban ch\u1ee7 nhi\u1ec7m" },
+                new Role { RoleID = 3, RoleName = "Member", Description = "Th\u00e0nh vi\u00ean" },
+                new Role { RoleID = 4, RoleName = "Guest", Description = "Kh\u00e1ch" }
             );
             modelBuilder.Entity<ExecutiveBoard>(entity =>
             {
-                entity.HasKey(e => e.BoardID); // Giả sử có khóa chính
+                entity.HasKey(e => e.BoardID); // Giáº£ sá»­ cÃ³ khÃ³a chÃ­nh
 
                 entity.HasOne(e => e.user)
                       .WithMany()
                       .HasForeignKey(e => e.userID)
-                      .OnDelete(DeleteBehavior.NoAction); // KHÔNG DÙNG CASCADE
+                      .OnDelete(DeleteBehavior.NoAction); // KHÃ”NG DÃ™NG CASCADE
             });
 
 
@@ -146,3 +163,4 @@ namespace ClubManagement.API.Data
         }
     }
 }
+

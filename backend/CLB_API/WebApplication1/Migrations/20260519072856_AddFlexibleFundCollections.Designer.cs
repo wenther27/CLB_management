@@ -4,6 +4,7 @@ using ClubManagement.API.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ClubManagement.API.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260519072856_AddFlexibleFundCollections")]
+    partial class AddFlexibleFundCollections
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -213,17 +216,9 @@ namespace ClubManagement.API.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("FundCollectionPeriodID"));
 
-                    b.Property<int?>("ActivityID")
-                        .HasColumnType("int");
-
                     b.Property<decimal>("Amount")
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
-
-                    b.Property<string>("Category")
-                        .IsRequired()
-                        .HasMaxLength(120)
-                        .HasColumnType("nvarchar(120)");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
@@ -242,21 +237,15 @@ namespace ClubManagement.API.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
 
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasMaxLength(150)
-                        .HasColumnType("nvarchar(150)");
-
                     b.Property<int>("Year")
                         .HasColumnType("int");
 
                     b.HasKey("FundCollectionPeriodID");
 
-                    b.HasIndex("ActivityID");
-
                     b.HasIndex("CreatedByUserID");
 
-                    b.HasIndex("Year", "Month");
+                    b.HasIndex("Year", "Month")
+                        .IsUnique();
 
                     b.ToTable("FundCollectionPeriods");
                 });
@@ -390,78 +379,6 @@ namespace ClubManagement.API.Migrations
                     b.HasIndex("CreatedByUserID");
 
                     b.ToTable("FundTransactions");
-                });
-
-            modelBuilder.Entity("ClubManagement.API.Models.MemberApplication", b =>
-                {
-                    b.Property<int>("MemberApplicationID")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("MemberApplicationID"));
-
-                    b.Property<DateTime>("BirthDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("ClassName")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<string>("ContactEmail")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.Property<string>("Faculty")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<string>("FullName")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<string>("Note")
-                        .HasMaxLength(1000)
-                        .HasColumnType("nvarchar(1000)");
-
-                    b.Property<string>("Phone")
-                        .HasMaxLength(15)
-                        .HasColumnType("nvarchar(15)");
-
-                    b.Property<string>("ReviewNote")
-                        .HasMaxLength(1000)
-                        .HasColumnType("nvarchar(1000)");
-
-                    b.Property<DateTime?>("ReviewedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int?>("ReviewedByUserID")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
-
-                    b.Property<string>("StudentCode")
-                        .IsRequired()
-                        .HasMaxLength(30)
-                        .HasColumnType("nvarchar(30)");
-
-                    b.Property<DateTime>("SubmittedAt")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("MemberApplicationID");
-
-                    b.HasIndex("ContactEmail");
-
-                    b.HasIndex("ReviewedByUserID");
-
-                    b.HasIndex("StudentCode");
-
-                    b.ToTable("MemberApplications");
                 });
 
             modelBuilder.Entity("ClubManagement.API.Models.Notification", b =>
@@ -742,10 +659,6 @@ namespace ClubManagement.API.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
-                    b.Property<string>("StudentCode")
-                        .HasMaxLength(30)
-                        .HasColumnType("nvarchar(30)");
-
                     b.Property<int?>("UserID")
                         .HasColumnType("int");
 
@@ -938,18 +851,11 @@ namespace ClubManagement.API.Migrations
 
             modelBuilder.Entity("ClubManagement.API.Models.FundCollectionPeriod", b =>
                 {
-                    b.HasOne("ClubManagement.API.Models.ClubActivity", "Activity")
-                        .WithMany()
-                        .HasForeignKey("ActivityID")
-                        .OnDelete(DeleteBehavior.NoAction);
-
                     b.HasOne("User", "CreatedByUser")
                         .WithMany()
                         .HasForeignKey("CreatedByUserID")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
-
-                    b.Navigation("Activity");
 
                     b.Navigation("CreatedByUser");
                 });
@@ -1002,16 +908,6 @@ namespace ClubManagement.API.Migrations
                     b.Navigation("ApprovedByUser");
 
                     b.Navigation("CreatedByUser");
-                });
-
-            modelBuilder.Entity("ClubManagement.API.Models.MemberApplication", b =>
-                {
-                    b.HasOne("User", "ReviewedByUser")
-                        .WithMany()
-                        .HasForeignKey("ReviewedByUserID")
-                        .OnDelete(DeleteBehavior.NoAction);
-
-                    b.Navigation("ReviewedByUser");
                 });
 
             modelBuilder.Entity("ClubManagement.API.Models.Notification", b =>

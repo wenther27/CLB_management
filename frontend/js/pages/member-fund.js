@@ -74,7 +74,9 @@ const MemberFundPanel = {
       <div style="background:#fff;border:1px solid #e2e8f0;border-radius:14px;padding:20px">
         <div style="display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap">
           <div>
-            <div style="font-size:16px;font-weight:800">Quỹ tháng ${String(c.month).padStart(2, '0')}/${c.year}</div>
+            <div style="font-size:16px;font-weight:800">${Utils.escapeHtml(c.title || `Quỹ tháng ${String(c.month).padStart(2, '0')}/${c.year}`)}</div>
+            <div style="color:#64748b;margin-top:4px">Danh mục: <strong>${Utils.escapeHtml(c.category || 'Đóng quỹ')}</strong></div>
+            ${c.activityName ? `<div style="color:#64748b;margin-top:4px">Hoạt động: <strong>${Utils.escapeHtml(c.activityName)}</strong></div>` : ''}
             <div style="color:#64748b;margin-top:6px">Số tiền cần đóng: <strong>${this.money(c.expectedAmount)}</strong></div>
             <div style="color:#64748b;margin-top:4px">Nội dung chuyển khoản: <code>${c.paymentCode}</code></div>
             <div style="color:#64748b;margin-top:4px">Hạn đóng: ${c.dueDate ? Utils.formatDate(c.dueDate) : 'Không giới hạn'}</div>
@@ -142,7 +144,7 @@ const MemberFundPanel = {
                   cursor:pointer;
                   font-weight:${active ? 700 : 600};
                 ">
-                <span>Tháng ${String(item.month).padStart(2, '0')}/${item.year}</span>
+                <span>${Utils.escapeHtml(item.title || `Tháng ${String(item.month).padStart(2, '0')}/${item.year}`)}</span>
                 <span style="color:${item.status === 'Paid' ? '#15803d' : '#b45309'}">${memberLabel}</span>
                 <span style="color:#64748b">· ${periodLabel}</span>
               </button>

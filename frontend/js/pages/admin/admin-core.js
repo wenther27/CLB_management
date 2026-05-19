@@ -81,7 +81,12 @@ async function loadStats() {
 // ── Modal dùng chung cho toàn dashboard ──────────────────────────────────────
 function openModal(title, bodyHtml, onSave) {
   const m = document.getElementById('gModal');
-  document.getElementById('gModalInner').innerHTML = `
+  const inner = document.getElementById('gModalInner');
+  if (inner) {
+    inner.removeAttribute('style');
+    inner.classList.remove('member-applications-modal');
+  }
+  inner.innerHTML = `
     <div class="modal-header">
       <div class="modal-title">${Utils.escapeHtml(title)}</div>
       <button class="modal-close" onclick="closeModal()">✕</button>
@@ -93,7 +98,13 @@ function openModal(title, bodyHtml, onSave) {
 }
 
 function closeModal() {
-  document.getElementById('gModal').classList.remove('open');
+  const m = document.getElementById('gModal');
+  const inner = document.getElementById('gModalInner');
+  m.classList.remove('open');
+  if (inner) {
+    inner.removeAttribute('style');
+    inner.classList.remove('member-applications-modal');
+  }
 }
 
 // ── Navbar cho admin ──────────────────────────────────────────────────────────

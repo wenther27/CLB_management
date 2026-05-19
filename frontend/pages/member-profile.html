@@ -81,6 +81,10 @@
                 </div>
                 <div class="info-list" style="margin-top:16px">
                   <div class="info-row">
+                    <span class="lbl"><i class="fa-solid fa-id-card"></i></span>
+                    <span class="val" id="infoStudentCode">—</span>
+                  </div>
+                  <div class="info-row">
                     <span class="lbl"><i class="fa-solid fa-envelope"></i></span>
                     <span class="val" id="infoEmail">—</span>
                   </div>
@@ -176,21 +180,21 @@
               <div class="form-row" style="margin-bottom:14px">
                 <div class="form-group">
                   <label class="form-label">Họ và tên *</label>
-                  <input id="edit-fullname" class="form-control" placeholder="Nguyễn Văn A">
+                  <input id="edit-fullname" class="form-control" placeholder="">
                 </div>
                 <div class="form-group">
                   <label class="form-label">Số điện thoại</label>
-                  <input id="edit-phone" class="form-control" placeholder="0901234567">
+                  <input id="edit-phone" class="form-control" placeholder="">
                 </div>
               </div>
               <div class="form-row" style="margin-bottom:14px">
                 <div class="form-group">
                   <label class="form-label">Lớp</label>
-                  <input id="edit-class" class="form-control" placeholder="22TCLC_DT1">
+                  <input id="edit-class" class="form-control" placeholder="">
                 </div>
                 <div class="form-group">
                   <label class="form-label">Khoa</label>
-                  <input id="edit-faculty" class="form-control" placeholder="Điện tử - Viễn thông">
+                  <input id="edit-faculty" class="form-control" placeholder="">
                 </div>
               <div class="form-row" style="margin-bottom:14px">
                 <div class="form-group">
@@ -419,6 +423,36 @@ async function loadProfile() {
   }
 }
 
+function normalizeProfileText(value, fallback = '—') {
+  if (value === null || value === undefined || value === '') return fallback;
+  let text = String(value);
+
+  // Sửa nhanh dữ liệu cũ từng bị lưu lỗi font trong database/API.
+  if (/[ÃÂÄÅÆâ]/.test(text)) {
+    try { text = decodeURIComponent(escape(text)); } catch (_) {}
+  }
+
+  const replacements = [
+    [/Th\?nh vi\?n/gi, 'Thành viên'],
+    [/Tr\?\?ng Ban/gi, 'Trưởng Ban'],
+    [/Ph\? Ban/gi, 'Phó Ban'],
+    [/C\?ng ngh\? th\?ng tin/gi, 'Công nghệ thông tin'],
+    [/X\?y d\?ng C\?u\s*-\s*\?\?\?ng/gi, 'Xây dựng Cầu - Đường'],
+    [/Ch\?a c\?p nh\?t/gi, 'Chưa cập nhật'],
+    [/Ho\?t \?\?ng/gi, 'Hoạt động']
+  ];
+  replacements.forEach(([pattern, replacement]) => {
+    text = text.replace(pattern, replacement);
+  });
+  return text;
+}
+
+function getProfileStudentCode(p) {
+  const direct = p.studentCode || p.mssv || p.studentId;
+  if (direct) return direct;
+  return 'Chưa cập nhật';
+}
+
 function renderProfile(p) {
   const initials = (p.fullName || p.username || '?')
     .split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
@@ -435,15 +469,16 @@ function renderProfile(p) {
     }
   }
 
-  document.getElementById('profileName').textContent = p.fullName || p.username || '—';
-  document.getElementById('profileSub').textContent = p.position || p.roleName || 'Thành viên CLB';
+  document.getElementById('profileName').textContent = normalizeProfileText(p.fullName || p.username);
+  document.getElementById('profileSub').textContent = normalizeProfileText(p.position || p.roleName, 'Thành viên CLB');
   document.getElementById('profileStatusBadge').innerHTML = Utils.statusLabel(p.status || 'Active');
-  document.getElementById('infoEmail').textContent    = p.email      || '—';
-  document.getElementById('infoPhone').textContent    = p.phone      || 'Chưa cập nhật';
-  document.getElementById('infoClass').textContent    = p.className  || 'Chưa cập nhật';
+  document.getElementById('infoStudentCode').textContent = normalizeProfileText(getProfileStudentCode(p));
+  document.getElementById('infoEmail').textContent    = normalizeProfileText(p.email);
+  document.getElementById('infoPhone').textContent    = normalizeProfileText(p.phone, 'Chưa cập nhật');
+  document.getElementById('infoClass').textContent    = normalizeProfileText(p.className, 'Chưa cập nhật');
   document.getElementById('infoBirthDate').textContent = p.birthDate ? Utils.formatDate(p.birthDate) : 'Chưa cập nhật';
-  document.getElementById('infoFaculty').textContent  = p.faculty    || 'Chưa cập nhật';
-  document.getElementById('infoPosition').textContent = p.position   || 'Thành viên';
+  document.getElementById('infoFaculty').textContent  = normalizeProfileText(p.faculty, 'Chưa cập nhật');
+  document.getElementById('infoPosition').textContent = normalizeProfileText(p.position, 'Thành viên');
   document.getElementById('infoJoinDate').textContent = Utils.formatDate(p.joinDate);
 
   document.getElementById('edit-fullname').value = p.fullName  || '';

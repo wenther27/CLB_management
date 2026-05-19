@@ -56,6 +56,10 @@ const API = {
   // Auth
   login: (data) => post('/auth/login', data),
   registerUser: (data) => post('/auth/register', data),
+  submitMemberApplication: (data) => request('POST', '/member-applications', data, false),
+  getMemberApplications: (params = '') => request('GET', `/member-applications${params}`, null, true),
+  approveMemberApplication: (id, data = {}) => request('PATCH', `/member-applications/${id}/approve`, data, true),
+  rejectMemberApplication: (id, data = {}) => request('PATCH', `/member-applications/${id}/reject`, data, true),
 
   // Users
   getUsers: (params = '') => request('GET', `/users${params}`, null, true),
@@ -339,7 +343,7 @@ function updateNavbar() {
   else {
    navActions.innerHTML = `
       <button class="login" onclick="AuthModal.open('login')">Đăng Nhập</button>
-      <button class="signup" onclick="AuthModal.open('register')">Đăng Ký</button>
+      <button class="signup" onclick="AuthModal.open('register')">Nộp hồ sơ</button>
     `;
   }
   

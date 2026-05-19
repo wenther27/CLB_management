@@ -21,7 +21,10 @@
     {
         public int RegistrationID { get; set; }
         public int MemberID { get; set; }
+        public string? StudentCode { get; set; }
         public string MemberName { get; set; } = string.Empty;
+        public string? ClassName { get; set; }
+        public string? Faculty { get; set; }
         public int ActivityID { get; set; }
         public string ActivityName { get; set; } = string.Empty;
         public DateTime RegisterDate { get; set; }
