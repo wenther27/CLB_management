@@ -3,7 +3,7 @@
     public class UserDetailDTO
     {
         public int UserID { get; set; }
-        public string Username { get; set; } = string.Empty;
+        public string? StudentCode { get; set; }
         public string Email { get; set; } = string.Empty;
         public string? Phone { get; set; }
         public bool IsActive { get; set; }

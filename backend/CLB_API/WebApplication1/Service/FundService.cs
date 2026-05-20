@@ -10,12 +10,12 @@ namespace ClubManagement.API.Service
         Task<FundOverviewDTO> GetOverviewAsync();
         Task<List<FundTransactionDTO>> GetTransactionsAsync(string? status, string? type, int? year, int? month);
         Task<FundTransactionDTO?> CreateTransactionAsync(CreateFundTransactionDTO dto, int userId);
-        Task<FundTransactionDTO?> UpdateTransactionAsync(int id, UpdateFundTransactionDTO dto);
+        Task<FundTransactionDTO?> UpdateTransactionAsync(int id, UpdateFundTransactionDTO dto, int userId);
         Task<FundTransactionDTO?> UpdateStatusAsync(int id, string status, int approverUserId);
-        Task<bool> DeleteTransactionAsync(int id);
+        Task<bool> DeleteTransactionAsync(int id, int userId);
         Task<List<ActivityBudgetDTO>> GetBudgetsAsync();
         Task<ActivityBudgetDTO?> SaveBudgetAsync(SaveActivityBudgetDTO dto, int userId);
-        Task<ActivityBudgetDTO?> UpdateBudgetAsync(int id, SaveActivityBudgetDTO dto);
+        Task<ActivityBudgetDTO?> UpdateBudgetAsync(int id, SaveActivityBudgetDTO dto, int userId);
         Task<FundReportDTO> GetReportAsync(int year, int? month);
     }
 
@@ -26,6 +26,18 @@ namespace ClubManagement.API.Service
         public FundService(ApplicationDbContext context)
         {
             _context = context;
+        }
+
+        private void AddAuditLog(int? userId, string action, string tableName, int? recordId)
+        {
+            _context.AuditLogs.Add(new AuditLog
+            {
+                UserID = userId,
+                Action = action.Length > 250 ? action[..250] : action,
+                TableName = tableName,
+                RecordID = recordId,
+                CreatedAt = DateTime.Now
+            });
         }
 
         public async Task<FundOverviewDTO> GetOverviewAsync()
@@ -98,10 +110,12 @@ namespace ClubManagement.API.Service
 
             _context.FundTransactions.Add(item);
             await _context.SaveChangesAsync();
+            AddAuditLog(userId, $"Tạo giao dịch quỹ: {item.Category} - {item.Amount:N0}", "FundTransactions", item.FundTransactionID);
+            await _context.SaveChangesAsync();
             return await GetTransactionByIdAsync(item.FundTransactionID);
         }
 
-        public async Task<FundTransactionDTO?> UpdateTransactionAsync(int id, UpdateFundTransactionDTO dto)
+        public async Task<FundTransactionDTO?> UpdateTransactionAsync(int id, UpdateFundTransactionDTO dto, int userId)
         {
             var item = await _context.FundTransactions.FindAsync(id);
             if (item == null || item.Status != "Pending" || !IsValidType(dto.Type)) return null;
@@ -115,6 +129,7 @@ namespace ClubManagement.API.Service
             item.TransactionDate = dto.TransactionDate ?? item.TransactionDate;
             item.ReceiptUrl = dto.ReceiptUrl;
             item.ActivityID = dto.ActivityID;
+            AddAuditLog(userId, $"Cập nhật giao dịch quỹ: {item.Category} - {item.Amount:N0}", "FundTransactions", item.FundTransactionID);
             await _context.SaveChangesAsync();
             return await GetTransactionByIdAsync(id);
         }
@@ -128,14 +143,17 @@ namespace ClubManagement.API.Service
             item.Status = status;
             item.ApprovedByUserID = approverUserId;
             item.ApprovedAt = DateTime.Now;
+            var statusText = status == "Approved" ? "Duyệt" : "Từ chối";
+            AddAuditLog(approverUserId, $"{statusText} giao dịch quỹ: {item.Category} - {item.Amount:N0}", "FundTransactions", item.FundTransactionID);
             await _context.SaveChangesAsync();
             return await GetTransactionByIdAsync(id);
         }
 
-        public async Task<bool> DeleteTransactionAsync(int id)
+        public async Task<bool> DeleteTransactionAsync(int id, int userId)
         {
             var item = await _context.FundTransactions.FindAsync(id);
             if (item == null || item.Status != "Pending") return false;
+            AddAuditLog(userId, $"Xóa giao dịch quỹ: {item.Category} - {item.Amount:N0}", "FundTransactions", item.FundTransactionID);
             _context.FundTransactions.Remove(item);
             await _context.SaveChangesAsync();
             return true;
@@ -156,7 +174,7 @@ namespace ClubManagement.API.Service
             if (activity == null) return null;
 
             var existing = await _context.ActivityBudgets.FirstOrDefaultAsync(b => b.ActivityID == dto.ActivityID);
-            if (existing != null) return await UpdateBudgetAsync(existing.ActivityBudgetID, dto);
+            if (existing != null) return await UpdateBudgetAsync(existing.ActivityBudgetID, dto, userId);
 
             var budget = new ActivityBudget
             {
@@ -167,10 +185,12 @@ namespace ClubManagement.API.Service
             };
             _context.ActivityBudgets.Add(budget);
             await _context.SaveChangesAsync();
+            AddAuditLog(userId, $"Tạo ngân sách hoạt động: {activity.ActivityName} - {budget.PlannedAmount:N0}", "FundCollectionPeriods", budget.ActivityBudgetID);
+            await _context.SaveChangesAsync();
             return await GetBudgetByIdAsync(budget.ActivityBudgetID);
         }
 
-        public async Task<ActivityBudgetDTO?> UpdateBudgetAsync(int id, SaveActivityBudgetDTO dto)
+        public async Task<ActivityBudgetDTO?> UpdateBudgetAsync(int id, SaveActivityBudgetDTO dto, int userId)
         {
             var budget = await _context.ActivityBudgets.FindAsync(id);
             if (budget == null) return null;
@@ -182,6 +202,7 @@ namespace ClubManagement.API.Service
             budget.PlannedAmount = dto.PlannedAmount;
             budget.Note = dto.Note?.Trim();
             budget.UpdatedAt = DateTime.Now;
+            AddAuditLog(userId, $"Cập nhật ngân sách hoạt động: #{budget.ActivityID} - {budget.PlannedAmount:N0}", "FundCollectionPeriods", budget.ActivityBudgetID);
             await _context.SaveChangesAsync();
             return await GetBudgetByIdAsync(id);
         }
@@ -277,7 +298,7 @@ namespace ClubManagement.API.Service
                 ? null
                 : !string.IsNullOrWhiteSpace(user.Member?.FullName)
                     ? user.Member.FullName
-                    : user.Username;
+                    : user.Email;
 
         private ActivityBudgetDTO MapBudget(ActivityBudget b)
         {

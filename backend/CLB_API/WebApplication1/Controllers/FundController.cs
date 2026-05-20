@@ -50,7 +50,7 @@ namespace ClubManagement.API.Controllers
         public async Task<IActionResult> UpdateTransaction(int id, [FromBody] UpdateFundTransactionDTO dto)
         {
             if (!ModelState.IsValid) return BadRequest(ApiResponse<string>.Fail("Dữ liệu không hợp lệ"));
-            var item = await _fundService.UpdateTransactionAsync(id, dto);
+            var item = await _fundService.UpdateTransactionAsync(id, dto, GetUserId());
             if (item == null) return NotFound(ApiResponse<string>.Fail("Chỉ có thể sửa giao dịch đang chờ duyệt"));
             return Ok(ApiResponse<FundTransactionDTO>.Ok(item, "Cập nhật giao dịch thành công"));
         }
@@ -66,7 +66,7 @@ namespace ClubManagement.API.Controllers
         [HttpDelete("transactions/{id:int}")]
         public async Task<IActionResult> DeleteTransaction(int id)
         {
-            var ok = await _fundService.DeleteTransactionAsync(id);
+            var ok = await _fundService.DeleteTransactionAsync(id, GetUserId());
             if (!ok) return BadRequest(ApiResponse<string>.Fail("Chỉ có thể xóa giao dịch đang chờ duyệt"));
             return Ok(ApiResponse<string>.Ok("Deleted", "Đã xóa giao dịch"));
         }
@@ -90,7 +90,7 @@ namespace ClubManagement.API.Controllers
         public async Task<IActionResult> UpdateBudget(int id, [FromBody] SaveActivityBudgetDTO dto)
         {
             if (!ModelState.IsValid) return BadRequest(ApiResponse<string>.Fail("Dữ liệu không hợp lệ"));
-            var item = await _fundService.UpdateBudgetAsync(id, dto);
+            var item = await _fundService.UpdateBudgetAsync(id, dto, GetUserId());
             if (item == null) return NotFound(ApiResponse<string>.Fail("Không tìm thấy ngân sách"));
             return Ok(ApiResponse<ActivityBudgetDTO>.Ok(item, "Cập nhật ngân sách thành công"));
         }

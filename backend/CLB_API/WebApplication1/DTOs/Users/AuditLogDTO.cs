@@ -4,7 +4,7 @@
     {
         public int LogID { get; set; }
         public int? UserID { get; set; }
-        public string? Username { get; set; }
+        public string? StudentCode { get; set; }
         public string? FullName { get; set; }
         public string? Action { get; set; }
         public string? TableName { get; set; }

@@ -85,10 +85,10 @@ namespace ClubManagement.API.Controllers
 
         // PUT /api/members/{id}  → Admin cập nhật (kể cả Position, Status)
         [HttpPut("{id:int}")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin,ExecutiveBoard")]
         public async Task<IActionResult> AdminUpdate(int id, [FromBody] UpdateMemberDTO dto)
         {
-            var result = await _memberService.AdminUpdateAsync(id, dto);
+            var result = await _memberService.AdminUpdateAsync(id, dto, GetUserId());
             if (result == null)
                 return NotFound(ApiResponse<string>.Fail("Không tìm thấy thành viên"));
             return Ok(ApiResponse<MemberDTO>.Ok(result, "Cập nhật thành viên thành công"));
@@ -99,7 +99,7 @@ namespace ClubManagement.API.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Deactivate(int id)
         {
-            var success = await _memberService.DeactivateAsync(id);
+            var success = await _memberService.DeactivateAsync(id, GetUserId());
             if (!success)
                 return NotFound(ApiResponse<string>.Fail("Không tìm thấy thành viên"));
             return Ok(ApiResponse<string>.Ok("Deactivated", "Vô hiệu hóa thành công"));

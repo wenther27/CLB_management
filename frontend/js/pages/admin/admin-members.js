@@ -4,6 +4,14 @@
 // xem chi tiết, vô hiệu hóa, thống kê
 // ================================================
 
+function memberPlain(value, fallback = '—') {
+  return Utils.displayText(value, fallback);
+}
+
+function memberText(value, fallback = '—') {
+  return Utils.escapeText(value, fallback);
+}
+
 // ── Load danh sách thành viên ─────────────────────────────────────────────────
 async function loadMembers() {
   const keyword = document.getElementById('mSearch')?.value.trim() || '';
@@ -35,19 +43,19 @@ async function loadMembers() {
             <div style="width:32px;height:32px;border-radius:50%;background:#ff2d55;
                         display:flex;align-items:center;justify-content:center;
                         font-size:12px;font-weight:700;color:white;flex-shrink:0">
-              ${(m.fullName || '?').split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2)}
+              ${memberPlain(m.fullName, '?').split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2)}
             </div>
             <div>
-              <div style="font-weight:700;font-size:13px">${Utils.escapeHtml(m.fullName)}</div>
+              <div style="font-weight:700;font-size:13px">${memberText(m.fullName)}</div>
               <div style="color:#475569;font-size:11px">
-                ${Utils.escapeHtml(m.username || '')}${m.email ? ' · ' + m.email : ''}
+                ${memberText(m.studentCode, '')}${m.email ? ' - ' + memberText(m.email, '') : ''}
               </div>
             </div>
           </div>
         </td>
-        <td style="color:#000000;font-size:13px">${Utils.escapeHtml(m.className || '—')}</td>
-        <td style="color:#000000;font-size:13px">${Utils.escapeHtml(m.faculty || '—')}</td>
-        <td style="color:#000000;font-size:13px">${Utils.escapeHtml(m.position || 'Thành viên')}</td>
+        <td style="color:#000000;font-size:13px">${memberText(m.className)}</td>
+        <td style="color:#000000;font-size:13px">${memberText(m.faculty)}</td>
+        <td style="color:#000000;font-size:13px">${memberText(m.position, 'Thành viên')}</td>
         <td>${Utils.statusLabel(m.status || 'Active')}</td>
         <td>
           <div style="display:flex;gap:6px">
@@ -58,7 +66,7 @@ async function loadMembers() {
               <i class="fa-solid fa-pen"></i>
             </button>
             ${m.status !== 'Inactive'
-              ? `<button onclick="deactivateMember(${m.memberID}, '${Utils.escapeHtml(m.fullName)}')"
+              ? `<button onclick="deactivateMember(${m.memberID}, ${JSON.stringify(memberPlain(m.fullName, ''))})"
                    class="btn-danger btn-sm" title="Vô hiệu hóa">
                    <i class="fa-solid fa-user-slash"></i>
                  </button>`
@@ -86,7 +94,7 @@ async function viewMember(id) {
   try {
     const r = await API.getMember(id);
     const m = r.data;
-    const initials = (m.fullName || '?').split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
+    const initials = memberPlain(m.fullName, '?').split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
 
     document.getElementById('gModalInner').innerHTML = `
       <div class="modal-header">
@@ -101,8 +109,8 @@ async function viewMember(id) {
                     display:flex;align-items:center;justify-content:center;
                     font-size:20px;font-weight:700;color:white;flex-shrink:0">${initials}</div>
         <div>
-          <div style="font-size:18px;font-weight:700">${Utils.escapeHtml(m.fullName)}</div>
-          <div style="color:#475569;font-size:13px">@${Utils.escapeHtml(m.username || '—')}</div>
+          <div style="font-size:18px;font-weight:700">${memberText(m.fullName)}</div>
+          <div style="color:#475569;font-size:13px">${memberText(m.studentCode)}</div>
           <div style="margin-top:6px">${Utils.statusLabel(m.status || 'Active')}</div>
         </div>
       </div>
@@ -124,7 +132,7 @@ async function viewMember(id) {
               <i class="fa-solid ${ico}" style="color:#475569;margin-right:5px"></i>${lbl}
             </div>
             <div style="font-size:13px;color:#0f172a;font-weight:600">
-              ${Utils.escapeHtml(String(val || '—'))}
+              ${memberText(val)}
             </div>
           </div>`).join('')}
       </div>
@@ -134,7 +142,7 @@ async function viewMember(id) {
           <i class="fa-solid fa-pen"></i> Chỉnh sửa
         </button>
         ${m.status !== 'Inactive'
-          ? `<button onclick="deactivateMember(${m.memberID},'${Utils.escapeHtml(m.fullName)}')"
+          ? `<button onclick="deactivateMember(${m.memberID}, ${JSON.stringify(memberPlain(m.fullName, ''))})"
                class="btn-danger" style="padding:10px 16px">
                <i class="fa-solid fa-user-slash"></i>
              </button>`

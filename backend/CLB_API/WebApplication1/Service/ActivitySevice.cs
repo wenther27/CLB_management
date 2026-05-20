@@ -34,12 +34,25 @@ namespace ClubManagement.API.Service
             _context = context;
         }
 
+        private void AddAuditLog(int? userId, string action, string tableName, int? recordId)
+        {
+            _context.AuditLogs.Add(new AuditLog
+            {
+                UserID = userId,
+                Action = action.Length > 250 ? action[..250] : action,
+                TableName = tableName,
+                RecordID = recordId,
+                CreatedAt = DateTime.Now
+            });
+        }
+
        
 
         public async Task<PagedResultDTO<ActivityDTO>> GetAllAsync(ActivityQueryDTO query)
         {
             var q = _context.Activities
                 .Include(a => a.Creator)
+                .ThenInclude(u => u!.Member)
                 .Include(a => a.Registrations)
                 .Include(a => a.ActivityImages)
                 .AsQueryable();
@@ -76,6 +89,7 @@ namespace ClubManagement.API.Service
         {
             var activity = await _context.Activities
                 .Include(a => a.Creator)
+                .ThenInclude(u => u!.Member)
                 .Include(a => a.Registrations)
                 .Include(a => a.ActivityImages)
                 .FirstOrDefaultAsync(a => a.ActivityID == id);
@@ -113,6 +127,8 @@ namespace ClubManagement.API.Service
 
             _context.Activities.Add(activity);
             await _context.SaveChangesAsync();
+            AddAuditLog(creatorUserId, $"Tạo hoạt động: {activity.ActivityName}", "Activities", activity.ActivityID);
+            await _context.SaveChangesAsync();
             await _context.Entry(activity).Reference(a => a.Creator).LoadAsync();
             return MapToDTO(activity);
         }
@@ -122,6 +138,7 @@ namespace ClubManagement.API.Service
         {
             var activity = await _context.Activities
                 .Include(a => a.Creator)
+                .ThenInclude(u => u!.Member)
                 .Include(a => a.Registrations)
                 .Include(a => a.ActivityImages)
                 .FirstOrDefaultAsync(a => a.ActivityID == id);
@@ -162,6 +179,7 @@ namespace ClubManagement.API.Service
                 }).ToList();
             }
 
+            AddAuditLog(requestUserId, $"Cập nhật hoạt động: {activity.ActivityName}", "Activities", activity.ActivityID);
             await _context.SaveChangesAsync();
             return MapToDTO(activity);
         }
@@ -171,6 +189,7 @@ namespace ClubManagement.API.Service
             if (requestUserRole != "Admin" && requestUserRole != "ExecutiveBoard") return false;
             var activity = await _context.Activities.FindAsync(id);
             if (activity == null) return false;
+            AddAuditLog(requestUserId, $"Xóa hoạt động: {activity.ActivityName}", "Activities", activity.ActivityID);
             _context.Activities.Remove(activity);
             await _context.SaveChangesAsync();
             return true;
@@ -182,6 +201,7 @@ namespace ClubManagement.API.Service
             if (activity == null) return false;
             if (requestUserRole != "Admin" && activity.CreateBy != requestUserId) return false;
             activity.Status = "Cancelled";
+            AddAuditLog(requestUserId, $"Hủy hoạt động: {activity.ActivityName}", "Activities", activity.ActivityID);
             await _context.SaveChangesAsync();
             return true;
         }
@@ -197,7 +217,11 @@ namespace ClubManagement.API.Service
                 .ToListAsync();
 
             if (!expired.Any()) return 0;
-            foreach (var a in expired) a.Status = "Closed";
+            foreach (var a in expired)
+            {
+                a.Status = "Closed";
+                AddAuditLog(null, $"Auto-close: Hết hạn đăng ký ({a.RegistrationDeadLine:yyyy-MM-dd HH:mm})", "Activities", a.ActivityID);
+            }
             await _context.SaveChangesAsync();
             return expired.Count;
         }
@@ -257,6 +281,8 @@ namespace ClubManagement.API.Service
 
             _context.Registrations.Add(registration);
             await _context.SaveChangesAsync();
+            AddAuditLog(userId, $"Đăng ký hoạt động: {activity.ActivityName}", "Registrations", registration.RegistrationID);
+            await _context.SaveChangesAsync();
 
             return new RegistrationResponseDTO
             {
@@ -302,6 +328,7 @@ namespace ClubManagement.API.Service
                 return (false, "Đã hết hạn đăng ký, không thể hủy đăng ký");
 
             _context.Registrations.Remove(registration);
+            AddAuditLog(userId, $"Hủy đăng ký hoạt động: {activity.ActivityName}", "Registrations", registration.RegistrationID);
             await _context.SaveChangesAsync();
             return (true, null);
         }
@@ -384,6 +411,8 @@ namespace ClubManagement.API.Service
             registration.IsAttended = isAttended;
             registration.AttendedAt = isAttended ? DateTime.Now : null;
             registration.AttendedByUserID = isAttended ? verifierUserId : null;
+            var attendanceText = isAttended ? "Điểm danh tham gia" : "Hủy điểm danh";
+            AddAuditLog(verifierUserId, $"{attendanceText}: {registration.ClubActivity?.ActivityName ?? $"#{registration.ActivityID}"}", "Registrations", registration.RegistrationID);
             await _context.SaveChangesAsync();
             return (true, null);
         }
@@ -406,6 +435,8 @@ namespace ClubManagement.API.Service
                 registration.AttendedByUserID = isAttended ? verifierUserId : null;
             }
 
+            var bulkAttendanceText = isAttended ? "Điểm danh toàn bộ" : "Hủy điểm danh toàn bộ";
+            AddAuditLog(verifierUserId, $"{bulkAttendanceText}: {activity.ActivityName} ({registrations.Count} đăng ký)", "Registrations", activity.ActivityID);
             await _context.SaveChangesAsync();
             return (true, registrations.Count, null);
         }
@@ -421,7 +452,7 @@ namespace ClubManagement.API.Service
             CreateAt = a.CreateAt,
             MaxParticipants = a.MaxParticipants,
             CreateBy = a.CreateBy,
-            CreatorName = a.Creator?.Username ?? "",
+            CreatorName = a.Creator?.Member?.FullName ?? a.Creator?.Member?.StudentCode ?? a.Creator?.Email ?? "",
             RegisteredCount = a.Registrations?.Count(r => r.Status == "Đã đăng ký") ?? 0,
             Image = a.ActivityImages?.Select(i => i.ImageUrl).ToList() ?? new(),
             RegistrationOpenDate = a.RegistrationOpenDate,

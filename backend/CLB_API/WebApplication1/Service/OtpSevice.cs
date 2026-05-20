@@ -14,6 +14,7 @@ namespace ClubManagement.API.Service
     public interface IOtpService
     {
         Task<bool> SendOtpAsync(string email, string purpose); // purpose: "register" | "forgot"
+        Task SendMemberApprovedEmailAsync(string email, string fullName, string studentCode, string temporaryPassword);
         Task<bool> VerifyOtpAsync(string email, string otp, string purpose);
         void InvalidateOtp(string email, string purpose);
     }
@@ -97,6 +98,16 @@ namespace ClubManagement.API.Service
         public void InvalidateOtp(string email, string purpose)
             => _cache.Remove(CacheKey(email, purpose));
 
+        public async Task SendMemberApprovedEmailAsync(string email, string fullName, string studentCode, string temporaryPassword)
+        {
+            await SendEmailAsync(
+                email,
+                "Chúc mừng bạn đã trở thành thành viên CLB CTXH DUT",
+                BuildMemberApprovedEmailHtml(fullName, studentCode, temporaryPassword));
+
+            _logger.LogInformation("[MEMBER_APPLICATION] Sent approval email to {Email}", email);
+        }
+
         // ── Gửi email qua Gmail SMTP ──────────────────────────────────────────
         private async Task SendEmailAsync(string toEmail, string subject, string htmlBody)
         {
@@ -179,6 +190,54 @@ namespace ClubManagement.API.Service
                   <p style="color:#9ca3af;font-size:11px;margin:0">
                     © {DateTime.Now.Year} CLB Công tác Xã hội · Trường Đại học Bách Khoa Đà Nẵng<br>
                     54 Nguyễn Lương Bằng, Đà Nẵng
+                  </p>
+                </div>
+              </div>
+            </body>
+            </html>
+            """;
+        }
+
+        private static string BuildMemberApprovedEmailHtml(string fullName, string studentCode, string temporaryPassword)
+        {
+            return $"""
+            <!DOCTYPE html>
+            <html lang="vi">
+            <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+            <body style="margin:0;padding:0;background:#f1f5f9;font-family:Arial,Helvetica,sans-serif">
+              <div style="max-width:560px;margin:40px auto;background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.10)">
+                <div style="background:linear-gradient(135deg,#e8213a 0%,#c01830 100%);padding:34px 32px;text-align:center">
+                  <div style="color:white;font-size:23px;font-weight:800;letter-spacing:-0.5px">CTXHDUT</div>
+                  <div style="color:rgba(255,255,255,0.88);font-size:13px;margin-top:6px">CLB Công tác Xã hội DUT</div>
+                </div>
+
+                <div style="padding:34px 32px">
+                  <h2 style="color:#111827;font-size:22px;margin:0 0 12px;font-weight:800">Chúc mừng {fullName}!</h2>
+                  <p style="color:#4b5563;font-size:14px;line-height:1.7;margin:0 0 24px">
+                    Hồ sơ đăng ký thành viên của bạn đã được duyệt. Dưới đây là thông tin tài khoản để đăng nhập hệ thống CLB CTXH DUT.
+                  </p>
+
+                  <div style="background:#f8fafc;border:1px solid #e5e7eb;border-radius:12px;padding:20px;margin-bottom:22px">
+                    <div style="margin-bottom:14px">
+                      <div style="color:#6b7280;font-size:12px;text-transform:uppercase;font-weight:700;letter-spacing:0.06em">Tên đăng nhập</div>
+                      <div style="color:#111827;font-size:18px;font-weight:800;margin-top:4px">{studentCode}</div>
+                    </div>
+                    <div>
+                      <div style="color:#6b7280;font-size:12px;text-transform:uppercase;font-weight:700;letter-spacing:0.06em">Mật khẩu tạm thời</div>
+                      <div style="color:#e8213a;font-size:20px;font-weight:900;margin-top:4px;font-family:Consolas,monospace">{temporaryPassword}</div>
+                    </div>
+                  </div>
+
+                  <div style="background:#fff7ed;border:1px solid #fed7aa;border-radius:10px;padding:14px 16px">
+                    <p style="color:#9a3412;font-size:13px;line-height:1.6;margin:0">
+                      Vì lý do bảo mật, bạn nên đổi mật khẩu ngay sau lần đăng nhập đầu tiên.
+                    </p>
+                  </div>
+                </div>
+
+                <div style="background:#f8f9fc;border-top:1px solid #e5e7eb;padding:18px 32px;text-align:center">
+                  <p style="color:#9ca3af;font-size:11px;margin:0">
+                    © {DateTime.Now.Year} CLB Công tác Xã hội · Trường Đại học Bách Khoa Đà Nẵng
                   </p>
                 </div>
               </div>

@@ -2,7 +2,7 @@
 // auth-modal.js — UPDATED COMPLETE VERSION
 // Luồng:
 //   Đăng ký:  Điền form → Gửi OTP Gmail → Nhập OTP → Tạo tài khoản
-//   Đăng nhập: Username/Password
+//   Đăng nhập: MSSV/Email + mật khẩu
 //   Quên MK: Nhập email → OTP Gmail → Nhập MK mới → Đổi thành công
 // ================================================
 
@@ -16,6 +16,44 @@
   let _pendingPurpose = 'register'; // 'register' | 'forgot'
   let _countdownTimer = null;
   let _injected = false;
+  const REMEMBER_LOGIN_KEY = 'ctxhdut_remember_login';
+
+  function loadRememberedLogin() {
+    try {
+      const data = JSON.parse(localStorage.getItem(REMEMBER_LOGIN_KEY) || 'null');
+      return data && typeof data.login === 'string' && typeof data.password === 'string'
+        ? data
+        : null;
+    } catch {
+      return null;
+    }
+  }
+
+  function saveRememberedLogin(login, password, remember) {
+    if (!remember) {
+      localStorage.removeItem(REMEMBER_LOGIN_KEY);
+      return;
+    }
+
+    localStorage.setItem(REMEMBER_LOGIN_KEY, JSON.stringify({ login, password }));
+  }
+
+  function fillRememberedLogin() {
+    const remembered = loadRememberedLogin();
+    const loginInput = document.getElementById('am-login-login');
+    const passwordInput = document.getElementById('am-login-pwd');
+    const rememberInput = document.getElementById('am-login-remember');
+
+    if (!loginInput || !passwordInput || !rememberInput) return;
+
+    if (remembered) {
+      loginInput.value = remembered.login;
+      passwordInput.value = remembered.password;
+      rememberInput.checked = true;
+    } else {
+      rememberInput.checked = false;
+    }
+  }
 
   // ── Inject HTML ────────────────────────────────────────────────────────────
   function injectModal() {
@@ -72,6 +110,9 @@
   .am-link-btn { background:none;border:none;color:#e8213a;font-size:13px;font-weight:700;
     cursor:pointer;font-family:inherit;padding:0 }
   .am-link-btn:hover { text-decoration:underline }
+  .am-login-actions { display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px }
+  .am-remember { display:flex;align-items:center;gap:8px;color:#6b7280;font-size:12px;font-weight:700;cursor:pointer;user-select:none }
+  .am-remember input { width:15px;height:15px;accent-color:#e8213a;cursor:pointer }
   .am-switch { text-align:center;font-size:13px;color:#6b7280;margin-top:16px }
   .am-panel { display:none }
   .am-panel.active { display:block }
@@ -121,8 +162,8 @@
       <div class="am-divider">hoặc</div>
 
       <div class="am-group">
-        <label class="am-label">Tên đăng nhập hoặc Email</label>
-        <input id="am-login-username" class="am-input" type="text" placeholder="Nhập tên đăng nhập..."
+        <label class="am-label">MSSV hoặc Email</label>
+        <input id="am-login-login" class="am-input" type="text" placeholder="Nhập MSSV hoặc email..."
           onkeydown="if(event.key==='Enter')document.getElementById('am-login-pwd').focus()">
       </div>
       <div class="am-group">
@@ -137,7 +178,11 @@
         </div>
       </div>
 
-      <div style="text-align:right;margin-bottom:16px">
+      <div class="am-login-actions">
+        <label class="am-remember">
+          <input id="am-login-remember" type="checkbox">
+          <span>Nhớ mật khẩu</span>
+        </label>
         <button class="am-link-btn" onclick="AuthModal.show('forgot')" style="font-size:12px">
           Quên mật khẩu?
         </button>
@@ -533,6 +578,8 @@
       const tagEl = document.getElementById('amModalTag');
       if (tagEl) tagEl.textContent = tags[panel] || '';
 
+      if (panel === 'login') fillRememberedLogin();
+
       // Focus input đầu tiên
       setTimeout(() => {
         const first = document.querySelector(`#am-${panel} .am-input, #am-${panel} input`);
@@ -544,18 +591,20 @@
     // ĐĂNG NHẬP
     // ════════════════════════════════════════════════════════════════════════
     async doLogin() {
-      const username = document.getElementById('am-login-username')?.value.trim();
+      const login = document.getElementById('am-login-login')?.value.trim();
       const password = document.getElementById('am-login-pwd')?.value;
-      if (!username || !password) { toast('Vui lòng nhập đầy đủ thông tin', 'error'); return; }
+      const remember = document.getElementById('am-login-remember')?.checked === true;
+      if (!login || !password) { toast('Vui lòng nhập đầy đủ thông tin', 'error'); return; }
 
       setLoading('am-login-btn', true);
       try {
-        const r = await apiPost('/auth/login', { username, password });
+        const r = await apiPost('/auth/login', { login, password });
         const userData = r.data ?? r;
         Auth.setToken(userData.token);
         Auth.setUser(userData);
+        saveRememberedLogin(login, password, remember);
         this.close();
-        toast(`Chào mừng ${userData.username}! 👋`, 'success');
+        toast(`Chào mừng ${userData.displayName || userData.fullName || userData.studentCode || userData.email || 'bạn'}! 👋`, 'success');
         if (typeof updateNavbar === 'function') updateNavbar();
         if (userData.role === 'Admin' || userData.role === 'ExecutiveBoard') {
           setTimeout(() => location.href = '../pages/Admin-dashboard.html', 800);
@@ -640,7 +689,7 @@
           document.getElementById('am-success-icon').textContent = '🎉';
           document.getElementById('am-success-title').textContent = 'Đăng ký thành công!';
           document.getElementById('am-success-msg').textContent =
-            `Chào mừng ${userData.username} đến với CLB CTXH DUT! Tài khoản của bạn đã sẵn sàng.`;
+            `Chào mừng ${userData.displayName || userData.fullName || userData.studentCode || userData.email || 'bạn'} đến với CLB CTXH DUT! Tài khoản của bạn đã sẵn sàng.`;
           document.getElementById('am-success-btn').onclick = () => {
             this.close();
             if (typeof updateNavbar === 'function') updateNavbar();

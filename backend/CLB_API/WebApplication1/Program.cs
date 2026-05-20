@@ -79,7 +79,7 @@ builder.Services.AddScoped<IFundService, FundService>();
 builder.Services.AddScoped<IFundContributionService, FundContributionService>();
 builder.Services.AddHttpClient<ISepayTransactionSyncService, SepayTransactionSyncService>();
 
-// Background service: tá»± Ä‘á»™ng khoÃ¡/má»Ÿ hoáº¡t Ä‘á»™ng theo thá»i gian
+
 builder.Services.AddHostedService<ActivityAutoCloseService>();
 builder.Services.AddHostedService<SepayTransactionPollingService>();
 
@@ -94,15 +94,14 @@ builder.Services.Configure<FormOptions>(options =>
 // ========== BUILD APP ==========
 var app = builder.Build();
 
-// Táº¡o thÆ° má»¥c uploads náº¿u chÆ°a tá»“n táº¡i
+
 var uploadsFolder = Path.Combine(app.Environment.WebRootPath ?? "wwwroot", "uploads", "activities");
 if (!Directory.Exists(uploadsFolder))
     Directory.CreateDirectory(uploadsFolder);
 
 app.UseStaticFiles();
 
-// QUAN TRá»ŒNG: thá»© tá»± middleware
-// CORS â†’ Authentication â†’ Authorization â†’ Controllers
+
 app.UseCors("AllowAll");
 app.UseAuthentication();
 app.UseAuthorization();

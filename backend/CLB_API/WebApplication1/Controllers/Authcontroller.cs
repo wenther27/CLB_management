@@ -22,7 +22,7 @@ namespace ClubManagement.API.Controllers
         {
             var result = await _authService.LoginAsync(dto);
             if (result == null)
-                return Unauthorized(new { message = "Tên đăng nhập hoặc mật khẩu không đúng" });
+                return Unauthorized(new { message = "MSSV/Email hoặc mật khẩu không đúng" });
 
             return Ok(result);
         }

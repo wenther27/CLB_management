@@ -298,7 +298,7 @@ function openCertificateModal(activityData) {
   const profile = window._cachedProfile || null;
 
   // Lấy thông tin thành viên
-  const memberName  = profile?.fullName  || user?.username || 'Thành viên';
+  const memberName  = Utils.displayText(profile?.fullName || user?.displayName || user?.fullName || user?.studentCode || user?.email, 'Thành viên');
   const memberClass = profile?.className || user?.className || '';
   const memberFac   = profile?.faculty   || user?.faculty   || '';
   const school      = 'Trường Đại học Bách Khoa - Đại học Đà Nẵng';

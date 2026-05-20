@@ -454,7 +454,7 @@ function getProfileStudentCode(p) {
 }
 
 function renderProfile(p) {
-  const initials = (p.fullName || p.username || '?')
+  const initials = (p.fullName || p.studentCode || p.email || '?')
     .split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
 
   const display = document.getElementById('avatarDisplay');
@@ -469,7 +469,7 @@ function renderProfile(p) {
     }
   }
 
-  document.getElementById('profileName').textContent = normalizeProfileText(p.fullName || p.username);
+  document.getElementById('profileName').textContent = normalizeProfileText(p.fullName || p.studentCode || p.email);
   document.getElementById('profileSub').textContent = normalizeProfileText(p.position || p.roleName, 'Thành viên CLB');
   document.getElementById('profileStatusBadge').innerHTML = Utils.statusLabel(p.status || 'Active');
   document.getElementById('infoStudentCode').textContent = normalizeProfileText(getProfileStudentCode(p));

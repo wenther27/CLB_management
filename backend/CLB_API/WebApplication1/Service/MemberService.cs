@@ -16,8 +16,8 @@ namespace ClubManagement.API.Service
         Task<MemberDTO?> GetByUserIdAsync(int userId);
         Task<MemberDTO?> UpdateProfileAsync(int userId, UpdateProfileDTO dto);
         Task<MemberDTO?> UpdateAvatarAsync(int userId, UpdateAvatarDTO dto);
-        Task<MemberDTO?> AdminUpdateAsync(int memberId, UpdateMemberDTO dto);
-        Task<bool> DeactivateAsync(int memberId);
+        Task<MemberDTO?> AdminUpdateAsync(int memberId, UpdateMemberDTO dto, int adminUserId);
+        Task<bool> DeactivateAsync(int memberId, int adminUserId);
         Task<bool> ChangePasswordAsync(int userId, ChangePasswordDTO dto);
         Task<MemberStatsDTO> GetStatsAsync();
     }
@@ -28,6 +28,19 @@ namespace ClubManagement.API.Service
         {
             _context = context;
         }
+
+        private void AddAuditLog(int? userId, string action, string tableName, int? recordId)
+        {
+            _context.AuditLogs.Add(new AuditLog
+            {
+                UserID = userId,
+                Action = action.Length > 250 ? action[..250] : action,
+                TableName = tableName,
+                RecordID = recordId,
+                CreatedAt = DateTime.Now
+            });
+        }
+
         private static MemberDTO MapToDTO(Member m) => new()
         {
             MemberID = m.MemberID,
@@ -40,7 +53,6 @@ namespace ClubManagement.API.Service
             Status = m.Status,
             JoinDate = m.JoinDate,
             BirthDate = m.BirthDate,
-            Username = m.User?.Username,
             Email = m.User?.Email,
             ContactEmail = m.ContactEmail,
             Phone = m.User?.Phone,
@@ -59,7 +71,6 @@ namespace ClubManagement.API.Service
                 q = q.Where(m =>
                 m.FullName.Contains(query.Keyword) ||
                 (m.StudentCode != null && m.StudentCode.Contains(query.Keyword)) ||
-                (m.User != null && m.User.Username.Contains(query.Keyword)) ||
                 (m.User != null && m.User.Email.Contains(query.Keyword)));
             }
             if (!string.IsNullOrWhiteSpace(query.Faculty))
@@ -115,6 +126,7 @@ namespace ClubManagement.API.Service
             {
                 member.User.Phone = dto.Phone; member.User.UpdatedAt = DateTime.UtcNow;
             }
+            AddAuditLog(userId, $"Cập nhật hồ sơ cá nhân: {member.FullName}", "Members", member.MemberID);
             await _context.SaveChangesAsync();
             return MapToDTO(member);
 
@@ -128,15 +140,16 @@ namespace ClubManagement.API.Service
             if (member == null) return null;
 
             member.AvatarUrl = dto.AvatarUrl;
+            AddAuditLog(userId, $"Cập nhật ảnh đại diện: {member.FullName}", "Members", member.MemberID);
             await _context.SaveChangesAsync();
             return MapToDTO(member);
         }
 
-        public async Task <MemberDTO?> AdminUpdateAsync (int memberId, UpdateMemberDTO dto)
+        public async Task <MemberDTO?> AdminUpdateAsync (int memberId, UpdateMemberDTO dto, int adminUserId)
         {
             var member = await _context.Members
                 .Include(m => m.User).ThenInclude(u => u!.Role)
-                .FirstAsync(m => m.MemberID == memberId);
+                .FirstOrDefaultAsync(m => m.MemberID == memberId);
             if (member == null) return null;
             if (dto.FullName != null) member.FullName = dto.FullName;
             if (dto.ClassName != null) member.ClassName = dto.ClassName;
@@ -160,12 +173,13 @@ namespace ClubManagement.API.Service
                 if (dto.DisplayOrder.HasValue) member.DisplayOrder = dto.DisplayOrder.Value;
                 if (dto.AvatarUrl != null) member.AvatarUrl = dto.AvatarUrl == "" ? null : dto.AvatarUrl;
                 if (dto.ContactEmail != null) member.ContactEmail = dto.ContactEmail == "" ? null : dto.ContactEmail;
+                AddAuditLog(adminUserId, $"Cập nhật thành viên: {member.FullName}", "Members", member.MemberID);
                 await _context.SaveChangesAsync();
                 return MapToDTO(member);
             
         }
        
-       public async Task<bool> DeactivateAsync (int memberId)
+       public async Task<bool> DeactivateAsync (int memberId, int adminUserId)
         {
             var member = await _context.Members.Include(m => m.User)
                 .FirstOrDefaultAsync(m => m.MemberID == memberId);
@@ -176,6 +190,7 @@ namespace ClubManagement.API.Service
                member.User.IsActive = false;
                member.User.UpdatedAt = DateTime.UtcNow;
             }
+            AddAuditLog(adminUserId, $"Vô hiệu hóa thành viên: {member.FullName}", "Members", member.MemberID);
             await _context.SaveChangesAsync();
             return true;
         }
@@ -189,6 +204,7 @@ namespace ClubManagement.API.Service
             }
             user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.NewPassword);
             user.UpdatedAt = DateTime.UtcNow;
+            AddAuditLog(userId, "Đổi mật khẩu", "Users", user.UserID);
             await _context.SaveChangesAsync();  
             return true;
         }

@@ -14,7 +14,6 @@
         public DateTime JoinDate { get; set; }
         public DateTime? BirthDate { get; set; }
 
-        public string ? Username {  get; set; }
         public string ? Email { get; set; }
         public string? ContactEmail { get; set; }
         public string ? Phone { get; set; }

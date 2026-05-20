@@ -32,6 +32,18 @@ namespace ClubManagement.API.Service
             _context = context;
         }
 
+        private void AddAuditLog(int? userId, string action, string tableName, int? recordId)
+        {
+            _context.AuditLogs.Add(new AuditLog
+            {
+                UserID = userId,
+                Action = action.Length > 250 ? action[..250] : action,
+                TableName = tableName,
+                RecordID = recordId,
+                CreatedAt = DateTime.Now
+            });
+        }
+
         public async Task<PagedResultDTO<PostDTO>> GetAllAsync(PostQueryDTO query, int? currentUserId = null)
         {
             var q = _context.Posts
@@ -120,6 +132,8 @@ namespace ClubManagement.API.Service
 
             _context.Posts.Add(post);
             await _context.SaveChangesAsync();
+            AddAuditLog(authorUserId, $"Tạo bài viết: {post.Title}", "Posts", post.PostID);
+            await _context.SaveChangesAsync();
             await _context.Entry(post).Reference(p => p.User).LoadAsync();
             return MapToDTO(post);
         }
@@ -161,6 +175,7 @@ namespace ClubManagement.API.Service
                 }).ToList();
             }
 
+            AddAuditLog(requestUserId, $"Cập nhật bài viết: {post.Title}", "Posts", post.PostID);
             await _context.SaveChangesAsync();
             return MapToDTO(post);
         }
@@ -172,6 +187,7 @@ namespace ClubManagement.API.Service
             if (requestUserRole != "Admin" && post.CreateBy != requestUserId) return false;
             post.status = "Published";
             post.UpdateTime = DateTime.UtcNow;
+            AddAuditLog(requestUserId, $"Đăng bài viết: {post.Title}", "Posts", post.PostID);
             await _context.SaveChangesAsync();
             return true;
         }
@@ -183,6 +199,7 @@ namespace ClubManagement.API.Service
             if (requestUserRole != "Admin" && post.CreateBy != requestUserId) return false;
             post.status = "Draft";
             post.UpdateTime = DateTime.UtcNow;
+            AddAuditLog(requestUserId, $"Ẩn bài viết: {post.Title}", "Posts", post.PostID);
             await _context.SaveChangesAsync();
             return true;
         }
@@ -192,6 +209,7 @@ namespace ClubManagement.API.Service
             var post = await _context.Posts.FindAsync(id);
             if (post == null) return false;
             if (requestUserRole != "Admin" && post.CreateBy != requestUserId) return false;
+            AddAuditLog(requestUserId, $"Xóa bài viết: {post.Title}", "Posts", post.PostID);
             _context.Posts.Remove(post);
             await _context.SaveChangesAsync();
             return true;
@@ -305,7 +323,7 @@ namespace ClubManagement.API.Service
             ReadTime = p.ReadTime,
             CreatedDate = p.createdDate,
             UpdatedDate = p.UpdateTime,
-            AuthorName = p.User?.Member?.FullName ?? p.User?.Username ?? "BTC",
+            AuthorName = p.User?.Member?.FullName ?? p.User?.Member?.StudentCode ?? p.User?.Email ?? "BTC",
             AuthorId = p.CreateBy ?? 0,
             AuthorAvatarUrl = p.User?.Member?.AvatarUrl ?? p.User?.AvatarUrl,
             Images = p.postImages?.Select(i => i.ImageUrl).ToList() ?? new List<string>(),

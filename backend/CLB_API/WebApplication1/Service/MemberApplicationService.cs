@@ -16,10 +16,24 @@ namespace ClubManagement.API.Service
     public class MemberApplicationService : IMemberApplicationService
     {
         private readonly ApplicationDbContext _context;
+        private readonly IOtpService _otpService;
 
-        public MemberApplicationService(ApplicationDbContext context)
+        public MemberApplicationService(ApplicationDbContext context, IOtpService otpService)
         {
             _context = context;
+            _otpService = otpService;
+        }
+
+        private void AddAuditLog(int? userId, string action, string tableName, int? recordId)
+        {
+            _context.AuditLogs.Add(new AuditLog
+            {
+                UserID = userId,
+                Action = action.Length > 250 ? action[..250] : action,
+                TableName = tableName,
+                RecordID = recordId,
+                CreatedAt = DateTime.Now
+            });
         }
 
         public async Task<MemberApplicationDTO> SubmitAsync(CreateMemberApplicationDTO dto)
@@ -35,8 +49,9 @@ namespace ClubManagement.API.Service
             if (!dto.BirthDate.HasValue) throw new InvalidOperationException("Vui l?ng nh?p ng?y sinh");
             if (string.IsNullOrWhiteSpace(email) || !email.Contains('@')) throw new InvalidOperationException("Email li?n h? kh?ng h?p l?");
 
-            var existedUser = await _context.Users.AnyAsync(u => u.Username == studentCode || u.Email.ToLower() == email);
-            if (existedUser) throw new InvalidOperationException("MSSV ho?c email n?y ?? c? t?i kho?n trong h? th?ng");
+            var existedUser = await _context.Users.AnyAsync(u => u.Email.ToLower() == email);
+            var existedStudentCode = await _context.Members.AnyAsync(m => m.StudentCode == studentCode);
+            if (existedUser || existedStudentCode) throw new InvalidOperationException("MSSV ho?c email n?y ?? c? t?i kho?n trong h? th?ng");
 
             var existedMember = await _context.Members.AnyAsync(m => m.ContactEmail != null && m.ContactEmail.ToLower() == email);
             if (existedMember) throw new InvalidOperationException("Email n?y ?? ???c d?ng cho th?nh vi?n kh?c");
@@ -61,6 +76,8 @@ namespace ClubManagement.API.Service
 
             _context.MemberApplications.Add(application);
             await _context.SaveChangesAsync();
+            AddAuditLog(null, $"Nộp hồ sơ thành viên: {application.FullName} ({application.StudentCode})", "MemberApplications", application.MemberApplicationID);
+            await _context.SaveChangesAsync();
 
             return Map(application);
         }
@@ -69,6 +86,7 @@ namespace ClubManagement.API.Service
         {
             var query = _context.MemberApplications
                 .Include(a => a.ReviewedByUser)
+                    .ThenInclude(u => u!.Member)
                 .AsQueryable();
 
             if (!string.IsNullOrWhiteSpace(status))
@@ -84,53 +102,96 @@ namespace ClubManagement.API.Service
 
         public async Task<MemberApplicationDTO?> ApproveAsync(int id, int reviewedByUserId, string? reviewNote = null)
         {
-            var application = await _context.MemberApplications.FirstOrDefaultAsync(a => a.MemberApplicationID == id);
+            var application = await _context.MemberApplications
+                .Include(a => a.ReviewedByUser)
+                .ThenInclude(u => u!.Member)
+                .FirstOrDefaultAsync(a => a.MemberApplicationID == id);
             if (application == null) return null;
+            if (application.Status == "Approved") return Map(application);
             if (application.Status != "Pending") throw new InvalidOperationException("H? s? n?y ?? ???c x? l?");
-
-            var existedUser = await _context.Users.AnyAsync(u =>
-                u.Username == application.StudentCode || u.Email.ToLower() == application.ContactEmail.ToLower());
-            if (existedUser) throw new InvalidOperationException("MSSV ho?c email n?y ?? c? t?i kho?n trong h? th?ng");
 
             var memberRole = await _context.Roles.FirstOrDefaultAsync(r => r.RoleName == "Member");
             var defaultPassword = application.BirthDate.ToString("ddMMyyyy");
+            var email = application.ContactEmail.Trim().ToLowerInvariant();
+            var studentCode = NormalizeStudentCode(application.StudentCode);
 
-            var user = new User
+            var existingUser = await _context.Users
+                .Include(u => u.Member)
+                .FirstOrDefaultAsync(u => u.Email.ToLower() == email);
+
+            var existingMember = await _context.Members
+                .Include(m => m.User)
+                .FirstOrDefaultAsync(m => m.StudentCode == studentCode);
+
+            if (existingUser?.Member != null && existingUser.Member.StudentCode != studentCode)
+                throw new InvalidOperationException("Email n?y ?? ???c d?ng cho th?nh vi?n kh?c");
+
+            if (existingUser != null && existingMember != null &&
+                existingMember.UserID.HasValue && existingMember.UserID.Value != existingUser.UserID)
+                throw new InvalidOperationException("MSSV v? email ?ang thu?c hai t?i kho?n kh?c nhau");
+
+            await using var transaction = await _context.Database.BeginTransactionAsync();
+
+            var user = existingUser ?? new User
             {
-                Username = application.StudentCode,
                 Email = application.ContactEmail,
-                PasswordHash = BCrypt.Net.BCrypt.HashPassword(defaultPassword),
-                Phone = application.Phone,
                 RoleID = memberRole?.RoleID ?? 3,
                 IsActive = true,
                 CreatedAt = DateTime.Now,
                 CreatedDate = DateTime.Now
             };
 
-            _context.Users.Add(user);
-            await _context.SaveChangesAsync();
+            user.Email = application.ContactEmail;
+            user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(defaultPassword);
+            user.Phone = application.Phone;
+            user.RoleID = memberRole?.RoleID ?? user.RoleID;
+            user.IsActive = true;
+            user.UpdatedAt = DateTime.Now;
 
-            var member = new Member
+            if (existingUser == null)
+            {
+                _context.Users.Add(user);
+                await _context.SaveChangesAsync();
+            }
+
+            var member = existingMember ?? new Member
             {
                 UserID = user.UserID,
-                StudentCode = application.StudentCode,
-                FullName = application.FullName,
-                ClassName = application.ClassName,
-                Faculty = application.Faculty,
-                BirthDate = application.BirthDate,
-                ContactEmail = application.ContactEmail,
                 Position = "Th?nh vi?n",
                 Status = "Active",
                 JoinDate = DateTime.Now
             };
 
-            _context.Members.Add(member);
+            member.UserID = user.UserID;
+            member.StudentCode = studentCode;
+            member.FullName = application.FullName;
+            member.ClassName = application.ClassName;
+            member.Faculty = application.Faculty;
+            member.BirthDate = application.BirthDate;
+            member.ContactEmail = application.ContactEmail;
+            member.Position ??= "Th?nh vi?n";
+            member.Status = "Active";
+
+            if (existingMember == null)
+            {
+                _context.Members.Add(member);
+            }
+
             application.Status = "Approved";
             application.ReviewedAt = DateTime.Now;
             application.ReviewedByUserID = reviewedByUserId;
             application.ReviewNote = reviewNote?.Trim();
 
             await _context.SaveChangesAsync();
+            AddAuditLog(reviewedByUserId, $"Duyệt hồ sơ thành viên: {application.FullName} ({application.StudentCode})", "Members", member.MemberID);
+            await _context.SaveChangesAsync();
+            await _otpService.SendMemberApprovedEmailAsync(
+                application.ContactEmail,
+                application.FullName,
+                application.StudentCode,
+                defaultPassword);
+
+            await transaction.CommitAsync();
             await _context.Entry(application).Reference(a => a.ReviewedByUser).LoadAsync();
             return Map(application);
         }
@@ -139,6 +200,7 @@ namespace ClubManagement.API.Service
         {
             var application = await _context.MemberApplications
                 .Include(a => a.ReviewedByUser)
+                .ThenInclude(u => u!.Member)
                 .FirstOrDefaultAsync(a => a.MemberApplicationID == id);
             if (application == null) return null;
             if (application.Status != "Pending") throw new InvalidOperationException("H? s? n?y ?? ???c x? l?");
@@ -147,6 +209,7 @@ namespace ClubManagement.API.Service
             application.ReviewedAt = DateTime.Now;
             application.ReviewedByUserID = reviewedByUserId;
             application.ReviewNote = reviewNote?.Trim();
+            AddAuditLog(reviewedByUserId, $"Từ chối hồ sơ thành viên: {application.FullName} ({application.StudentCode})", "MemberApplications", application.MemberApplicationID);
             await _context.SaveChangesAsync();
             await _context.Entry(application).Reference(a => a.ReviewedByUser).LoadAsync();
             return Map(application);
@@ -168,7 +231,7 @@ namespace ClubManagement.API.Service
             Status = a.Status,
             SubmittedAt = a.SubmittedAt,
             ReviewedAt = a.ReviewedAt,
-            ReviewedBy = a.ReviewedByUser?.Username,
+            ReviewedBy = a.ReviewedByUser == null ? null : (!string.IsNullOrWhiteSpace(a.ReviewedByUser.Member?.FullName) ? a.ReviewedByUser.Member.FullName : (!string.IsNullOrWhiteSpace(a.ReviewedByUser.Member?.StudentCode) ? a.ReviewedByUser.Member.StudentCode : a.ReviewedByUser.Email)),
             ReviewNote = a.ReviewNote
         };
     }

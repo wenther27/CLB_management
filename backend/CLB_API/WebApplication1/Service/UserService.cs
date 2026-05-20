@@ -1,4 +1,4 @@
-﻿using ClubManagement.API.Data;
+using ClubManagement.API.Data;
 using ClubManagement.API.DTOs;
 using ClubManagement.API.DTOs.Activityes;
 using ClubManagement.API.DTOs.Users;
@@ -34,7 +34,7 @@ namespace ClubManagement.API.Service
             return new UserDetailDTO
             {
                 UserID = u.UserID,
-                Username = u.Username,
+                StudentCode = member?.StudentCode,
                 Email = u.Email,
                 Phone = u.Phone,
                 IsActive = u.IsActive,
@@ -42,27 +42,19 @@ namespace ClubManagement.API.Service
                 RoleName = u.Role?.RoleName ?? "Member",
                 CreatedAt = u.CreatedAt,
                 UpdatedAt = u.UpdatedAt,
-
-                // Member info
                 MemberID = member?.MemberID,
                 FullName = member?.FullName,
                 ClassName = member?.ClassName,
                 Faculty = member?.Faculty,
                 Position = member?.Position,
                 MemberStatus = member?.Status,
-
-                // FIX: khởi tạo mặc định = 0 để frontend không bị null
                 TotalRegistrations = 0,
                 TotalPostsCreated = 0,
             };
         }
 
-        // ────────────────────────────────────────────────────────────────────
-        // GET ALL (filter + sort + page)
-        // ────────────────────────────────────────────────────────────────────
         public async Task<PagedResultAdminDTO<UserDetailDTO>> GetAllAsync(UserQueryDTO query)
         {
-            // Đảm bảo page/pageSize hợp lệ
             if (query.Page < 1) query.Page = 1;
             if (query.PageSize < 1) query.PageSize = 15;
 
@@ -73,12 +65,12 @@ namespace ClubManagement.API.Service
 
             if (!string.IsNullOrWhiteSpace(query.Keyword))
             {
-                var kw = query.Keyword.ToLower();
+                var kw = query.Keyword.Trim().ToLower();
                 q = q.Where(u =>
-                    u.Username.ToLower().Contains(kw) ||
                     u.Email.ToLower().Contains(kw) ||
                     (u.Phone != null && u.Phone.Contains(kw)) ||
-                    (u.Member != null && u.Member.FullName.ToLower().Contains(kw)));
+                    (u.Member != null && u.Member.FullName.ToLower().Contains(kw)) ||
+                    (u.Member != null && u.Member.StudentCode != null && u.Member.StudentCode.ToLower().Contains(kw)));
             }
 
             if (!string.IsNullOrWhiteSpace(query.RoleName))
@@ -93,11 +85,10 @@ namespace ClubManagement.API.Service
             if (query.ToDate.HasValue)
                 q = q.Where(u => u.CreatedAt <= query.ToDate.Value);
 
-            // Sorting
             q = (query.SortBy?.ToLower(), query.SortDir?.ToLower()) switch
             {
-                ("username", "asc") => q.OrderBy(u => u.Username),
-                ("username", _) => q.OrderByDescending(u => u.Username),
+                ("studentcode", "asc") => q.OrderBy(u => u.Member != null ? u.Member.StudentCode : null),
+                ("studentcode", _) => q.OrderByDescending(u => u.Member != null ? u.Member.StudentCode : null),
                 ("email", "asc") => q.OrderBy(u => u.Email),
                 ("email", _) => q.OrderByDescending(u => u.Email),
                 ("createdat", "asc") => q.OrderBy(u => u.CreatedAt),
@@ -110,7 +101,6 @@ namespace ClubManagement.API.Service
                 .Take(query.PageSize)
                 .ToListAsync();
 
-            // Gắn thống kê hoạt động (1 query mỗi loại)
             var userIds = items.Select(u => u.UserID).ToList();
             var memberIds = items
                 .Where(u => u.Member != null)
@@ -152,9 +142,6 @@ namespace ClubManagement.API.Service
             };
         }
 
-        // ────────────────────────────────────────────────────────────────────
-        // GET BY ID
-        // ────────────────────────────────────────────────────────────────────
         public async Task<UserDetailDTO?> GetByIdAsync(int id)
         {
             var u = await _context.Users
@@ -169,15 +156,10 @@ namespace ClubManagement.API.Service
                 dto.TotalRegistrations = await _context.Registrations
                     .CountAsync(r => r.MemberID == u.Member.MemberID);
 
-            dto.TotalPostsCreated = await _context.Posts
-                .CountAsync(p => p.CreateBy == id);
-
+            dto.TotalPostsCreated = await _context.Posts.CountAsync(p => p.CreateBy == id);
             return dto;
         }
 
-        // ────────────────────────────────────────────────────────────────────
-        // STATS
-        // ────────────────────────────────────────────────────────────────────
         public async Task<UserStatsDTO> GetStatsAsync()
         {
             var now = DateTime.Now;
@@ -204,9 +186,6 @@ namespace ClubManagement.API.Service
             };
         }
 
-        // ────────────────────────────────────────────────────────────────────
-        // ADMIN UPDATE (role, isActive, phone)
-        // ────────────────────────────────────────────────────────────────────
         public async Task<UserDetailDTO?> AdminUpdateAsync(int id, UpdateUserAdminDTO dto)
         {
             var user = await _context.Users
@@ -229,16 +208,21 @@ namespace ClubManagement.API.Service
                 user.Phone = string.IsNullOrWhiteSpace(dto.Phone) ? null : dto.Phone.Trim();
 
             user.UpdatedAt = DateTime.Now;
+            _context.AuditLogs.Add(new AuditLog
+            {
+                UserID = null,
+                Action = $"Admin cập nhật tài khoản: {GetDisplayName(user)}",
+                TableName = "Users",
+                RecordID = user.UserID,
+                CreatedAt = DateTime.Now,
+            });
             await _context.SaveChangesAsync();
 
-            // Reload role sau khi update để trả về đúng RoleName
             await _context.Entry(user).Reference(u => u.Role).LoadAsync();
+            await _context.Entry(user).Reference(u => u.Member).LoadAsync();
             return MapToDTO(user);
         }
 
-        // ────────────────────────────────────────────────────────────────────
-        // TOGGLE ACTIVE
-        // ────────────────────────────────────────────────────────────────────
         public async Task<UserDetailDTO?> ToggleActiveAsync(int id)
         {
             var user = await _context.Users
@@ -250,7 +234,6 @@ namespace ClubManagement.API.Service
             user.IsActive = !user.IsActive;
             user.UpdatedAt = DateTime.Now;
 
-            // Đồng bộ member status
             if (user.Member != null)
                 user.Member.Status = user.IsActive ? "Active" : "Inactive";
 
@@ -260,8 +243,8 @@ namespace ClubManagement.API.Service
             {
                 UserID = null,
                 Action = user.IsActive
-                    ? $"Admin kích hoạt tài khoản: {user.Username}"
-                    : $"Admin vô hiệu hóa tài khoản: {user.Username}",
+                    ? $"Admin kích hoạt tài khoản: {GetDisplayName(user)}"
+                    : $"Admin vô hiệu hoá tài khoản: {GetDisplayName(user)}",
                 TableName = "Users",
                 RecordID = user.UserID,
                 CreatedAt = DateTime.Now,
@@ -271,9 +254,6 @@ namespace ClubManagement.API.Service
             return MapToDTO(user);
         }
 
-        // ────────────────────────────────────────────────────────────────────
-        // DELETE (soft)
-        // ────────────────────────────────────────────────────────────────────
         public async Task<bool> DeleteAsync(int id)
         {
             var user = await _context.Users
@@ -285,13 +265,18 @@ namespace ClubManagement.API.Service
             user.UpdatedAt = DateTime.Now;
             if (user.Member != null) user.Member.Status = "Inactive";
 
+            _context.AuditLogs.Add(new AuditLog
+            {
+                UserID = null,
+                Action = $"Admin xóa/vô hiệu hóa tài khoản: {GetDisplayName(user)}",
+                TableName = "Users",
+                RecordID = user.UserID,
+                CreatedAt = DateTime.Now,
+            });
             await _context.SaveChangesAsync();
             return true;
         }
 
-        // ────────────────────────────────────────────────────────────────────
-        // AUDIT LOGS (filter + page)
-        // ────────────────────────────────────────────────────────────────────
         public async Task<PagedResultAdminDTO<AuditLogDTO>> GetAuditLogsAsync(AuditLogQueryDTO query)
         {
             if (query.Page < 1) query.Page = 1;
@@ -304,11 +289,13 @@ namespace ClubManagement.API.Service
 
             if (!string.IsNullOrWhiteSpace(query.Keyword))
             {
-                var kw = query.Keyword.ToLower();
+                var kw = query.Keyword.Trim().ToLower();
                 q = q.Where(l =>
                     (l.Action != null && l.Action.ToLower().Contains(kw)) ||
                     (l.TableName != null && l.TableName.ToLower().Contains(kw)) ||
-                    (l.User != null && l.User.Username.ToLower().Contains(kw)));
+                    (l.User != null && l.User.Email.ToLower().Contains(kw)) ||
+                    (l.User != null && l.User.Member != null && l.User.Member.FullName.ToLower().Contains(kw)) ||
+                    (l.User != null && l.User.Member != null && l.User.Member.StudentCode != null && l.User.Member.StudentCode.ToLower().Contains(kw)));
             }
 
             if (!string.IsNullOrWhiteSpace(query.TableName))
@@ -326,7 +313,20 @@ namespace ClubManagement.API.Service
             if (!string.IsNullOrWhiteSpace(query.Category))
             {
                 var cat = query.Category.ToLower();
-                q = q.Where(l => l.TableName != null && l.TableName.ToLower().Contains(cat));
+                var tableNames = cat switch
+                {
+                    "activity" => new[] { "Activities", "ActivityImages", "Registrations" },
+                    "post" => new[] { "Posts", "PostImages" },
+                    "member" => new[] { "Members", "MemberApplications" },
+                    "user" => new[] { "Users" },
+                    "login" => new[] { "Login" },
+                    "fund" => new[] { "FundCollectionPeriods", "FundContributions", "FundTransactions" },
+                    "system" => new[] { "Roles" },
+                    _ => Array.Empty<string>()
+                };
+
+                if (tableNames.Length > 0)
+                    q = q.Where(l => l.TableName != null && tableNames.Contains(l.TableName));
             }
 
             var total = await q.CountAsync();
@@ -338,9 +338,8 @@ namespace ClubManagement.API.Service
                 {
                     LogID = l.LogID,
                     UserID = l.UserID,
-                    Username = l.User != null ? l.User.Username : "Hệ thống",
-                    FullName = l.User != null && l.User.Member != null
-                        ? l.User.Member.FullName : null,
+                    StudentCode = l.User != null && l.User.Member != null ? l.User.Member.StudentCode : null,
+                    FullName = l.User != null && l.User.Member != null ? l.User.Member.FullName : null,
                     Action = l.Action,
                     TableName = l.TableName,
                     RecordID = l.RecordID,
@@ -358,9 +357,6 @@ namespace ClubManagement.API.Service
             };
         }
 
-        // ────────────────────────────────────────────────────────────────────
-        // WRITE LOG
-        // ────────────────────────────────────────────────────────────────────
         public async Task WriteLogAsync(int userId, string action, string? tableName = null, int? recordId = null)
         {
             _context.AuditLogs.Add(new AuditLog
@@ -374,9 +370,6 @@ namespace ClubManagement.API.Service
             await _context.SaveChangesAsync();
         }
 
-        // ────────────────────────────────────────────────────────────────────
-        // HELPER
-        // ────────────────────────────────────────────────────────────────────
         private static string ResolveCategory(string? tableName)
         {
             return tableName?.ToLower() switch
@@ -387,10 +380,22 @@ namespace ClubManagement.API.Service
                 "posts" => "post",
                 "postimages" => "post",
                 "members" => "member",
+                "memberapplications" => "member",
                 "users" => "user",
+                "login" => "login",
                 "roles" => "system",
+                "fundcollectionperiods" => "fund",
+                "fundcontributions" => "fund",
+                "fundtransactions" => "fund",
                 _ => "system",
             };
         }
+
+        private static string GetDisplayName(User user)
+            => !string.IsNullOrWhiteSpace(user.Member?.FullName)
+                ? user.Member.FullName
+                : !string.IsNullOrWhiteSpace(user.Member?.StudentCode)
+                    ? user.Member.StudentCode!
+                    : user.Email;
     }
 }

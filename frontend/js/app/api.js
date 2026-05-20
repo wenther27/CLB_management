@@ -224,6 +224,10 @@ const Utils = {
     if (!str) return '';
     return str.length > n ? str.substring(0, n) + '...' : str;
   },
+  displayText(value, fallback = '—') {
+    const text = value == null ? '' : String(value).trim();
+    return text || fallback;
+  },
   statusLabel(status) {
     const map = {
       'Open': '<span class="badge badge-open">Đang mở</span>',
@@ -243,6 +247,9 @@ const Utils = {
     d.appendChild(document.createTextNode(str || ''));
     return d.innerHTML;
   },
+  escapeText(value, fallback = '—') {
+    return this.escapeHtml(this.displayText(value, fallback));
+  },
   getQueryParam(name) {
     return new URLSearchParams(window.location.search).get(name);
   }
@@ -254,6 +261,7 @@ function updateNavbar() {
   const navActions = document.getElementById('navActions');
   if (!navActions) return;
   if (user){
+    const displayName = user.displayName || user.fullName || user.studentCode || user.email || 'Thành viên';
     const profileAvatar = user.avatarUrl
   ? `<img src="${user.avatarUrl.startsWith('http')
       ? user.avatarUrl
@@ -264,7 +272,7 @@ function updateNavbar() {
       width:40px;height:40px;border-radius:50%;
       display:inline-flex;align-items:center;justify-content:center;
       background:#ff2d55;color:#fff;font-size:14px;font-weight:700">
-      ${(user.username || '?').slice(0, 2).toUpperCase()}
+      ${(displayName || '?').slice(0, 2).toUpperCase()}
     </span>`;
     let roleLabel = '';
     let roleClass = '';
@@ -272,7 +280,7 @@ function updateNavbar() {
   navActions.innerHTML = `
     <span class="navbar-user">
   <i class="fa-solid fa-crown" style="color: rgb(255, 212, 59);"></i>
-  ${Utils.escapeHtml(user.username)} (${user.role})
+  ${Utils.escapeHtml(displayName)} (${user.role})
 </span>
 
 <a href="member-profile.html" title="Hồ sơ"
@@ -298,7 +306,7 @@ function updateNavbar() {
   navActions.innerHTML = `
     <span class="navbar-user">
   <i class="fa-regular fa-clipboard" style="color: rgb(116, 192, 252);"></i>
-  ${Utils.escapeHtml(user.username)} (${user.role})
+  ${Utils.escapeHtml(displayName)} (${user.role})
 </span>
 
 <a href="member-profile.html" title="Hồ sơ"
@@ -322,7 +330,7 @@ function updateNavbar() {
   `;
 } else if (user.role === 'Member') {
       navActions.innerHTML = `
-        <span class="navbar-user"><i class="fa-regular fa-user" style="color: rgb(251, 251, 251);"></i> ${Utils.escapeHtml(user.username)}</span>
+        <span class="navbar-user"><i class="fa-regular fa-user" style="color: rgb(251, 251, 251);"></i> ${Utils.escapeHtml(displayName)}</span>
         <a href="member-profile.html" class="btn btn-secondary btn-sm" title="Hồ sơ"
    style="
      width:44px;height:44px;

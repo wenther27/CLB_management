@@ -113,10 +113,11 @@ function updateNavbar() {
   if (!el) return;
   const u = Auth.getUser();
   if (!u) return;
+  const displayName = Utils.displayText(u.displayName || u.fullName || u.studentCode || u.email, 'Người dùng');
   el.innerHTML = `
     <span class="navbar-user">
       <i class="fa-solid fa-crown" style="color:rgb(255,212,59)"></i>
-      ${Utils.escapeHtml(u.username)}
+      ${Utils.escapeHtml(displayName)}
       <span style="color:#475569;font-size:11px">(${u.role})</span>
     </span>
     <button onclick="logout()" class="btn-secondary btn-sm">

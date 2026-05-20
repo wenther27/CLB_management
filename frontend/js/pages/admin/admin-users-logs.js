@@ -118,6 +118,8 @@ const LogsPanel = (() => {
 
   // ── Render một dòng log ───────────────────────────────────────────────────
   function _renderRow(log) {
+    const logName = Utils.displayText(log.fullName || log.studentCode, 'Hệ thống');
+    const logCode = log.studentCode || '';
     // Lấy icon theo category
     const iconMap = {
       activity: '<i class="fa-solid fa-heart" style="color:#ec489a"></i>',
@@ -126,13 +128,14 @@ const LogsPanel = (() => {
       user: '<i class="fa-solid fa-user" style="color:#8b5cf6"></i>',
       system: '<i class="fa-solid fa-gear" style="color:#64748b"></i>',
       login: '<i class="fa-solid fa-right-to-bracket" style="color:#22c55e"></i>',
+      fund: '<i class="fa-solid fa-wallet" style="color:#f97316"></i>',
     };
     const icon = iconMap[log.category] || '<i class="fa-solid fa-clock-rotate-left"></i>';
     
     // User display
-    const userDisplay = log.fullName 
-      ? `${Utils.escapeHtml(log.fullName)} <span style="color:#94a3b8;font-size:11px">(@${Utils.escapeHtml(log.username)})</span>`
-      : Utils.escapeHtml(log.username);
+    const userDisplay = log.fullName
+      ? `${Utils.escapeText(log.fullName)}${logCode ? ` <span style="color:#94a3b8;font-size:11px">(${Utils.escapeText(logCode)})</span>` : ''}`
+      : Utils.escapeText(logName);
 
     // Đối tượng display
     let objectDisplay = '';
@@ -144,8 +147,13 @@ const LogsPanel = (() => {
         'Posts': 'Bài viết',
         'PostImages': 'Ảnh bài viết',
         'Members': 'Thành viên',
+        'MemberApplications': 'Hồ sơ thành viên',
         'Users': 'Người dùng',
+        'Login': 'Đăng nhập',
         'Roles': 'Vai trò',
+        'FundCollectionPeriods': 'Đợt thu quỹ',
+        'FundContributions': 'Đóng quỹ',
+        'FundTransactions': 'Giao dịch quỹ',
       };
       const viName = tableMap[log.tableName] || log.tableName;
       objectDisplay = log.recordId 
@@ -158,7 +166,7 @@ const LogsPanel = (() => {
       <td style="font-size:13px">
         <div style="display:flex;align-items:center;gap:8px">
           <div class="u-avatar" style="width:28px;height:28px;font-size:11px;background:${log.fullName ? '#3b82f6' : '#64748b'}">
-            ${log.fullName ? log.fullName.charAt(0).toUpperCase() : 'S'}
+            ${logName.charAt(0).toUpperCase()}
           </div>
           <div>
             <div style="font-weight:600">${userDisplay}</div>
@@ -190,6 +198,7 @@ const LogsPanel = (() => {
       member: 'Thành viên',
       user: 'Người dùng',
       system: 'Hệ thống',
+      fund: 'Quỹ CLB',
       login: 'Đăng nhập',
     };
     return map[cat] || cat || 'Khác';
@@ -251,14 +260,7 @@ const LogsPanel = (() => {
     
     const category = document.getElementById('lCategory')?.value || '';
     _query.category = category;
-    // Map category to tableName if needed (backend filter theo TableName.Contains)
-    const tableNameMap = {
-      activity: 'Activities',
-      post: 'Posts',
-      member: 'Members',
-      user: 'Users',
-    };
-    _query.tableName = tableNameMap[category] || '';
+    _query.tableName = '';
     
     _query.page = 1;
     load();
@@ -319,6 +321,14 @@ const UsersPanel = (() => {
   let _query = initialQuery();
   let _totalPages = 1;
   let _stats = null;
+
+  function _displayName(u) {
+    return Utils.displayText(u?.fullName || u?.displayName || u?.studentCode || u?.email, '?');
+  }
+
+  function _identifier(u) {
+    return Utils.displayText(u?.studentCode || u?.email, '');
+  }
 
   // ── Khởi tạo ──────────────────────────────────────────────────────────────
   async function init() {
@@ -393,7 +403,7 @@ const UsersPanel = (() => {
 
   // ── Render một dòng bảng ───────────────────────────────────────────────────
   function _renderRow(u) {
-    const name = u.fullName || u.username || '?';
+    const name = _displayName(u);
     const initials = name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
 
     const activeHtml = u.isActive
@@ -414,15 +424,15 @@ const UsersPanel = (() => {
             ${initials}
           </div>
           <div>
-            <div style="font-weight:700;font-size:13px">${Utils.escapeHtml(u.username || '')}</div>
+            <div style="font-weight:700;font-size:13px">${Utils.escapeText(_displayName(u))}</div>
             <div style="color:#475569;font-size:11px">
-              ${Utils.escapeHtml(u.fullName || '—')}
-              ${u.faculty ? `<span style="color:#334155"> · ${Utils.escapeHtml(u.faculty)}</span>` : ''}
+              ${Utils.escapeText(_identifier(u), '')}
+              ${u.faculty ? `<span style="color:#334155"> - ${Utils.escapeText(u.faculty)}</span>` : ''}
             </div>
           </div>
         </div>
       </td>
-      <td style="font-size:13px;color:#94a3b8">${Utils.escapeHtml(u.email || '')}</td>
+      <td style="font-size:13px;color:#94a3b8">${Utils.escapeText(u.email, '')}</td>
       <td>
         <span class="badge ${badgeClassForRole(u.roleName)}">
           <i class="fa-solid ${roleIcon(u.roleName)}"></i> ${roleLabelVi(u.roleName)}
@@ -447,7 +457,7 @@ const UsersPanel = (() => {
             class="btn-outline btn-sm" title="Chỉnh sửa">
             <i class="fa-solid fa-pen"></i>
           </button>
-          <button onclick="UsersPanel.toggleActive(${u.userID}, '${Utils.escapeHtml(u.username || '')}')"
+          <button onclick="UsersPanel.toggleActive(${u.userID}, ${JSON.stringify(_displayName(u))})"
             class="btn-outline btn-sm" title="${toggleTitle}"
             style="${toggleStyle}">
             <i class="fa-solid ${toggleIcon}"></i>
@@ -468,7 +478,7 @@ const UsersPanel = (() => {
       const u = r.data;
       if (!u) { Toast.error('Không tìm thấy người dùng'); return; }
 
-      const initials = (u.fullName || u.username || '?')
+      const initials = (_displayName(u))
         .split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
 
       document.getElementById('gModalInner').innerHTML = `
@@ -480,8 +490,8 @@ const UsersPanel = (() => {
         <div class="u-detail-hero">
           <div class="u-avatar-lg" style="background:${avatarColor(u.roleName)}">${initials}</div>
           <div>
-            <div class="u-detail-name">${Utils.escapeHtml(u.username || '')}</div>
-            <div class="u-detail-sub">${Utils.escapeHtml(u.fullName || 'Chưa cập nhật')}</div>
+            <div class="u-detail-name">${Utils.escapeText(_displayName(u))}</div>
+              ${Utils.escapeText(_identifier(u), '')}
             <div style="display:flex;gap:6px;margin-top:8px">
               <span class="badge ${u.isActive ? 'badge-open' : 'badge-inactive'}">
                 ${u.isActive ? '✅ Hoạt động' : '🔒 Vô hiệu'}
@@ -492,6 +502,7 @@ const UsersPanel = (() => {
         </div>
 
         <div class="u-info-grid">
+          ${_infoCard('fa-id-card', 'MSSV', u.studentCode || '?')}
           ${_infoCard('fa-envelope', 'Email', u.email)}
           ${_infoCard('fa-phone', 'Điện thoại', u.phone || 'Chưa cập nhật')}
           ${_infoCard('fa-school', 'Lớp', u.className || '—')}
@@ -517,7 +528,7 @@ const UsersPanel = (() => {
           <button onclick="UsersPanel.openEdit(${u.userID})" class="btn-outline" style="flex:1;padding:10px">
             <i class="fa-solid fa-pen"></i> Chỉnh sửa
           </button>
-          <button onclick="UsersPanel.toggleActive(${u.userID}, '${Utils.escapeHtml(u.username || '')}')"
+          <button onclick="UsersPanel.toggleActive(${u.userID}, ${JSON.stringify(_displayName(u))})"
             class="btn-sm" style="padding:10px 16px;border-radius:6px;cursor:pointer;
               ${u.isActive
                 ? 'background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.3);color:#f59e0b'
@@ -541,11 +552,11 @@ const UsersPanel = (() => {
       openModal('Chỉnh sửa người dùng', `
         <div class="form-group">
           <label class="form-label">Tên đăng nhập</label>
-          <div class="form-control" style="opacity:.6;cursor:not-allowed">${Utils.escapeHtml(u.username || '')}</div>
+          <div class="form-control" style="opacity:.6;cursor:not-allowed">${Utils.escapeText(u.studentCode, '')}</div>
         </div>
         <div class="form-group">
           <label class="form-label">Email</label>
-          <div class="form-control" style="opacity:.6;cursor:not-allowed">${Utils.escapeHtml(u.email || '')}</div>
+          <div class="form-control" style="opacity:.6;cursor:not-allowed">${Utils.escapeText(u.email, '')}</div>
         </div>
         <div class="form-group">
           <label class="form-label">Điện thoại</label>
@@ -604,8 +615,8 @@ const UsersPanel = (() => {
   }
 
   // ── Toggle active ──────────────────────────────────────────────────────────
-  async function toggleActive(id, username) {
-    const msg = confirm(`Bạn có chắc chắn muốn thay đổi trạng thái tài khoản "${username}"?`);
+  async function toggleActive(id, displayName) {
+    const msg = confirm(`Bạn có chắc chắn muốn thay đổi trạng thái tài khoản "${displayName}"?`);
     if (!msg) return;
 
     try {
