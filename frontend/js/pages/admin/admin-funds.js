@@ -54,11 +54,36 @@ const FundPanel = {
     try {
       const r = await API.getFundTransactions(`?status=${encodeURIComponent(status)}&type=${encodeURIComponent(type)}`);
       this.transactions = r.data || [];
-      if (!this.transactions.length) {
+      this.renderTransactions();
+      this.renderApprovals();
+    } catch (e) {
+      tbody.innerHTML = `<tr><td colspan="9" style="color:#e8213a">${e.message}</td></tr>`;
+    }
+  },
+
+  renderTransactions() {
+    const tbody = document.getElementById('fundTxBody');
+    if (!tbody) return;
+
+    const keyword = (document.getElementById('fundTxSearch')?.value || '').trim().toLowerCase();
+    const list = keyword
+      ? this.transactions.filter(t => [
+          t.fundTransactionID,
+          t.type === 'Income' ? 'Thu' : 'Chi',
+          t.amount,
+          t.category,
+          t.activityName,
+          t.createdBy,
+          t.transactionDate,
+          t.status
+        ].join(' ').toLowerCase().includes(keyword))
+      : this.transactions;
+
+      if (!list.length) {
         tbody.innerHTML = '<tr><td colspan="9" class="fund-empty">Chưa có giao dịch</td></tr>';
         return;
       }
-      tbody.innerHTML = this.transactions.map(t => `
+      tbody.innerHTML = list.map(t => `
         <tr>
           <td>#${t.fundTransactionID}</td>
           <td><span class="fund-pill ${t.type === 'Income' ? 'income' : 'expense'}">${t.type === 'Income' ? 'Thu' : 'Chi'}</span></td>
@@ -79,10 +104,6 @@ const FundPanel = {
           </td>
         </tr>
       `).join('');
-      this.renderApprovals();
-    } catch (e) {
-      tbody.innerHTML = `<tr><td colspan="9" style="color:#e8213a">${e.message}</td></tr>`;
-    }
   },
 
   renderApprovals() {
@@ -170,24 +191,20 @@ const FundPanel = {
       document.getElementById('fundReportExpense').textContent = this.money(d.totalExpense);
       document.getElementById('fundReportNet').textContent = this.money(d.netAmount);
 
-      const catWrap = document.getElementById('fundReportCategories');
-      catWrap.innerHTML = (d.categories || []).length
-        ? (d.categories || []).map(c => `
+      const txWrap = document.getElementById('fundReportTransactions');
+      txWrap.innerHTML = (d.transactions || []).length
+        ? (d.transactions || []).map(t => `
             <tr>
-              <td>${Utils.escapeHtml(c.category)}</td>
-              <td>${this.money(c.income)}</td>
-              <td>${this.money(c.expense)}</td>
+              <td>#${t.fundTransactionID}</td>
+              <td>${Utils.formatDate(t.transactionDate)}</td>
+              <td><span class="fund-pill ${t.type === 'Income' ? 'income' : 'expense'}">${t.type === 'Income' ? 'Thu' : 'Chi'}</span></td>
+              <td><strong>${this.money(t.amount)}</strong></td>
+              <td>${Utils.escapeHtml(t.category || '—')}</td>
+              <td>${Utils.escapeHtml(t.activityName || '—')}</td>
+              <td>${Utils.escapeHtml(t.createdBy || '—')}</td>
+              <td>${Utils.escapeHtml(t.description || '—')}</td>
             </tr>`).join('')
-        : '<tr><td colspan="3" class="fund-empty">Chưa có dữ liệu</td></tr>';
-
-      const actWrap = document.getElementById('fundReportActivities');
-      actWrap.innerHTML = (d.activities || []).length
-        ? (d.activities || []).map(a => `
-            <tr>
-              <td>${Utils.escapeHtml(a.activityName)}</td>
-              <td>${this.money(a.expense)}</td>
-            </tr>`).join('')
-        : '<tr><td colspan="2" class="fund-empty">Chưa có dữ liệu</td></tr>';
+        : '<tr><td colspan="8" class="fund-empty">Chưa có giao dịch đã duyệt trong kỳ này</td></tr>';
     } catch (e) {
       Toast.error(e.message);
     }
@@ -450,24 +467,20 @@ const FundPanel = {
       ? `Tháng ${this.reportMonth}/${this.reportYear}`
       : `Năm ${this.reportYear}`;
 
-    const categoryRows = (this.report.categories || []).length
-      ? (this.report.categories || []).map(c => `
+    const transactionRows = (this.report.transactions || []).length
+      ? (this.report.transactions || []).map(t => `
           <tr>
-            <td>${this.escapeExcel(c.category)}</td>
-            <td>${Number(c.income || 0)}</td>
-            <td>${Number(c.expense || 0)}</td>
+            <td>#${Number(t.fundTransactionID || 0)}</td>
+            <td>${this.escapeExcel(Utils.formatDate(t.transactionDate))}</td>
+            <td>${this.escapeExcel(t.type === 'Income' ? 'Thu' : 'Chi')}</td>
+            <td>${Number(t.amount || 0)}</td>
+            <td>${this.escapeExcel(t.category || '')}</td>
+            <td>${this.escapeExcel(t.activityName || '')}</td>
+            <td>${this.escapeExcel(t.createdBy || '')}</td>
+            <td>${this.escapeExcel(t.description || '')}</td>
           </tr>
         `).join('')
-      : '<tr><td colspan="3">Chưa có dữ liệu</td></tr>';
-
-    const activityRows = (this.report.activities || []).length
-      ? (this.report.activities || []).map(a => `
-          <tr>
-            <td>${this.escapeExcel(a.activityName)}</td>
-            <td>${Number(a.expense || 0)}</td>
-          </tr>
-        `).join('')
-      : '<tr><td colspan="2">Chưa có dữ liệu</td></tr>';
+      : '<tr><td colspan="8">Chưa có giao dịch đã duyệt trong kỳ này</td></tr>';
 
     const html = `
       <html xmlns:o="urn:schemas-microsoft-com:office:office"
@@ -497,16 +510,10 @@ const FundPanel = {
           <tr><td>Chênh lệch</td><td>${Number(this.report.netAmount || 0)}</td></tr>
         </table>
 
-        <h2>Chi tiết theo danh mục</h2>
+        <h2>Chi tiết giao dịch</h2>
         <table>
-          <tr><th>Danh mục</th><th>Thu</th><th>Chi</th></tr>
-          ${categoryRows}
-        </table>
-
-        <h2>Chi phí theo hoạt động</h2>
-        <table>
-          <tr><th>Hoạt động</th><th>Chi phí</th></tr>
-          ${activityRows}
+          <tr><th>ID</th><th>Ngày</th><th>Loại</th><th>Số tiền</th><th>Danh mục</th><th>Hoạt động</th><th>Người thực hiện</th><th>Mô tả</th></tr>
+          ${transactionRows}
         </table>
       </body>
       </html>

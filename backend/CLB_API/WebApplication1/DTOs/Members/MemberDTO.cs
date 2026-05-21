@@ -21,5 +21,6 @@
         public string? Department { get; set; }
         public int DisplayOrder { get; set; }
         public string? AvatarUrl { get; set; }
+        public string? BoardAvatarUrl { get; set; }
     }
 }

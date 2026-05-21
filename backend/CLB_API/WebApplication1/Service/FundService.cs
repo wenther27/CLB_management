@@ -211,6 +211,10 @@ namespace ClubManagement.API.Service
         {
             var approved = _context.FundTransactions
                 .Include(t => t.Activity)
+                .Include(t => t.CreatedByUser)
+                    .ThenInclude(u => u!.Member)
+                .Include(t => t.ApprovedByUser)
+                    .ThenInclude(u => u!.Member)
                 .Where(t => t.Status == "Approved" && t.TransactionDate.Year == year);
 
             if (month.HasValue) approved = approved.Where(t => t.TransactionDate.Month == month.Value);
@@ -249,7 +253,12 @@ namespace ClubManagement.API.Service
                 TotalExpense = expense,
                 NetAmount = income - expense,
                 Categories = categories,
-                Activities = activities
+                Activities = activities,
+                Transactions = list
+                    .OrderByDescending(t => t.TransactionDate)
+                    .ThenByDescending(t => t.CreatedAt)
+                    .Select(MapTransaction)
+                    .ToList()
             };
         }
 

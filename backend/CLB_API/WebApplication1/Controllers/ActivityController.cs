@@ -134,8 +134,8 @@ namespace ClubManagement.API.Controllers
         {
             var (success, errorMessage) = await _activityService.UpdateAttendanceAsync(registrationId, dto.IsAttended, GetUserId());
             if (!success)
-                return BadRequest(ApiResponse<string>.Fail(errorMessage ?? "Kh?ng th? c?p nh?t ?i?m danh"));
-            return Ok(ApiResponse<string>.Ok("Updated", "C?p nh?t ?i?m danh th?nh c?ng"));
+                return BadRequest(ApiResponse<string>.Fail(errorMessage ?? "Không thể cập nhật điểm danh"));
+            return Ok(ApiResponse<string>.Ok("Updated", "Cập nhật điểm danh thành công"));
         }
 
         [HttpPatch("{id:int}/attendance")]
@@ -144,8 +144,8 @@ namespace ClubManagement.API.Controllers
         {
             var (success, count, errorMessage) = await _activityService.UpdateAllAttendanceAsync(id, dto.IsAttended, GetUserId());
             if (!success)
-                return BadRequest(ApiResponse<string>.Fail(errorMessage ?? "Kh?ng th? c?p nh?t ?i?m danh"));
-            return Ok(ApiResponse<int>.Ok(count, "C?p nh?t ?i?m danh th?nh c?ng"));
+                return BadRequest(ApiResponse<string>.Fail(errorMessage ?? "Không thể cập nhật điểm danh"));
+            return Ok(ApiResponse<int>.Ok(count, "Cập nhật điểm danh thành công"));
         }
 
         [HttpGet("my-registrations")]

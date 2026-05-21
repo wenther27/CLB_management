@@ -43,22 +43,22 @@ namespace ClubManagement.API.Service
             var faculty = dto.Faculty?.Trim() ?? string.Empty;
             var email = dto.ContactEmail?.Trim().ToLowerInvariant() ?? string.Empty;
 
-            if (string.IsNullOrWhiteSpace(studentCode)) throw new InvalidOperationException("Vui l?ng nh?p MSSV");
-            if (string.IsNullOrWhiteSpace(fullName)) throw new InvalidOperationException("Vui l?ng nh?p h? v? t?n");
-            if (string.IsNullOrWhiteSpace(faculty)) throw new InvalidOperationException("Vui l?ng ch?n khoa");
-            if (!dto.BirthDate.HasValue) throw new InvalidOperationException("Vui l?ng nh?p ng?y sinh");
-            if (string.IsNullOrWhiteSpace(email) || !email.Contains('@')) throw new InvalidOperationException("Email li?n h? kh?ng h?p l?");
+            if (string.IsNullOrWhiteSpace(studentCode)) throw new InvalidOperationException("Vui lòng nhập MSSV");
+            if (string.IsNullOrWhiteSpace(fullName)) throw new InvalidOperationException("Vui lòng nhập họ và tên");
+            if (string.IsNullOrWhiteSpace(faculty)) throw new InvalidOperationException("Vui lòng chọn khoa");
+            if (!dto.BirthDate.HasValue) throw new InvalidOperationException("Vui lòng nhập ngày sinh");
+            if (string.IsNullOrWhiteSpace(email) || !email.Contains('@')) throw new InvalidOperationException("Email liên hệ không hợp lệ");
 
             var existedUser = await _context.Users.AnyAsync(u => u.Email.ToLower() == email);
             var existedStudentCode = await _context.Members.AnyAsync(m => m.StudentCode == studentCode);
-            if (existedUser || existedStudentCode) throw new InvalidOperationException("MSSV ho?c email n?y ?? c? t?i kho?n trong h? th?ng");
+            if (existedUser || existedStudentCode) throw new InvalidOperationException("MSSV hoặc email này đã có tài khoản trong hệ thống");
 
             var existedMember = await _context.Members.AnyAsync(m => m.ContactEmail != null && m.ContactEmail.ToLower() == email);
-            if (existedMember) throw new InvalidOperationException("Email n?y ?? ???c d?ng cho th?nh vi?n kh?c");
+            if (existedMember) throw new InvalidOperationException("Email này đã được dùng cho thành viên khác");
 
             var existedApplication = await _context.MemberApplications.AnyAsync(a =>
                 (a.StudentCode == studentCode || a.ContactEmail.ToLower() == email) && a.Status != "Rejected");
-            if (existedApplication) throw new InvalidOperationException("H? s? v?i MSSV ho?c email n?y ?ang ch? duy?t ho?c ?? ???c duy?t");
+            if (existedApplication) throw new InvalidOperationException("Hồ sơ với MSSV hoặc email này đang chờ duyệt hoặc đã được duyệt");
 
             var application = new MemberApplication
             {
@@ -108,7 +108,7 @@ namespace ClubManagement.API.Service
                 .FirstOrDefaultAsync(a => a.MemberApplicationID == id);
             if (application == null) return null;
             if (application.Status == "Approved") return Map(application);
-            if (application.Status != "Pending") throw new InvalidOperationException("H? s? n?y ?? ???c x? l?");
+            if (application.Status != "Pending") throw new InvalidOperationException("Hồ sơ này đã được xử lý");
 
             var memberRole = await _context.Roles.FirstOrDefaultAsync(r => r.RoleName == "Member");
             var defaultPassword = application.BirthDate.ToString("ddMMyyyy");
@@ -124,11 +124,11 @@ namespace ClubManagement.API.Service
                 .FirstOrDefaultAsync(m => m.StudentCode == studentCode);
 
             if (existingUser?.Member != null && existingUser.Member.StudentCode != studentCode)
-                throw new InvalidOperationException("Email n?y ?? ???c d?ng cho th?nh vi?n kh?c");
+                throw new InvalidOperationException("Email này đã được dùng cho thành viên khác");
 
             if (existingUser != null && existingMember != null &&
                 existingMember.UserID.HasValue && existingMember.UserID.Value != existingUser.UserID)
-                throw new InvalidOperationException("MSSV v? email ?ang thu?c hai t?i kho?n kh?c nhau");
+                throw new InvalidOperationException("MSSV và email đang thuộc hai tài khoản khác nhau");
 
             await using var transaction = await _context.Database.BeginTransactionAsync();
 
@@ -157,7 +157,7 @@ namespace ClubManagement.API.Service
             var member = existingMember ?? new Member
             {
                 UserID = user.UserID,
-                Position = "Th?nh vi?n",
+                Position = "Thành viên",
                 Status = "Active",
                 JoinDate = DateTime.Now
             };
@@ -169,7 +169,7 @@ namespace ClubManagement.API.Service
             member.Faculty = application.Faculty;
             member.BirthDate = application.BirthDate;
             member.ContactEmail = application.ContactEmail;
-            member.Position ??= "Th?nh vi?n";
+            member.Position ??= "Thành viên";
             member.Status = "Active";
 
             if (existingMember == null)
@@ -203,7 +203,7 @@ namespace ClubManagement.API.Service
                 .ThenInclude(u => u!.Member)
                 .FirstOrDefaultAsync(a => a.MemberApplicationID == id);
             if (application == null) return null;
-            if (application.Status != "Pending") throw new InvalidOperationException("H? s? n?y ?? ???c x? l?");
+            if (application.Status != "Pending") throw new InvalidOperationException("Hồ sơ này đã được xử lý");
 
             application.Status = "Rejected";
             application.ReviewedAt = DateTime.Now;

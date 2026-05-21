@@ -62,6 +62,69 @@
   padding: 16px 18px;
 }
 
+#fundTxTableWrap {
+  max-height: 430px;
+  overflow-x: auto;
+  overflow-y: auto;
+  padding-top: 0;
+  position: relative;
+}
+
+#fundTxTableWrap table {
+  border-collapse: separate;
+  border-spacing: 0;
+  margin-bottom: 0;
+}
+
+#fundTxTableWrap thead th {
+  background: #f7f8fb;
+  position: sticky;
+  top: 0;
+  z-index: 3;
+}
+
+#fundPeriodTableWrap {
+  max-height: 430px;
+  overflow-x: auto;
+  overflow-y: auto;
+  padding-top: 0;
+  position: relative;
+}
+
+#fundPeriodTableWrap table {
+  border-collapse: separate;
+  border-spacing: 0;
+  margin-bottom: 0;
+}
+
+#fundPeriodTableWrap thead th {
+  background: #f7f8fb;
+  position: sticky;
+  top: 0;
+  z-index: 3;
+}
+
+#fundReportDetailWrap {
+  max-height: 430px;
+  overflow-x: auto;
+  overflow-y: auto;
+  padding-top: 0;
+  position: relative;
+}
+
+#fundReportDetailWrap table {
+  border-collapse: separate;
+  border-spacing: 0;
+  margin-bottom: 0;
+}
+
+#fundReportDetailWrap thead th {
+  background: #f7f8fb;
+  position: sticky;
+  top: 0;
+  z-index: 3;
+}
+
 .fund-toolbar {
   display: flex;
   flex-wrap: wrap;

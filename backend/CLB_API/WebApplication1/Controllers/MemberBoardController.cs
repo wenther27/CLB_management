@@ -30,7 +30,7 @@ namespace ClubManagement.API.Controllers
                     FullName = m.FullName,
                     Position = m.Position,
                     Department = m.Department,
-                    AvatarUrl = m.AvatarUrl ?? m.User!.AvatarUrl,
+                    AvatarUrl = m.AvatarUrl,
                     DisplayOrder = m.DisplayOrder,
                     Faculty = m.Faculty,
                     JoinDate = m.JoinDate,

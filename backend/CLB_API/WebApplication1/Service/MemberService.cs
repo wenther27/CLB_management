@@ -59,7 +59,8 @@ namespace ClubManagement.API.Service
             RoleName = m.User?.Role?.RoleName,
             Department = m.Department,
             DisplayOrder = m.DisplayOrder,
-            AvatarUrl = m.AvatarUrl ?? m.User?.AvatarUrl
+            AvatarUrl = m.User?.AvatarUrl,
+            BoardAvatarUrl = m.AvatarUrl
         };
         public async Task<PagedResultDTO<MemberDTO>> GetAllAsync(MemberQueryDTO query)
         {
@@ -139,7 +140,11 @@ namespace ClubManagement.API.Service
                 .FirstOrDefaultAsync(m => m.UserID == userId);
             if (member == null) return null;
 
-            member.AvatarUrl = dto.AvatarUrl;
+            if (member.User != null)
+            {
+                member.User.AvatarUrl = dto.AvatarUrl;
+                member.User.UpdatedAt = DateTime.UtcNow;
+            }
             AddAuditLog(userId, $"Cập nhật ảnh đại diện: {member.FullName}", "Members", member.MemberID);
             await _context.SaveChangesAsync();
             return MapToDTO(member);

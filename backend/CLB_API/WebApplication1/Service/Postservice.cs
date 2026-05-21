@@ -325,7 +325,7 @@ namespace ClubManagement.API.Service
             UpdatedDate = p.UpdateTime,
             AuthorName = p.User?.Member?.FullName ?? p.User?.Member?.StudentCode ?? p.User?.Email ?? "BTC",
             AuthorId = p.CreateBy ?? 0,
-            AuthorAvatarUrl = p.User?.Member?.AvatarUrl ?? p.User?.AvatarUrl,
+            AuthorAvatarUrl = p.User?.AvatarUrl,
             Images = p.postImages?.Select(i => i.ImageUrl).ToList() ?? new List<string>(),
             LikeCount = p.PostLikes?.Count ?? 0,
             IsLikedByCurrentUser = currentUserId.HasValue

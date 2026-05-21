@@ -91,7 +91,7 @@ namespace ClubManagement.API.AuthService
             var exists = await _context.Users.AnyAsync(u => u.Email.ToLower() == email)
                 || await _context.Members.AnyAsync(m => m.StudentCode == studentCode);
             if (exists)
-                return (false, "MSSV hoặc Email ?? tồn tại");
+                return (false, "MSSV hoặc Email đã tồn tại");
 
             dto.StudentCode = studentCode;
             dto.Email = email;
@@ -100,7 +100,7 @@ namespace ClubManagement.API.AuthService
             var sent = await _otpService.SendOtpAsync(email, "register");
             return sent
                 ? (true, null)
-                : (false, "Không thể gưĩ email. Vui lòng kiểm tra địa chỉ email v? th? l?i.");
+                : (false, "Không thể gửi email. Vui lòng kiểm tra địa chỉ email và thử lại.");
         }
 
         public async Task<AuthResponseDTO?> VerifyRegisterOtpAsync(VerifyRegisterOtpDTO dto)
@@ -183,13 +183,13 @@ namespace ClubManagement.API.AuthService
                 return (true, null);
 
             var sent = await _otpService.SendOtpAsync(normalizedEmail, "forgot");
-            return sent ? (true, null) : (false, "Không thể gưi email. Vui lòng thử lại.");
+            return sent ? (true, null) : (false, "Không thể gửi email. Vui lòng thử lại.");
         }
 
         public async Task<(bool Success, string? Error)> ResetPasswordAsync(ResetPasswordDTO dto)
         {
             if (string.IsNullOrWhiteSpace(dto.NewPassword) || dto.NewPassword.Length < 6)
-                return (false, "Mật khẩu mới phải có ít nhấtt 6 kí tự");
+                return (false, "Mật khẩu mới phải có ít nhất 6 kí tự");
 
             if (dto.NewPassword != dto.ConfirmPassword)
                 return (false, "Mật khẩu xác nhận không khớp");
@@ -197,7 +197,7 @@ namespace ClubManagement.API.AuthService
             var email = (dto.Email ?? string.Empty).Trim().ToLowerInvariant();
             var isValid = await _otpService.VerifyOtpAsync(email, dto.Otp, "forgot");
             if (!isValid)
-                return (false, "Mã OTP không hợp lệ hoặc ?? h?t h?n");
+                return (false, "Mã OTP không hợp lệ hoặc đã hết hạn");
 
             var user = await _context.Users
                 .FirstOrDefaultAsync(u => u.Email.ToLower() == email && u.IsActive);
@@ -249,7 +249,7 @@ namespace ClubManagement.API.AuthService
             Email = user.Email,
             Role = user.Role?.RoleName ?? "Member",
             UserID = user.UserID.ToString(),
-            AvatarUrl = user.Member?.AvatarUrl ?? user.AvatarUrl
+            AvatarUrl = user.AvatarUrl
         };
 
         private static string NormalizeStudentCode(string? value) => (value ?? string.Empty).Trim().ToUpperInvariant();

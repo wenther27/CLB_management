@@ -88,6 +88,7 @@ namespace ClubManagement.API.DTOs.Funds
         public decimal NetAmount { get; set; }
         public List<FundReportCategoryDTO> Categories { get; set; } = new();
         public List<FundReportActivityDTO> Activities { get; set; } = new();
+        public List<FundTransactionDTO> Transactions { get; set; } = new();
     }
 
     public class FundReportCategoryDTO

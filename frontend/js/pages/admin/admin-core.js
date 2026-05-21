@@ -126,11 +126,13 @@ function updateNavbar() {
 }
 // ── Dashboard charts ─────────────────────────────────────────────────────────
 let activitiesByMonthChart = null;
+let fundMonthlyChart = null;
 
 async function loadDashboardCharts() {
   await Promise.all([
     loadActivitiesByMonthLineChart(),
-    loadTopActivitiesList()
+    loadTopActivitiesList(),
+    loadFundMonthlyChart()
   ]);
 }
 
@@ -138,8 +140,15 @@ async function loadActivitiesByMonthLineChart() {
   const canvas = document.getElementById('activitiesByMonthLineChart');
   if (!canvas || typeof Chart === 'undefined') return;
 
+  const yearInput = document.getElementById('activitiesByMonthChartYear');
+  if (yearInput && !yearInput.value) {
+    yearInput.value = new Date().getFullYear();
+  }
+
+  const year = Number(yearInput?.value || new Date().getFullYear());
+
   try {
-    const res = await request('GET', '/dashboard/activities-by-month', null, true);
+    const res = await request('GET', `/dashboard/activities-by-month?year=${year}`, null, true);
     const data = res.data || [];
 
     if (activitiesByMonthChart) {
@@ -219,6 +228,161 @@ async function loadActivitiesByMonthLineChart() {
     });
   } catch (e) {
     console.warn('loadActivitiesByMonthLineChart:', e.message);
+  }
+}
+
+async function loadFundMonthlyChart() {
+  const canvas = document.getElementById('fundMonthlyChart');
+  const message = document.getElementById('fundMonthlyChartMessage');
+  if (!canvas || typeof Chart === 'undefined') return;
+
+  const yearInput = document.getElementById('fundMonthlyChartYear');
+  if (yearInput && !yearInput.value) {
+    yearInput.value = new Date().getFullYear();
+  }
+
+  const year = Number(yearInput?.value || new Date().getFullYear());
+
+  try {
+    if (message) message.style.display = 'none';
+    canvas.style.display = 'block';
+
+    const reports = await Promise.all(
+      Array.from({ length: 12 }, (_, index) =>
+        request('GET', `/funds/reports?year=${year}&month=${index + 1}`, null, true)
+      )
+    );
+
+    const data = reports.map(r => r.data || {});
+    const labels = Array.from({ length: 12 }, (_, index) => `Tháng ${index + 1}`);
+    const income = data.map(x => Number(x.totalIncome || 0));
+    const expense = data.map(x => Number(x.totalExpense || 0));
+    const net = data.map(x => Number(x.netAmount || 0));
+
+    if (fundMonthlyChart) {
+      fundMonthlyChart.destroy();
+    }
+
+    const money = value => `${Number(value || 0).toLocaleString('vi-VN')} đ`;
+
+    fundMonthlyChart = new Chart(canvas, {
+      type: 'bar',
+      data: {
+        labels,
+        datasets: [
+          {
+            type: 'bar',
+            label: 'Thu',
+            data: income,
+            backgroundColor: 'rgba(22, 163, 74, 0.78)',
+            borderColor: '#15803d',
+            borderWidth: 1,
+            borderRadius: 6,
+            maxBarThickness: 28,
+            categoryPercentage: 0.62,
+            barPercentage: 0.82
+          },
+          {
+            type: 'bar',
+            label: 'Chi',
+            data: expense,
+            backgroundColor: 'rgba(232, 33, 58, 0.78)',
+            borderColor: '#e8213a',
+            borderWidth: 1,
+            borderRadius: 6,
+            maxBarThickness: 28,
+            categoryPercentage: 0.62,
+            barPercentage: 0.82
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        layout: {
+          padding: {
+            top: 6,
+            right: 16,
+            bottom: 0,
+            left: 0
+          }
+        },
+        interaction: {
+          mode: 'index',
+          intersect: false
+        },
+        plugins: {
+          legend: {
+            display: true,
+            position: 'top',
+            align: 'end',
+            labels: {
+              color: '#111827',
+              boxWidth: 16,
+              boxHeight: 10,
+              padding: 16,
+              font: {
+                family: 'Be Vietnam Pro',
+                weight: '700'
+              }
+            }
+          },
+          tooltip: {
+            callbacks: {
+              label: context => `${context.dataset.label}: ${money(context.parsed.y)}`,
+              afterBody: items => {
+                const index = items[0]?.dataIndex ?? 0;
+                return `Chênh lệch: ${money(net[index])}`;
+              }
+            }
+          }
+        },
+        scales: {
+          x: {
+            ticks: {
+              color: '#111827',
+              font: {
+                family: 'Be Vietnam Pro',
+                weight: '600'
+              }
+            },
+            grid: {
+              display: false
+            }
+          },
+          y: {
+            beginAtZero: true,
+            ticks: {
+              color: '#111827',
+              font: {
+                family: 'Be Vietnam Pro',
+                weight: '600'
+              },
+              callback: value => {
+                const number = Number(value || 0);
+                if (Math.abs(number) >= 1000000) {
+                  return `${(number / 1000000).toLocaleString('vi-VN')} tr`;
+                }
+                if (Math.abs(number) >= 1000) {
+                  return `${(number / 1000).toLocaleString('vi-VN')}k`;
+                }
+                return `${number.toLocaleString('vi-VN')} đ`;
+              }
+            },
+            grid: {
+              color: '#e2e8f0'
+            }
+          }
+        }
+      }
+    });
+  } catch (e) {
+    console.warn('loadFundMonthlyChart:', e.message);
+    canvas.style.display = 'none';
+    if (message) {
+      message.textContent = 'Không tải được dữ liệu thu / chi quỹ';
+      message.style.display = 'block';
+    }
   }
 }
 

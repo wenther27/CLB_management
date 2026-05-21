@@ -77,6 +77,7 @@ async function loadMembers() {
           </div>
         </td>
       </tr>`).join('');
+    refreshMemberApplicationsBadge();
 
   } catch (e) {
     tbody.innerHTML = `<tr><td colspan="7" style="color:#ff2d55;padding:20px;text-align:center">
@@ -195,8 +196,9 @@ function openMemberModal(data = {}) {
     <option value="${f}" ${data.faculty === f ? 'selected' : ''}>${f}</option>
   `).join('');
 
-  const avatarSrc = data.avatarUrl
-    ? (data.avatarUrl.startsWith('http') ? data.avatarUrl : 'http://localhost:5190' + data.avatarUrl)
+  const boardAvatarUrl = data.boardAvatarUrl || '';
+  const avatarSrc = boardAvatarUrl
+    ? (boardAvatarUrl.startsWith('http') ? boardAvatarUrl : 'http://localhost:5190' + boardAvatarUrl)
     : '';
 
   openModal(data.memberID ? 'Chỉnh sửa thành viên' : 'Thêm thành viên mới', `
@@ -304,7 +306,7 @@ function openMemberModal(data = {}) {
                  padding:24px; text-align:center; cursor:pointer;
                  transition:border-color 0.2s, background 0.2s;
                  width:100%; box-sizing:border-box; background:rgba(255,255,255,0.02);
-                 ${data.avatarUrl ? 'display:none' : ''}">
+                 ${boardAvatarUrl ? 'display:none' : ''}">
           <div style="font-size:2rem;margin-bottom:8px">🖼️</div>
           <div style="font-size:13px;color:#64748b">
             Kéo thả ảnh vào đây hoặc
@@ -318,7 +320,7 @@ function openMemberModal(data = {}) {
 
         <!-- Preview ảnh tròn — căn giữa, chỉ hiện khi đã có ảnh -->
         <div id="mf-preview" style="display:flex; justify-content:center; width:100%; margin-top:12px">
-          ${data.avatarUrl ? `
+          ${boardAvatarUrl ? `
             <div id="mf-img-wrap" style="position:relative; width:160px; height:210px;
                  border-radius:12px; overflow:hidden;
                  border:3px solid #ff2d55; flex-shrink:0; box-shadow:0 4px 12px rgba(0,0,0,0.3)">
@@ -334,7 +336,7 @@ function openMemberModal(data = {}) {
         </div>
 
         <div id="mf-uploadStatus" style="font-size:12px; color:#64748b; margin-top:8px; text-align:center"></div>
-        <input type="hidden" id="mf-avatar" value="${data.avatarUrl || ''}">
+        <input type="hidden" id="mf-avatar" value="${boardAvatarUrl}">
       </div>
     </div>
 
@@ -584,6 +586,19 @@ function formatApplicationDate(value) {
   return d.toLocaleDateString('vi-VN');
 }
 
+async function refreshMemberApplicationsBadge() {
+  const badge = document.getElementById('memberApplicationsBadge');
+  if (!badge) return;
+
+  try {
+    const r = await API.getMemberApplications('?status=Pending');
+    const list = r.data || [];
+    badge.style.display = list.length ? 'block' : 'none';
+  } catch {
+    badge.style.display = 'none';
+  }
+}
+
 async function openMemberApplicationsModal(status = 'Pending') {
   openModal('H\u1ed3 s\u01a1 ch\u1edd duy\u1ec7t', `
     <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:14px;margin-bottom:16px">
@@ -626,6 +641,7 @@ async function openMemberApplicationsModal(status = 'Pending') {
     const query = status ? `?status=${encodeURIComponent(status)}` : '';
     const r = await API.getMemberApplications(query);
     window._memberApplicationsCache = r.data || [];
+    refreshMemberApplicationsBadge();
     renderMemberApplicationsTable();
   } catch (e) {
     const body = document.getElementById('memberApplicationsBody');
@@ -727,12 +743,14 @@ async function rejectMemberApplication(id) {
     await API.rejectMemberApplication(id, { reviewNote: reason });
     Toast.success('\u0110\u00e3 t\u1eeb ch\u1ed1i h\u1ed3 s\u01a1');
     await openMemberApplicationsModal('Pending');
+    refreshMemberApplicationsBadge();
   } catch (e) {
     Toast.error(e.message);
   }
 }
 
 window.openMemberApplicationsModal = openMemberApplicationsModal;
+window.refreshMemberApplicationsBadge = refreshMemberApplicationsBadge;
 window.approveMemberApplication = approveMemberApplication;
 window.rejectMemberApplication = rejectMemberApplication;
 window.renderMemberApplicationsTable = renderMemberApplicationsTable;

@@ -647,9 +647,9 @@
           note
         });
 
-        document.getElementById('am-success-icon').textContent = '✅';
+        document.getElementById('am-success-icon').innerHTML = '<i class="fa-solid fa-check" style="color: rgb(0, 255, 177);"></i>';
         document.getElementById('am-success-title').textContent = 'Đã gửi hồ sơ';
-        document.getElementById('am-success-msg').textContent = 'Ban quản lý sẽ kiểm tra hồ sơ. Nếu được duyệt, tài khoản sẽ được cấp theo MSSV.';
+        document.getElementById('am-success-msg').textContent = 'Ban quản lý sẽ kiểm tra hồ sơ. Hãy luôn theo dõi email để nhận thông báo khi tài khoản được duyệt.';
         document.getElementById('am-success-btn').textContent = 'Quay lại đăng nhập';
         document.getElementById('am-success-btn').onclick = () => this.show('login');
         this.show('success');

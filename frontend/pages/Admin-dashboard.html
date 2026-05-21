@@ -99,6 +99,7 @@
         <h3>Hoạt động theo tháng</h3>
         <p>Số lượng hoạt động được tổ chức trong năm hiện tại</p>
       </div>
+      <input id="activitiesByMonthChartYear" class="dashboard-chart-year" type="number" min="2020" onchange="loadActivitiesByMonthLineChart()" aria-label="Năm thống kê hoạt động">
     </div>
     <canvas id="activitiesByMonthLineChart"></canvas>
   </div>
@@ -114,6 +115,18 @@
       <div class="loading"><div class="spinner"></div></div>
     </div>
   </div>
+
+  <div class="dashboard-chart-card dashboard-chart-card-wide">
+    <div class="dashboard-chart-header">
+      <div>
+        <h3>Thu / chi quỹ theo tháng</h3>
+        <p>So sánh tổng thu, tổng chi và chênh lệch quỹ trong năm hiện tại</p>
+      </div>
+      <input id="fundMonthlyChartYear" class="dashboard-chart-year" type="number" min="2020" onchange="loadFundMonthlyChart()" aria-label="Năm thống kê thu chi quỹ">
+    </div>
+    <canvas id="fundMonthlyChart"></canvas>
+    <div id="fundMonthlyChartMessage" class="dashboard-chart-message" style="display:none"></div>
+  </div>
 </div>
       </div>
       <!-- MEMBERS -->
@@ -121,8 +134,9 @@
         <div class="adm-header">
           <h2><i class="fa-solid fa-user-group"></i> Quản lý thành viên</h2>
           <div style="display:flex;gap:8px">
-            <button class="btn-outline btn-sm" onclick="openMemberApplicationsModal()">
+            <button id="memberApplicationsBtn" class="btn-outline btn-sm" onclick="openMemberApplicationsModal()" style="position:relative">
                 <i class="fa-solid fa-file-signature"></i> Hồ sơ
+                <span id="memberApplicationsBadge" style="display:none;position:absolute;top:-7px;right:-7px;width:18px;height:18px;border-radius:50%;background:#ef4444;color:#fff;font-size:12px;font-weight:800;line-height:18px;text-align:center;box-shadow:0 4px 10px rgba(239,68,68,.35)">!</span>
               </button>
               <button class="btn-outline btn-sm" onclick="loadMemberStats()">
               <i class="fa-solid fa-chart-pie"></i> Thống kê
@@ -258,6 +272,7 @@
             <div class="fund-section-head">
               <h3>Giao dịch</h3>
               <div class="fund-toolbar compact">
+                <input id="fundTxSearch" aria-label="Tìm kiếm giao dịch quỹ" placeholder="Tìm giao dịch..." oninput="FundPanel.renderTransactions()">
                 <select id="fundTxStatus" aria-label="Lọc giao dịch theo trạng thái" onchange="FundPanel.loadTransactions()">
                   <option value="">Tất cả trạng thái</option>
                   <option value="Pending">Chờ duyệt</option>
@@ -271,7 +286,7 @@
                 </select>
               </div>
             </div>
-            <div class="fund-section-body table-wrap">
+            <div id="fundTxTableWrap" class="fund-section-body table-wrap">
               <table>
                 <thead>
                   <tr><th>ID</th><th>Loại</th><th>Số tiền</th><th>Danh mục</th><th>Hoạt động</th><th>Người thực hiện</th><th>Ngày</th><th>Trạng thái</th><th>Thao tác</th></tr>
@@ -285,7 +300,7 @@
             <div class="fund-section-head">
               <h3>Duyệt giao dịch</h3>
             </div>
-            <div class="fund-section-body table-wrap">
+            <div id="fundPeriodTableWrap" class="fund-section-body table-wrap">
               <table>
                 <thead>
                   <tr><th>ID</th><th>Loại</th><th>Số tiền</th><th>Danh mục</th><th>Người tạo</th><th>Thao tác</th></tr>
@@ -297,22 +312,13 @@
 
           <section class="fund-section">
             <div class="fund-section-head">
-              <h3>Ngân sách hoạt động</h3>
-              <button class="btn-outline btn-sm" onclick="FundPanel.openBudgetModal()">
-                <i class="fa-solid fa-plus"></i> Tạo ngân sách
-              </button>
-            </div>
-            <div class="fund-section-body">
-              <div class="fund-budget-list" id="fundBudgetList"></div>
-            </div>
-          </section>
-
-          <section class="fund-section">
-            <div class="fund-section-head">
               <h3>Đợt thu quỹ</h3>
-              <button class="btn-outline btn-sm" onclick="FundContributionPanel.openPeriodModal()">
-                <i class="fa-solid fa-plus"></i> Tạo đợt thu
-              </button>
+              <div class="fund-toolbar compact">
+                <input id="fundPeriodSearch" aria-label="Tìm kiếm đợt thu quỹ" placeholder="Tìm đợt thu..." oninput="FundContributionPanel.renderPeriods()">
+                <button class="btn-outline btn-sm" onclick="FundContributionPanel.openPeriodModal()">
+                  <i class="fa-solid fa-plus"></i> Tạo đợt thu
+                </button>
+              </div>
             </div>
             <div class="fund-section-body table-wrap">
               <table>
@@ -349,19 +355,22 @@
                 <div class="fund-card"><div class="fund-card-label">Tổng chi</div><div class="fund-card-value expense" id="fundReportExpense">—</div></div>
                 <div class="fund-card"><div class="fund-card-label">Chênh lệch</div><div class="fund-card-value" id="fundReportNet">—</div></div>
               </div>
-              <div class="fund-report-grid">
-                <div class="table-wrap">
-                  <table>
-                    <thead><tr><th>Danh mục</th><th>Thu</th><th>Chi</th></tr></thead>
-                    <tbody id="fundReportCategories"></tbody>
-                  </table>
-                </div>
-                <div class="table-wrap">
-                  <table>
-                    <thead><tr><th>Hoạt động</th><th>Chi phí</th></tr></thead>
-                    <tbody id="fundReportActivities"></tbody>
-                  </table>
-                </div>
+              <div id="fundReportDetailWrap" class="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>ID</th>
+                      <th>Ngày</th>
+                      <th>Loại</th>
+                      <th>Số tiền</th>
+                      <th>Danh mục</th>
+                      <th>Hoạt động</th>
+                      <th>Người thực hiện</th>
+                      <th>Mô tả</th>
+                    </tr>
+                  </thead>
+                  <tbody id="fundReportTransactions"></tbody>
+                </table>
               </div>
             </div>
           </section>

@@ -150,12 +150,12 @@ namespace ClubManagement.API.Data
             );
             modelBuilder.Entity<ExecutiveBoard>(entity =>
             {
-                entity.HasKey(e => e.BoardID); // Giáº£ sá»­ cÃ³ khÃ³a chÃ­nh
+                entity.HasKey(e => e.BoardID); // Giả sử có khóa chính
 
                 entity.HasOne(e => e.user)
                       .WithMany()
                       .HasForeignKey(e => e.userID)
-                      .OnDelete(DeleteBehavior.NoAction); // KHÃ”NG DÃ™NG CASCADE
+                      .OnDelete(DeleteBehavior.NoAction); // KHÔNG DÙNG CASCADE
             });
 
 

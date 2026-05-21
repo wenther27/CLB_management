@@ -41,11 +41,38 @@
     try {
       const r = await API.getFundCollectionPeriods();
       this.periods = r.data || [];
-      if (!this.periods.length) {
+      this.renderPeriods();
+    } catch (e) {
+      tbody.innerHTML = `<tr><td colspan="9" style="color:#e8213a">${e.message}</td></tr>`;
+    }
+  },
+
+  renderPeriods() {
+    const tbody = document.getElementById('fundPeriodBody');
+    if (!tbody) return;
+
+    const keyword = (document.getElementById('fundPeriodSearch')?.value || '').trim().toLowerCase();
+    const list = keyword
+      ? this.periods.filter(p => [
+          this.periodTitle(p),
+          p.category,
+          p.month,
+          p.year,
+          p.amount,
+          p.paidMembers,
+          p.totalMembers,
+          p.collectedAmount,
+          p.remainingAmount,
+          p.dueDate,
+          p.status === 'Open' ? 'Đang mở' : 'Đã đóng'
+        ].join(' ').toLowerCase().includes(keyword))
+      : this.periods;
+
+      if (!list.length) {
         tbody.innerHTML = '<tr><td colspan="9" class="fund-empty">Chưa có đợt thu quỹ</td></tr>';
         return;
       }
-      tbody.innerHTML = this.periods.map(p => `
+      tbody.innerHTML = list.map(p => `
         <tr>
           <td>
             <strong>${Utils.escapeHtml(this.periodTitle(p))}</strong>
@@ -74,9 +101,6 @@
           </td>
         </tr>
       `).join('');
-    } catch (e) {
-      tbody.innerHTML = `<tr><td colspan="9" style="color:#e8213a">${e.message}</td></tr>`;
-    }
   },
 
   getPeriod(periodId) {

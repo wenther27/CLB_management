@@ -403,10 +403,10 @@ namespace ClubManagement.API.Service
             var registration = await _context.Registrations
                 .Include(r => r.ClubActivity)
                 .FirstOrDefaultAsync(r => r.RegistrationID == registrationId);
-            if (registration == null) return (false, "Kh?ng t?m th?y ??ng k?");
+            if (registration == null) return (false, "Không tìm thấy đăng ký");
 
             if (isAttended && registration.ClubActivity != null && registration.ClubActivity.time > DateTime.Now)
-                return (false, "Ch? ???c ?i?m danh sau khi ho?t ??ng b?t ??u");
+                return (false, "Chỉ được điểm danh sau khi hoạt động bắt đầu");
 
             registration.IsAttended = isAttended;
             registration.AttendedAt = isAttended ? DateTime.Now : null;
@@ -420,9 +420,9 @@ namespace ClubManagement.API.Service
         public async Task<(bool Success, int UpdatedCount, string? ErrorMessage)> UpdateAllAttendanceAsync(int activityId, bool isAttended, int verifierUserId)
         {
             var activity = await _context.Activities.FindAsync(activityId);
-            if (activity == null) return (false, 0, "Kh?ng t?m th?y ho?t ??ng");
+            if (activity == null) return (false, 0, "Không tìm thấy hoạt động");
             if (isAttended && activity.time > DateTime.Now)
-                return (false, 0, "Ch? ???c ?i?m danh sau khi ho?t ??ng b?t ??u");
+                return (false, 0, "Chỉ được điểm danh sau khi hoạt động bắt đầu");
 
             var registrations = await _context.Registrations
                 .Where(r => r.ActivityID == activityId)
