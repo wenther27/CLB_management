@@ -119,11 +119,34 @@ namespace ClubManagement.API.Service
                 .Include(m => m.User).ThenInclude(u => u!.Role)
                 .FirstOrDefaultAsync(m => m.UserID == userId);
             if (member == null) return null;
+            if (member.User == null)
+                throw new InvalidOperationException("Không tìm thấy tài khoản người dùng");
+
+            if (string.IsNullOrWhiteSpace(dto.CurrentPassword) ||
+                !BCrypt.Net.BCrypt.Verify(dto.CurrentPassword, member.User.PasswordHash))
+            {
+                throw new InvalidOperationException("Mật khẩu xác nhận không đúng");
+            }
+
+            var newEmail = dto.Email?.Trim();
+            if (!string.IsNullOrWhiteSpace(newEmail) &&
+                !string.Equals(newEmail, member.User.Email, StringComparison.OrdinalIgnoreCase))
+            {
+                var emailExists = await _context.Users.AnyAsync(u =>
+                    u.UserID != userId && u.Email.ToLower() == newEmail.ToLower());
+
+                if (emailExists)
+                    throw new InvalidOperationException("Email này đã được sử dụng");
+
+                member.User.Email = newEmail;
+                member.User.UpdatedAt = DateTime.UtcNow;
+            }
+
             if (dto.FullName != null) member.FullName = dto.FullName;
             if (dto.ClassName != null) member.ClassName = dto.ClassName;
             if (dto.Faculty != null) member.Faculty = dto.Faculty;
             if (dto.BirthDate.HasValue) member.BirthDate = dto.BirthDate.Value;
-            if (dto.Phone != null && member.User != null)
+            if (dto.Phone != null)
             {
                 member.User.Phone = dto.Phone; member.User.UpdatedAt = DateTime.UtcNow;
             }

@@ -67,6 +67,7 @@ namespace ClubManagement.API.Service
                 ContactEmail = normalized.Email,
                 Phone = string.IsNullOrWhiteSpace(dto.Phone) ? null : dto.Phone.Trim(),
                 Note = string.IsNullOrWhiteSpace(dto.Note) ? null : dto.Note.Trim(),
+                StudentCardImageUrl = string.IsNullOrWhiteSpace(dto.StudentCardImageUrl) ? null : dto.StudentCardImageUrl.Trim(),
                 Status = "Pending",
                 SubmittedAt = DateTime.Now
             };
@@ -91,6 +92,7 @@ namespace ClubManagement.API.Service
             if (string.IsNullOrWhiteSpace(faculty)) throw new InvalidOperationException("Vui lòng chọn khoa");
             if (!dto.BirthDate.HasValue) throw new InvalidOperationException("Vui lòng nhập ngày sinh");
             if (string.IsNullOrWhiteSpace(email) || !email.Contains('@')) throw new InvalidOperationException("Email liên hệ không hợp lệ");
+            if (string.IsNullOrWhiteSpace(dto.StudentCardImageUrl)) throw new InvalidOperationException("Vui lòng tải ảnh thẻ sinh viên");
 
             var existedUser = await _context.Users.AnyAsync(u => u.Email.ToLower() == email);
             var existedStudentCode = await _context.Members.AnyAsync(m => m.StudentCode == studentCode);
@@ -222,6 +224,8 @@ namespace ClubManagement.API.Service
 
         public async Task<MemberApplicationDTO?> RejectAsync(int id, int reviewedByUserId, string? reviewNote = null)
         {
+            await using var transaction = await _context.Database.BeginTransactionAsync(IsolationLevel.Serializable);
+
             var application = await _context.MemberApplications
                 .Include(a => a.ReviewedByUser)
                 .ThenInclude(u => u!.Member)
@@ -235,6 +239,13 @@ namespace ClubManagement.API.Service
             application.ReviewNote = reviewNote?.Trim();
             AddAuditLog(reviewedByUserId, $"Từ chối hồ sơ thành viên: {application.FullName} ({application.StudentCode})", "MemberApplications", application.MemberApplicationID);
             await _context.SaveChangesAsync();
+            await _otpService.SendMemberRejectedEmailAsync(
+                application.ContactEmail,
+                application.FullName,
+                application.StudentCode,
+                application.ReviewNote);
+
+            await transaction.CommitAsync();
             await _context.Entry(application).Reference(a => a.ReviewedByUser).LoadAsync();
             return Map(application);
         }
@@ -252,6 +263,7 @@ namespace ClubManagement.API.Service
             ContactEmail = a.ContactEmail,
             Phone = a.Phone,
             Note = a.Note,
+            StudentCardImageUrl = a.StudentCardImageUrl,
             Status = a.Status,
             SubmittedAt = a.SubmittedAt,
             ReviewedAt = a.ReviewedAt,

@@ -14,7 +14,10 @@
 <!-- Navbar (giữ nguyên) -->
 <header>
   <div class="nav-container">
-    <div class="logo">CTXHDUT</div>
+        <div class="logo">
+            <img src="../assets/img/dut-logo.png" alt="Logo DUT" class="logo-mark">
+            <span>CTXH<span class="logo-dut">DUT</span></span>
+        </div>
     <nav class="nav-link">
       <a href="../pages/index.html" class="active">Trang chủ</a>
       <a href="../pages/activities.html">Hoạt động</a>
@@ -50,7 +53,7 @@
       những giá trị tích cực thông qua các hoạt động thiện nguyện đầy ý nghĩa.
     </p>
     <div class="hero-buttons">
-      <button class="btn-primary" onclick="AuthModal.open('register')" style="padding:13px 26px;font-size:15px;font-weight:700;box-shadow:0 4px 20px rgba(232,33,58,0.4)">
+      <button id="heroJoinBtn" class="btn-primary" onclick="AuthModal.open('register')" style="padding:13px 26px;font-size:15px;font-weight:700;box-shadow:0 4px 20px rgba(232,33,58,0.4)">
         <i class="fa-solid fa-heart-circle-plus"></i> Tham gia ngay
       </button>
       <button class="btn-outline" onclick="location.href='activities.html'" style="padding:13px 26px;font-size:15px;font-weight:600;border-color:rgba(255,255,255,0.4);color:#ffffff;backdrop-filter:blur(8px);background:rgba(255,255,255,0.08)">
@@ -171,7 +174,7 @@
       <h2>Sẵn sàng gia nhập CLB?</h2>
       <p>Hãy cùng chúng tôi tạo nên những điều ý nghĩa. Đăng ký ngay hôm nay để tham gia cộng đồng hơn 200 thành viên tích cực.</p>
       <div class="cta-buttons">
-        <button class="btn-primary" onclick="AuthModal.open('register')">
+        <button id="ctaJoinBtn" class="btn-primary" onclick="AuthModal.open('register')">
           <i class="fa-solid fa-heart-circle-plus"></i> Đăng ký thành viên
         </button>
         <button class="btn-outline" onclick="location.href='activities.html'">Khám phá hoạt động</button>
@@ -498,7 +501,14 @@ async function homeRegisterActivity(id, btn) {
 
 // ── Hủy đăng ký từ trang chủ ─────────────────────────────────────────────────
 async function homeCancelRegistration(id, btn) {
-  if (!confirm('Bạn có chắc muốn hủy đăng ký hoạt động này?')) return;
+  const ok = await showAppConfirm({
+    title: 'Hủy đăng ký hoạt động?',
+    message: 'Bạn sẽ không còn trong danh sách tham gia hoạt động này.',
+    confirmText: 'Hủy đăng ký',
+    cancelText: 'Giữ lại',
+    danger: true
+  });
+  if (!ok) return;
   const orig = btn.innerHTML;
   btn.disabled = true;
   btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
@@ -527,6 +537,26 @@ function renderHomeActivities(openActs) {
     </div>`;
   } else {
     actContainer.innerHTML = openActs.map(a => renderActivityCard(a)).join('');
+  }
+}
+
+function updateHomeCtaButtons() {
+  const isLoggedIn = !!(localStorage.getItem('token') && localStorage.getItem('user'));
+  if (!isLoggedIn) return;
+
+  const newsButtonHtml = '<i class="fa-solid fa-newspaper"></i> Xem Tin Tức';
+  const goToNews = () => { location.href = 'Posts.html'; };
+
+  const heroJoinBtn = document.getElementById('heroJoinBtn');
+  if (heroJoinBtn) {
+    heroJoinBtn.innerHTML = newsButtonHtml;
+    heroJoinBtn.onclick = goToNews;
+  }
+
+  const ctaJoinBtn = document.getElementById('ctaJoinBtn');
+  if (ctaJoinBtn) {
+    ctaJoinBtn.innerHTML = newsButtonHtml;
+    ctaJoinBtn.onclick = goToNews;
   }
 }
 
@@ -632,6 +662,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (heroYears) heroYears.textContent = (new Date().getFullYear() - 2010) + '+';
   
   if (typeof updateNavbar === 'function') updateNavbar();
+  updateHomeCtaButtons();
   if (typeof loadHomeData === 'function') loadHomeData();
 
   // Scroll animation cho about images

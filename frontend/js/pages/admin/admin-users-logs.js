@@ -481,7 +481,9 @@ const UsersPanel = (() => {
       const initials = (_displayName(u))
         .split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
 
-      document.getElementById('gModalInner').innerHTML = `
+      const modalInner = document.getElementById('gModalInner');
+      modalInner.classList.add('user-detail-modal');
+      modalInner.innerHTML = `
         <div class="modal-header">
           <div class="modal-title"><i class="fa-solid fa-user-circle"></i> Chi tiết người dùng</div>
           <button class="modal-close" onclick="closeModal()">✕</button>
@@ -489,12 +491,13 @@ const UsersPanel = (() => {
 
         <div class="u-detail-hero">
           <div class="u-avatar-lg" style="background:${avatarColor(u.roleName)}">${initials}</div>
-          <div>
+          <div class="u-detail-main">
             <div class="u-detail-name">${Utils.escapeText(_displayName(u))}</div>
-              ${Utils.escapeText(_identifier(u), '')}
-            <div style="display:flex;gap:6px;margin-top:8px">
+            <div class="u-detail-id">${Utils.escapeText(_identifier(u), '')}</div>
+            <div class="u-detail-badges">
               <span class="badge ${u.isActive ? 'badge-open' : 'badge-inactive'}">
-                ${u.isActive ? '✅ Hoạt động' : '🔒 Vô hiệu'}
+                <i class="fa-solid ${u.isActive ? 'fa-circle-check' : 'fa-circle-xmark'}"></i>
+                ${u.isActive ? 'Hoạt động' : 'Vô hiệu'}
               </span>
               <span class="badge badge-blue">${roleLabelVi(u.roleName)}</span>
             </div>
@@ -524,15 +527,12 @@ const UsersPanel = (() => {
           </div>
         </div>
 
-        <div style="display:flex;gap:10px;margin-top:4px">
-          <button onclick="UsersPanel.openEdit(${u.userID})" class="btn-outline" style="flex:1;padding:10px">
+        <div class="u-detail-actions">
+          <button onclick="UsersPanel.openEdit(${u.userID})" class="btn-outline u-detail-action-main">
             <i class="fa-solid fa-pen"></i> Chỉnh sửa
           </button>
           <button onclick="UsersPanel.toggleActive(${u.userID}, ${JSON.stringify(_displayName(u))})"
-            class="btn-sm" style="padding:10px 16px;border-radius:6px;cursor:pointer;
-              ${u.isActive
-                ? 'background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.3);color:#f59e0b'
-                : 'background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.3);color:#22c55e'}">
+            class="btn-sm u-detail-toggle ${u.isActive ? 'is-lock' : 'is-open'}">
             <i class="fa-solid ${u.isActive ? 'fa-lock' : 'fa-lock-open'}"></i>
             ${u.isActive ? 'Vô hiệu hóa' : 'Kích hoạt'}
           </button>

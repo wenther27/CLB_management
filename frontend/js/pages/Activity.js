@@ -227,7 +227,14 @@ function renderCard(a) {
 
 // ── Hủy đăng ký ─────────────────────────────────────────────────────────────
 async function cancelRegistration(activityId, btn) {
-  if (!confirm('Bạn có chắc muốn hủy đăng ký hoạt động này?')) return;
+  const ok = await showAppConfirm({
+    title: 'Hủy đăng ký hoạt động?',
+    message: 'Bạn sẽ không còn trong danh sách tham gia hoạt động này.',
+    confirmText: 'Hủy đăng ký',
+    cancelText: 'Giữ lại',
+    danger: true
+  });
+  if (!ok) return;
   const originalText = btn.innerHTML;
   btn.disabled = true;
   btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';

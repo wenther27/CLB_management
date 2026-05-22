@@ -16,6 +16,7 @@
   let _pendingEmail = '';
   let _pendingPurpose = 'register'; // 'register' | 'forgot' | 'member-application'
   let _pendingApplication = null;
+  let _selectedStudentCardFile = null;
   let _countdownTimer = null;
   let _injected = false;
   let _googleScriptPromise = null;
@@ -268,6 +269,30 @@
       <div class="am-group">
         <label class="am-label">Ghi chú</label>
         <textarea id="am-reg-note" class="am-input" rows="3" placeholder="Thông tin thêm nếu cần" style="resize:vertical;min-height:72px"></textarea>
+      </div>
+
+      <div class="am-group">
+        <label class="am-label">Ảnh thẻ sinh viên *</label>
+        <div id="am-student-card-drop" onclick="document.getElementById('am-reg-student-card').click()" style="
+          border:1px dashed #cbd5e1;border-radius:14px;background:#f8fafc;padding:16px;
+          cursor:pointer;display:flex;align-items:center;gap:12px;min-height:74px;
+        ">
+          <div id="am-student-card-preview" style="
+            width:54px;height:54px;border-radius:10px;background:#eef2f7;color:#94a3b8;
+            display:flex;align-items:center;justify-content:center;font-size:22px;overflow:hidden;flex-shrink:0;
+          ">
+            <i class="fa-regular fa-id-card"></i>
+          </div>
+          <div style="min-width:0">
+            <div id="am-student-card-name" style="font-size:13px;font-weight:800;color:#334155;margin-bottom:3px">
+              Chọn ảnh thẻ sinh viên
+            </div>
+            <div style="font-size:12px;color:#94a3b8;line-height:1.4">
+              JPG, PNG, WEBP, GIF · tối đa 5MB
+            </div>
+          </div>
+        </div>
+        <input id="am-reg-student-card" type="file" accept="image/*" style="display:none" onchange="AuthModal.handleStudentCardChange(this)">
       </div>
 
       <button class="am-btn-primary" id="am-reg-btn" onclick="AuthModal.doSubmitApplication()" style="margin-top:6px">
@@ -530,6 +555,19 @@
     return data;
   }
 
+  async function uploadMemberApplicationCard(file) {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const res = await fetch(`${API_BASE}/upload/member-application-card`, {
+      method: 'POST',
+      body: formData
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.message || 'Không thể upload ảnh thẻ sinh viên');
+    return data.data ?? data.url ?? data;
+  }
+
   function loadGoogleIdentityScript() {
     if (window.google?.accounts?.id) return Promise.resolve();
     if (_googleScriptPromise) return _googleScriptPromise;
@@ -705,6 +743,33 @@
       }
     },
 
+    handleStudentCardChange(input) {
+      const file = input?.files?.[0];
+      const preview = document.getElementById('am-student-card-preview');
+      const nameEl = document.getElementById('am-student-card-name');
+
+      _selectedStudentCardFile = null;
+      if (!file) return;
+
+      if (!file.type.startsWith('image/')) {
+        toast('Vui lòng chọn file ảnh thẻ sinh viên', 'error');
+        input.value = '';
+        return;
+      }
+
+      if (file.size > 5 * 1024 * 1024) {
+        toast('Ảnh thẻ sinh viên tối đa 5MB', 'error');
+        input.value = '';
+        return;
+      }
+
+      _selectedStudentCardFile = file;
+      if (nameEl) nameEl.textContent = file.name;
+      if (preview) {
+        preview.innerHTML = `<img src="${URL.createObjectURL(file)}" alt="Ảnh thẻ sinh viên" style="width:100%;height:100%;object-fit:cover">`;
+      }
+    },
+
     // ════════════════════════════════════════════════════════════════════════
     // ĐĂNG KÝ — Bước 1: Gửi OTP
     // ════════════════════════════════════════════════════════════════════════
@@ -723,9 +788,11 @@
       if (!birthDate) { toast('Vui lòng nhập ngày sinh', 'error'); return; }
       if (!faculty) { toast('Vui lòng chọn khoa', 'error'); return; }
       if (!contactEmail || !contactEmail.includes('@')) { toast('Email liên hệ không hợp lệ', 'error'); return; }
+      if (!_selectedStudentCardFile) { toast('Vui lòng chọn ảnh thẻ sinh viên', 'error'); return; }
 
       setLoading('am-reg-btn', true);
       try {
+        const studentCardImageUrl = await uploadMemberApplicationCard(_selectedStudentCardFile);
         const applicationData = {
           studentCode,
           fullName,
@@ -734,7 +801,8 @@
           faculty,
           contactEmail,
           phone,
-          note
+          note,
+          studentCardImageUrl
         };
 
         await apiPost('/member-applications/send-otp', applicationData);

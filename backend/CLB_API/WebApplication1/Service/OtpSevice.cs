@@ -7,6 +7,8 @@
 using System.Net;
 using System.Net.Mail;
 using System.Security.Cryptography;
+using System.Text;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Caching.Memory;
 
 namespace ClubManagement.API.Service
@@ -15,6 +17,7 @@ namespace ClubManagement.API.Service
     {
         Task<bool> SendOtpAsync(string email, string purpose); // purpose: "register" | "forgot" | "member-application"
         Task SendMemberApprovedEmailAsync(string email, string fullName, string studentCode, string temporaryPassword);
+        Task SendMemberRejectedEmailAsync(string email, string fullName, string studentCode, string? reason);
         Task<bool> VerifyOtpAsync(string email, string otp, string purpose);
         void InvalidateOtp(string email, string purpose);
     }
@@ -24,15 +27,17 @@ namespace ClubManagement.API.Service
         private readonly IMemoryCache _cache;
         private readonly IConfiguration _config;
         private readonly ILogger<OtpService> _logger;
+        private readonly IWebHostEnvironment _env;
 
         // OTP hết hạn sau 10 phút
         private static readonly TimeSpan OtpExpiry = TimeSpan.FromMinutes(10);
 
-        public OtpService(IMemoryCache cache, IConfiguration config, ILogger<OtpService> logger)
+        public OtpService(IMemoryCache cache, IConfiguration config, ILogger<OtpService> logger, IWebHostEnvironment env)
         {
             _cache = cache;
             _config = config;
             _logger = logger;
+            _env = env;
         }
 
         // ── Tạo OTP 6 số ngẫu nhiên an toàn ──────────────────────────────────
@@ -111,6 +116,16 @@ namespace ClubManagement.API.Service
             _logger.LogInformation("[MEMBER_APPLICATION] Sent approval email to {Email}", email);
         }
 
+        public async Task SendMemberRejectedEmailAsync(string email, string fullName, string studentCode, string? reason)
+        {
+            await SendEmailAsync(
+                email,
+                "Thông báo kết quả hồ sơ thành viên CLB CTXH DUT",
+                BuildMemberRejectedEmailHtml(fullName, studentCode, reason));
+
+            _logger.LogInformation("[MEMBER_APPLICATION] Sent rejection email to {Email}", email);
+        }
+
         // ── Gửi email qua Gmail SMTP ──────────────────────────────────────────
         private async Task SendEmailAsync(string toEmail, string subject, string htmlBody)
         {
@@ -140,7 +155,7 @@ namespace ClubManagement.API.Service
         }
 
         // ── HTML template email OTP ───────────────────────────────────────────
-        private static string BuildEmailHtml(string otp, string purpose)
+        private string BuildEmailHtml(string otp, string purpose)
         {
             var title = purpose switch
             {
@@ -156,103 +171,52 @@ namespace ClubManagement.API.Service
                 _ => "Chúng tôi nhận được yêu cầu đặt lại mật khẩu. Dùng mã dưới đây để tiếp tục:"
             };
 
-            return $"""
-            <!DOCTYPE html>
-            <html lang="vi">
-            <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
-            <body style="margin:0;padding:0;background:#f1f5f9;font-family:Arial,Helvetica,sans-serif">
-              <div style="max-width:520px;margin:40px auto;background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.10)">
-                
-                <!-- Header -->
-                <div style="background:linear-gradient(135deg,#e8213a 0%,#c01830 100%);padding:36px 32px;text-align:center">
-                  <div style="font-size:36px;margin-bottom:8px">❤️</div>
-                  <div style="color:white;font-size:22px;font-weight:800;letter-spacing:-0.5px">CTXH<span style="opacity:0.8">DUT</span></div>
-                  <div style="color:rgba(255,255,255,0.85);font-size:13px;margin-top:4px">CLB Công tác Xã hội DUT</div>
-                </div>
-                
-                <!-- Body -->
-                <div style="padding:36px 32px">
-                  <h2 style="color:#111827;font-size:20px;margin:0 0 12px;font-weight:700">{title}</h2>
-                  <p style="color:#6b7280;font-size:14px;line-height:1.7;margin:0 0 28px">{desc}</p>
-                  
-                  <!-- OTP Box -->
-                  <div style="background:#fef2f4;border:2px dashed #e8213a;border-radius:12px;padding:24px;text-align:center;margin-bottom:28px">
-                    <div style="color:#6b7280;font-size:12px;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px">Mã xác thực của bạn</div>
-                    <div style="color:#e8213a;font-size:40px;font-weight:900;letter-spacing:8px;font-family:monospace">{otp}</div>
-                    <div style="color:#9ca3af;font-size:12px;margin-top:10px">⏱ Mã có hiệu lực trong <strong>10 phút</strong></div>
-                  </div>
-                  
-                  <div style="background:#f8f9fc;border-radius:8px;padding:14px 16px;margin-bottom:24px">
-                    <p style="color:#374151;font-size:13px;margin:0;line-height:1.6">
-                      ⚠️ <strong>Lưu ý bảo mật:</strong> Không chia sẻ mã này với bất kỳ ai. 
-                      CLB CTXH DUT sẽ không bao giờ yêu cầu mã OTP qua điện thoại hoặc mạng xã hội.
-                    </p>
-                  </div>
-                  
-                  <p style="color:#9ca3af;font-size:12px;margin:0">
-                    Nếu bạn không yêu cầu mã này, hãy bỏ qua email này. Tài khoản của bạn vẫn an toàn.
-                  </p>
-                </div>
-                
-                <!-- Footer -->
-                <div style="background:#f8f9fc;border-top:1px solid #e5e7eb;padding:18px 32px;text-align:center">
-                  <p style="color:#9ca3af;font-size:11px;margin:0">
-                    © {DateTime.Now.Year} CLB Công tác Xã hội · Trường Đại học Bách Khoa Đà Nẵng<br>
-                    54 Nguyễn Lương Bằng, Đà Nẵng
-                  </p>
-                </div>
-              </div>
-            </body>
-            </html>
-            """;
+            return RenderEmailTemplate("otp.html", new Dictionary<string, string>
+            {
+                ["Title"] = title,
+                ["Description"] = desc,
+                ["Otp"] = WebUtility.HtmlEncode(otp),
+                ["Year"] = DateTime.Now.Year.ToString()
+            });
         }
 
-        private static string BuildMemberApprovedEmailHtml(string fullName, string studentCode, string temporaryPassword)
+        private string BuildMemberApprovedEmailHtml(string fullName, string studentCode, string temporaryPassword)
         {
-            return $"""
-            <!DOCTYPE html>
-            <html lang="vi">
-            <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
-            <body style="margin:0;padding:0;background:#f1f5f9;font-family:Arial,Helvetica,sans-serif">
-              <div style="max-width:560px;margin:40px auto;background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.10)">
-                <div style="background:linear-gradient(135deg,#e8213a 0%,#c01830 100%);padding:34px 32px;text-align:center">
-                  <div style="color:white;font-size:23px;font-weight:800;letter-spacing:-0.5px">CTXHDUT</div>
-                  <div style="color:rgba(255,255,255,0.88);font-size:13px;margin-top:6px">CLB Công tác Xã hội DUT</div>
-                </div>
+            return RenderEmailTemplate("member-approved.html", new Dictionary<string, string>
+            {
+                ["FullName"] = WebUtility.HtmlEncode(fullName),
+                ["StudentCode"] = WebUtility.HtmlEncode(studentCode),
+                ["TemporaryPassword"] = WebUtility.HtmlEncode(temporaryPassword),
+                ["Year"] = DateTime.Now.Year.ToString()
+            });
+        }
 
-                <div style="padding:34px 32px">
-                  <h2 style="color:#111827;font-size:22px;margin:0 0 12px;font-weight:800">Chúc mừng {fullName}!</h2>
-                  <p style="color:#4b5563;font-size:14px;line-height:1.7;margin:0 0 24px">
-                    Hồ sơ đăng ký thành viên của bạn đã được duyệt. Dưới đây là thông tin tài khoản để đăng nhập hệ thống CLB CTXH DUT.
-                  </p>
+        private string BuildMemberRejectedEmailHtml(string fullName, string studentCode, string? reason)
+        {
+            var safeReason = string.IsNullOrWhiteSpace(reason)
+                ? "Ban quản lý chưa ghi chú lý do cụ thể. Bạn có thể liên hệ CLB để được hỗ trợ thêm."
+                : WebUtility.HtmlEncode(reason.Trim());
 
-                  <div style="background:#f8fafc;border:1px solid #e5e7eb;border-radius:12px;padding:20px;margin-bottom:22px">
-                    <div style="margin-bottom:14px">
-                      <div style="color:#6b7280;font-size:12px;text-transform:uppercase;font-weight:700;letter-spacing:0.06em">Tên đăng nhập</div>
-                      <div style="color:#111827;font-size:18px;font-weight:800;margin-top:4px">{studentCode}</div>
-                    </div>
-                    <div>
-                      <div style="color:#6b7280;font-size:12px;text-transform:uppercase;font-weight:700;letter-spacing:0.06em">Mật khẩu tạm thời</div>
-                      <div style="color:#e8213a;font-size:20px;font-weight:900;margin-top:4px;font-family:Consolas,monospace">{temporaryPassword}</div>
-                    </div>
-                  </div>
+            return RenderEmailTemplate("member-rejected.html", new Dictionary<string, string>
+            {
+                ["FullName"] = WebUtility.HtmlEncode(fullName),
+                ["StudentCode"] = WebUtility.HtmlEncode(studentCode),
+                ["Reason"] = safeReason,
+                ["Year"] = DateTime.Now.Year.ToString()
+            });
+        }
 
-                  <div style="background:#fff7ed;border:1px solid #fed7aa;border-radius:10px;padding:14px 16px">
-                    <p style="color:#9a3412;font-size:13px;line-height:1.6;margin:0">
-                      Vì lý do bảo mật, bạn nên đổi mật khẩu ngay sau lần đăng nhập đầu tiên.
-                    </p>
-                  </div>
-                </div>
+        private string RenderEmailTemplate(string templateName, IReadOnlyDictionary<string, string> values)
+        {
+            var templatePath = Path.Combine(_env.ContentRootPath, "Templates", "Emails", templateName);
+            if (!File.Exists(templatePath))
+                throw new FileNotFoundException($"Không tìm thấy template email: {templateName}", templatePath);
 
-                <div style="background:#f8f9fc;border-top:1px solid #e5e7eb;padding:18px 32px;text-align:center">
-                  <p style="color:#9ca3af;font-size:11px;margin:0">
-                    © {DateTime.Now.Year} CLB Công tác Xã hội · Trường Đại học Bách Khoa Đà Nẵng
-                  </p>
-                </div>
-              </div>
-            </body>
-            </html>
-            """;
+            var html = File.ReadAllText(templatePath, Encoding.UTF8);
+            foreach (var item in values)
+                html = html.Replace($"{{{{{item.Key}}}}}", item.Value);
+
+            return html;
         }
     }
 }

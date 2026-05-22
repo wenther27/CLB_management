@@ -31,6 +31,9 @@ namespace ClubManagement.API.Models
         [MaxLength(1000)]
         public string? Note { get; set; }
 
+        [MaxLength(1000)]
+        public string? StudentCardImageUrl { get; set; }
+
         [Required, MaxLength(20)]
         public string Status { get; set; } = "Pending";
 

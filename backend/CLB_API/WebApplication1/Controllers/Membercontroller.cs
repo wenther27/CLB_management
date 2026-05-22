@@ -63,10 +63,17 @@ namespace ClubManagement.API.Controllers
         [HttpPut("me")]
         public async Task<IActionResult> UpdateMyProfile([FromBody] UpdateProfileDTO dto)
         {
-            var result = await _memberService.UpdateProfileAsync(GetUserId(), dto);
-            if (result == null)
-                return NotFound(ApiResponse<string>.Fail("Không tìm thấy thành viên"));
-            return Ok(ApiResponse<MemberDTO>.Ok(result, "Cập nhật profile thành công"));
+            try
+            {
+                var result = await _memberService.UpdateProfileAsync(GetUserId(), dto);
+                if (result == null)
+                    return NotFound(ApiResponse<string>.Fail("Không tìm thấy thành viên"));
+                return Ok(ApiResponse<MemberDTO>.Ok(result, "Cập nhật profile thành công"));
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(ApiResponse<string>.Fail(ex.Message));
+            }
         }
 
         // PUT /api/members/me/avatar

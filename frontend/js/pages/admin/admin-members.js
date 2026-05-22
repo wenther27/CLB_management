@@ -255,6 +255,7 @@ const FACULTIES = [
 ];
 
 function openMemberModal(data = {}) {
+  const isEditingMember = !!data.memberID;
   const facultyList = data.faculty && !FACULTIES.includes(data.faculty)
     ? [data.faculty, ...FACULTIES]
     : FACULTIES;
@@ -288,7 +289,13 @@ function openMemberModal(data = {}) {
     <div class="form-group">
       <label class="form-label">Email liên lạc *</label>
       <input id="mf-contact-email" class="form-control"
-             value="${Utils.escapeHtml(data.contactEmail || '')}">
+             value="${Utils.escapeHtml(data.contactEmail || '')}"
+             ${isEditingMember ? 'readonly aria-readonly="true"' : ''}>
+      ${isEditingMember ? `
+        <div style="font-size:11px;color:#64748b;margin-top:6px">
+          Email dùng để định danh tài khoản, quản lý không thể thay đổi tại đây.
+        </div>
+      ` : ''}
     </div>
 
     <!-- Hàng 2: Lớp | Khoa -->
@@ -441,13 +448,16 @@ async function saveMember(id) {
     department:   deptValue,   // "", "BCN", "BTT" hoặc "BPT"
     displayOrder: parseInt(document.getElementById('mf-order')?.value) || 0,
     avatarUrl:    document.getElementById('mf-avatar')?.value.trim()      || null,
-    contactEmail: document.getElementById('mf-contact-email')?.value.trim() || null,
   };
+
+  if (!id) {
+    d.contactEmail = document.getElementById('mf-contact-email')?.value.trim() || null;
+  }
 
   const requiredFields = [
     { value: d.fullName,     label: 'Họ và tên' },
     { value: d.phone,        label: 'Số điện thoại' },
-    { value: d.contactEmail, label: 'Gmail' },
+    ...(!id ? [{ value: d.contactEmail, label: 'Gmail' }] : []),
     { value: d.className,    label: 'Lớp' },
     { value: d.faculty,      label: 'Khoa' },
   ];
@@ -755,6 +765,7 @@ function renderMemberApplicationsTable() {
             <th style="padding:13px;text-align:left;white-space:nowrap">Ng\u00e0y sinh</th>
             <th style="padding:13px;text-align:left;min-width:230px">Email</th>
             <th style="padding:13px;text-align:left;white-space:nowrap">S\u0110T</th>
+            <th style="padding:13px;text-align:left;white-space:nowrap">Thẻ SV</th>
             <th style="padding:13px;text-align:left;white-space:nowrap">Tr\u1ea1ng th\u00e1i</th>
             <th style="padding:13px;text-align:left;min-width:170px">Thao t\u00e1c</th>
           </tr>
@@ -772,6 +783,13 @@ function renderMemberApplicationsTable() {
               <td style="padding:13px;white-space:nowrap">${formatApplicationDate(a.birthDate)}</td>
               <td style="padding:13px;font-weight:600">${Utils.escapeHtml(a.contactEmail || '\u2014')}</td>
               <td style="padding:13px;white-space:nowrap">${Utils.escapeHtml(a.phone || '\u2014')}</td>
+              <td style="padding:13px;white-space:nowrap">
+                ${a.studentCardImageUrl ? `
+                  <button class="btn-outline btn-sm" onclick="viewMemberApplicationCard('${Utils.escapeHtml(a.studentCardImageUrl)}')">
+                    <i class="fa-regular fa-id-card"></i> Xem
+                  </button>
+                ` : '\u2014'}
+              </td>
               <td style="padding:13px">${applicationStatusBadge(a.status)}</td>
               <td style="padding:13px">
                 ${a.status === 'Pending' ? `
@@ -791,8 +809,119 @@ function renderMemberApplicationsTable() {
     </div>`;
 }
 
+function viewMemberApplicationCard(url) {
+  const safeUrl = Utils.escapeHtml(url || '');
+  if (!safeUrl) return;
+  const imageUrl = safeUrl.startsWith('http')
+    ? safeUrl
+    : `http://localhost:5190${safeUrl.startsWith('/') ? safeUrl : `/${safeUrl}`}`;
+
+  const overlay = document.createElement('div');
+  overlay.style.cssText = `
+    position:fixed;inset:0;z-index:100000;background:rgba(15,23,42,.62);
+    display:flex;align-items:center;justify-content:center;padding:20px;
+  `;
+  overlay.innerHTML = `
+    <div style="background:#fff;border-radius:18px;max-width:min(760px,96vw);max-height:90vh;overflow:hidden;box-shadow:0 24px 80px rgba(15,23,42,.32)">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px 16px;border-bottom:1px solid #e2e8f0">
+        <strong style="font-size:16px;color:#0f172a">Ảnh thẻ sinh viên</strong>
+        <button type="button" data-close style="width:34px;height:34px;border-radius:50%;border:1px solid #e2e8f0;background:#f8fafc;cursor:pointer">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+      <div style="padding:16px;background:#f8fafc">
+        <img src="${imageUrl}" alt="Ảnh thẻ sinh viên" style="display:block;max-width:100%;max-height:72vh;border-radius:12px;border:1px solid #e2e8f0;background:#fff">
+      </div>
+    </div>
+  `;
+  overlay.querySelector('[data-close]').onclick = () => overlay.remove();
+  overlay.addEventListener('click', e => {
+    if (e.target === overlay) overlay.remove();
+  });
+  document.body.appendChild(overlay);
+}
+
+function showMemberApplicationDecisionDialog({ type }) {
+  return new Promise(resolve => {
+    const isReject = type === 'reject';
+    const overlay = document.createElement('div');
+    overlay.className = 'member-application-confirm-overlay';
+    overlay.style.cssText = `
+      position:fixed;inset:0;z-index:99999;background:rgba(15,23,42,.45);
+      display:flex;align-items:center;justify-content:center;padding:18px;
+    `;
+
+    overlay.innerHTML = `
+      <div style="
+        width:min(460px,100%);background:#fff;border-radius:18px;padding:24px;
+        box-shadow:0 24px 70px rgba(15,23,42,.28);border:1px solid #e2e8f0;
+        font-family:Arial,sans-serif;
+      ">
+        <div style="display:flex;gap:14px;align-items:flex-start;margin-bottom:18px">
+          <div style="
+            width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+            background:${isReject ? '#fff1f2' : '#ecfdf5'};color:${isReject ? '#e11d48' : '#16a34a'};font-size:20px;flex-shrink:0;
+          ">
+            <i class="fa-solid ${isReject ? 'fa-xmark' : 'fa-check'}"></i>
+          </div>
+          <div>
+            <h3 style="margin:0 0 6px;font-size:20px;color:#0f172a;font-weight:800">
+              ${isReject ? 'Từ chối hồ sơ?' : 'Duyệt hồ sơ?'}
+            </h3>
+            <p style="margin:0;color:#64748b;font-size:14px;line-height:1.55">
+              ${isReject
+                ? 'Người nộp sẽ nhận email thông báo kết quả kèm lý do nếu bạn nhập.'
+                : 'Hệ thống sẽ tạo tài khoản thành viên và gửi email thông tin đăng nhập.'}
+            </p>
+          </div>
+        </div>
+
+        ${isReject ? `
+          <label style="display:block;margin-bottom:8px;font-size:13px;font-weight:800;color:#334155;text-transform:uppercase">
+            Lý do từ chối
+          </label>
+          <textarea id="memberApplicationRejectReason" style="
+            width:100%;min-height:110px;resize:vertical;border:1px solid #cbd5e1;border-radius:12px;
+            padding:12px 14px;font-size:14px;outline:none;box-sizing:border-box;font-family:Arial,sans-serif;
+          " placeholder="Có thể bỏ trống nếu chưa cần ghi chú"></textarea>
+        ` : ''}
+
+        <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:22px">
+          <button type="button" data-dialog-cancel style="
+            border:1px solid #e2e8f0;background:#fff;color:#334155;border-radius:10px;
+            padding:10px 16px;font-weight:800;cursor:pointer;
+          ">Hủy</button>
+          <button type="button" data-dialog-confirm style="
+            border:0;background:${isReject ? '#e11d48' : '#16a34a'};color:#fff;border-radius:10px;
+            padding:10px 18px;font-weight:800;cursor:pointer;box-shadow:0 10px 24px ${isReject ? 'rgba(225,29,72,.22)' : 'rgba(22,163,74,.22)'};
+          ">
+            <i class="fa-solid ${isReject ? 'fa-xmark' : 'fa-check'}"></i>
+            ${isReject ? 'Từ chối' : 'Duyệt hồ sơ'}
+          </button>
+        </div>
+      </div>`;
+
+    const finish = result => {
+      overlay.remove();
+      resolve(result);
+    };
+
+    overlay.querySelector('[data-dialog-cancel]').onclick = () => finish(null);
+    overlay.querySelector('[data-dialog-confirm]').onclick = () => {
+      const reason = overlay.querySelector('#memberApplicationRejectReason')?.value.trim() || '';
+      finish(isReject ? { reason } : {});
+    };
+    overlay.addEventListener('click', e => {
+      if (e.target === overlay) finish(null);
+    });
+    document.body.appendChild(overlay);
+    overlay.querySelector('textarea')?.focus();
+  });
+}
+
 async function approveMemberApplication(id, button) {
-  if (!confirm('Duy\u1ec7t h\u1ed3 s\u01a1 n\u00e0y v\u00e0 t\u1ea1o t\u00e0i kho\u1ea3n th\u00e0nh vi\u00ean?')) return;
+  const decision = await showMemberApplicationDecisionDialog({ type: 'approve' });
+  if (!decision) return;
   window._processingMemberApplications ??= new Set();
   if (window._processingMemberApplications.has(id)) return;
 
@@ -824,7 +953,9 @@ async function approveMemberApplication(id, button) {
 }
 
 async function rejectMemberApplication(id, button) {
-  const reason = prompt('L\u00fd do t\u1eeb ch\u1ed1i h\u1ed3 s\u01a1 (c\u00f3 th\u1ec3 b\u1ecf tr\u1ed1ng):') || '';
+  const decision = await showMemberApplicationDecisionDialog({ type: 'reject' });
+  if (!decision) return;
+  const reason = decision.reason || '';
   window._processingMemberApplications ??= new Set();
   if (window._processingMemberApplications.has(id)) return;
 
@@ -859,3 +990,4 @@ window.refreshMemberApplicationsBadge = refreshMemberApplicationsBadge;
 window.approveMemberApplication = approveMemberApplication;
 window.rejectMemberApplication = rejectMemberApplication;
 window.renderMemberApplicationsTable = renderMemberApplicationsTable;
+window.viewMemberApplicationCard = viewMemberApplicationCard;

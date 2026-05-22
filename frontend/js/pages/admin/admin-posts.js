@@ -11,7 +11,7 @@ async function loadPostsAdmin() {
   tbody.innerHTML = '<tr><td colspan="7" class="loading"><div class="spinner" style="margin:0 auto"></div></td></tr>';
 
   try {
-    const r = await API.getPosts('');
+    const r = await API.getPosts('?status=all');
     const list = r.data?.items || r.data || [];
 
     if (!list.length) {

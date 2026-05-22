@@ -90,6 +90,31 @@ namespace ClubManagement.API.Controllers
             }
         }
 
+        [HttpPost("member-application-card")]
+        [AllowAnonymous]
+        [ApiExplorerSettings(IgnoreApi = true)]
+        public async Task<IActionResult> UploadMemberApplicationCard([FromForm] IFormFile file)
+        {
+            try
+            {
+                var error = ValidateFile(file);
+                if (error != null)
+                    return BadRequest(ApiResponse<string>.Fail(error));
+
+                var url = await SaveFileAsync(file!, "member-applications");
+                return Ok(new
+                {
+                    success = true,
+                    data = url,
+                    message = "Upload ảnh thẻ sinh viên thành công"
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ApiResponse<string>.Fail($"Lỗi server: {ex.Message}"));
+            }
+        }
+
         [HttpPost("receipt")]
         [Authorize(Roles = "Admin,ExecutiveBoard")]
         public async Task<IActionResult> UploadReceipt([FromForm] IFormFile file)

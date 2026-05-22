@@ -3,6 +3,64 @@
 // UPDATED: Thêm giấy chứng nhận + điểm danh
 // ================================================
 
+function showAppConfirm(options = {}) {
+  const {
+    title = 'Xác nhận thao tác',
+    message = 'Bạn có chắc muốn tiếp tục?',
+    confirmText = 'Xác nhận',
+    cancelText = 'Hủy',
+    danger = false
+  } = options;
+
+  return new Promise((resolve) => {
+    let overlay = document.getElementById('appConfirmModal');
+    if (!overlay) {
+      overlay = document.createElement('div');
+      overlay.id = 'appConfirmModal';
+      overlay.className = 'app-confirm-overlay';
+      document.body.appendChild(overlay);
+    }
+
+    overlay.innerHTML = `
+      <div class="app-confirm-box" role="dialog" aria-modal="true">
+        <button type="button" class="app-confirm-close" aria-label="Đóng">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+        <div class="app-confirm-icon ${danger ? 'danger' : ''}">
+          <i class="fa-solid ${danger ? 'fa-triangle-exclamation' : 'fa-circle-question'}"></i>
+        </div>
+        <div class="app-confirm-content">
+          <h3>${title}</h3>
+          <p>${message}</p>
+        </div>
+        <div class="app-confirm-actions">
+          <button type="button" class="app-confirm-btn cancel">${cancelText}</button>
+          <button type="button" class="app-confirm-btn ok ${danger ? 'danger' : ''}">${confirmText}</button>
+        </div>
+      </div>
+    `;
+
+    const close = (value) => {
+      overlay.classList.remove('open');
+      overlay.onclick = null;
+      document.onkeydown = null;
+      resolve(value);
+    };
+
+    overlay.querySelector('.app-confirm-close').onclick = () => close(false);
+    overlay.querySelector('.app-confirm-btn.cancel').onclick = () => close(false);
+    overlay.querySelector('.app-confirm-btn.ok').onclick = () => close(true);
+    overlay.onclick = (e) => {
+      if (e.target === overlay) close(false);
+    };
+    document.onkeydown = (e) => {
+      if (e.key === 'Escape') close(false);
+    };
+
+    requestAnimationFrame(() => overlay.classList.add('open'));
+  });
+}
+
 // ── Hiển thị chi tiết hoạt động ─────────────────────────────────────────────
 async function showActivityDetail(activityId, options = {}) {
   const isAdminPage = window.location.pathname.toLowerCase().includes('admin-dashboard');
@@ -609,7 +667,14 @@ async function registerActivityFromModal(activityId, btn) {
 }
 
 async function cancelRegistrationFromModal(activityId, btn) {
-  if (!confirm('Bạn có chắc muốn hủy đăng ký hoạt động này?')) return;
+  const ok = await showAppConfirm({
+    title: 'Hủy đăng ký hoạt động?',
+    message: 'Bạn sẽ không còn trong danh sách tham gia hoạt động này.',
+    confirmText: 'Hủy đăng ký',
+    cancelText: 'Giữ lại',
+    danger: true
+  });
+  if (!ok) return;
   const orig = btn.innerHTML;
   btn.disabled = true;
   btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang xử lý...';
@@ -656,7 +721,14 @@ async function registerActivityFromCard(activityId, btn) {
 }
 
 async function cancelRegistrationFromCard(activityId, btn) {
-  if (!confirm('Bạn có chắc muốn hủy đăng ký hoạt động này?')) return;
+  const ok = await showAppConfirm({
+    title: 'Hủy đăng ký hoạt động?',
+    message: 'Bạn sẽ không còn trong danh sách tham gia hoạt động này.',
+    confirmText: 'Hủy đăng ký',
+    cancelText: 'Giữ lại',
+    danger: true
+  });
+  if (!ok) return;
   const orig = btn.innerHTML;
   btn.disabled = true;
   btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';

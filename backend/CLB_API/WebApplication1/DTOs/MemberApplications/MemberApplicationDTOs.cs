@@ -28,6 +28,9 @@ namespace ClubManagement.API.DTOs.MemberApplications
         [MaxLength(1000)]
         public string? Note { get; set; }
 
+        [MaxLength(1000)]
+        public string? StudentCardImageUrl { get; set; }
+
         [MaxLength(6)]
         public string? Otp { get; set; }
     }
@@ -57,6 +60,9 @@ namespace ClubManagement.API.DTOs.MemberApplications
 
         [MaxLength(1000)]
         public string? Note { get; set; }
+
+        [MaxLength(1000)]
+        public string? StudentCardImageUrl { get; set; }
     }
 
     public class MemberApplicationDTO
@@ -70,6 +76,7 @@ namespace ClubManagement.API.DTOs.MemberApplications
         public string ContactEmail { get; set; } = string.Empty;
         public string? Phone { get; set; }
         public string? Note { get; set; }
+        public string? StudentCardImageUrl { get; set; }
         public string Status { get; set; } = string.Empty;
         public DateTime SubmittedAt { get; set; }
         public DateTime? ReviewedAt { get; set; }

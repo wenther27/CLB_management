@@ -84,7 +84,7 @@ function openModal(title, bodyHtml, onSave) {
   const inner = document.getElementById('gModalInner');
   if (inner) {
     inner.removeAttribute('style');
-    inner.classList.remove('member-applications-modal');
+    inner.classList.remove('member-applications-modal', 'user-detail-modal');
   }
   inner.innerHTML = `
     <div class="modal-header">
@@ -103,7 +103,7 @@ function closeModal() {
   m.classList.remove('open');
   if (inner) {
     inner.removeAttribute('style');
-    inner.classList.remove('member-applications-modal');
+    inner.classList.remove('member-applications-modal', 'user-detail-modal');
   }
 }
 
