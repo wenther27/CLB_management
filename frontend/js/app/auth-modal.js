@@ -10,12 +10,15 @@
   'use strict';
 
   const API_BASE = 'http://localhost:5190/api';
+  const GOOGLE_CLIENT_ID = window.GOOGLE_CLIENT_ID || '596320000573-sgse89rdg47d4f2kq3e0fa06q5l6asq2.apps.googleusercontent.com';
 
   // ── State ──────────────────────────────────────────────────────────────────
   let _pendingEmail = '';
-  let _pendingPurpose = 'register'; // 'register' | 'forgot'
+  let _pendingPurpose = 'register'; // 'register' | 'forgot' | 'member-application'
+  let _pendingApplication = null;
   let _countdownTimer = null;
   let _injected = false;
+  let _googleScriptPromise = null;
   const REMEMBER_LOGIN_KEY = 'ctxhdut_remember_login';
 
   function loadRememberedLogin() {
@@ -86,6 +89,8 @@
       margin:18px;max-height:92vh;overflow-y:auto;
     transform:scale(0.94) translateY(16px);transition:transform 0.25s;
     box-shadow:0 24px 64px rgba(0,0,0,0.18) }
+  #authBox.login-compact { max-width:520px;padding:36px 40px }
+  #authBox.login-compact #am-login { max-width:396px;margin:0 auto }
   #authModal.visible #authBox { transform:scale(1) translateY(0) }
   .am-input { width:100%;padding:14px 16px;border:1.5px solid #e5e7eb;border-radius:12px;
       font-size:15px;color:#111827;background:#f9fafb;outline:none;
@@ -105,6 +110,9 @@
     font-family:inherit;display:flex;align-items:center;justify-content:center;gap:10px;
     transition:border-color 0.2s,box-shadow 0.2s;margin-bottom:18px }
   .am-btn-google:hover { border-color:#e8213a;box-shadow:0 2px 8px rgba(232,33,58,0.12) }
+  .am-google-render { width:100%;min-height:48px;display:flex;justify-content:center;margin-bottom:18px }
+  .am-google-render > div { width:100% !important }
+  .am-google-render iframe { width:100% !important;max-width:100% !important;margin:0 auto !important }
   .am-divider { display:flex;align-items:center;gap:10px;margin:16px 0;color:#9ca3af;font-size:12px }
   .am-divider::before,.am-divider::after { content:'';flex:1;height:1px;background:#e5e7eb }
   .am-link-btn { background:none;border:none;color:#e8213a;font-size:13px;font-weight:700;
@@ -155,10 +163,7 @@
       <h2 style="font-size:22px;font-weight:800;margin:0 0 4px;color:#111827">Đăng nhập</h2>
       <p style="color:#6b7280;font-size:13px;margin:0 0 20px">Chào mừng trở lại!</p>
 
-      <button class="am-btn-google" onclick="AuthModal.loginGoogle()">
-        ${googleSVG()}
-        Tiếp tục với Google
-      </button>
+      <div id="am-google-button" class="am-google-render"></div>
       <div class="am-divider">hoặc</div>
 
       <div class="am-group">
@@ -525,7 +530,88 @@
     return data;
   }
 
+  function loadGoogleIdentityScript() {
+    if (window.google?.accounts?.id) return Promise.resolve();
+    if (_googleScriptPromise) return _googleScriptPromise;
+
+    _googleScriptPromise = new Promise((resolve, reject) => {
+      const script = document.createElement('script');
+      script.src = 'https://accounts.google.com/gsi/client';
+      script.async = true;
+      script.defer = true;
+      script.onload = resolve;
+      script.onerror = () => reject(new Error('Không thể tải thư viện đăng nhập Google'));
+      document.head.appendChild(script);
+    });
+
+    return _googleScriptPromise;
+  }
+
+  function finishGoogleLogin(userData) {
+    Auth.setToken(userData.token);
+    Auth.setUser(userData);
+    AuthModal.close();
+    toast(`Chào mừng ${userData.displayName || userData.fullName || userData.studentCode || userData.email || 'bạn'}!`, 'success');
+    if (typeof updateNavbar === 'function') updateNavbar();
+    if (userData.role === 'Admin' || userData.role === 'ExecutiveBoard') {
+      setTimeout(() => location.href = '../pages/Admin-dashboard.html', 800);
+    }
+  }
+
   // ── Toast helper ───────────────────────────────────────────────────────────
+  async function renderGoogleLoginButton() {
+    const container = document.getElementById('am-google-button');
+    if (!container || container.dataset.rendered === '1') return;
+
+    if (!GOOGLE_CLIENT_ID || GOOGLE_CLIENT_ID.includes('YOUR_GOOGLE_CLIENT_ID')) {
+      container.innerHTML = `
+        <button class="am-btn-google" type="button" disabled>
+          ${googleSVG()}
+          Chưa cấu hình Google Client ID
+        </button>`;
+      return;
+    }
+
+    try {
+      await loadGoogleIdentityScript();
+
+      window.google.accounts.id.initialize({
+        client_id: GOOGLE_CLIENT_ID,
+        callback: async response => {
+          try {
+            if (!response?.credential) {
+              throw new Error('Không nhận được thông tin từ Google');
+            }
+
+            const r = await apiPost('/auth/google', { idToken: response.credential });
+            finishGoogleLogin(r.data ?? r);
+          } catch (e) {
+            toast(e.message || 'Đăng nhập Google thất bại', 'error');
+          }
+        },
+        cancel_on_tap_outside: false
+      });
+
+      container.innerHTML = '';
+      window.google.accounts.id.renderButton(container, {
+        type: 'standard',
+        theme: 'outline',
+        size: 'large',
+        text: 'continue_with',
+        shape: 'rectangular',
+        logo_alignment: 'center',
+        width: 396
+      });
+      container.dataset.rendered = '1';
+    } catch {
+      container.innerHTML = `
+        <button class="am-btn-google" type="button" disabled>
+          ${googleSVG()}
+          Không thể tải đăng nhập Google
+        </button>`;
+    }
+  }
+
   function toast(msg, type = 'info') {
     if (typeof Toast !== 'undefined') {
       Toast[type]?.(msg) ?? Toast.info(msg);
@@ -571,6 +657,7 @@
     show(panel) {
       document.querySelectorAll('.am-panel').forEach(p => p.classList.remove('active'));
       document.getElementById(`am-${panel}`)?.classList.add('active');
+      document.getElementById('authBox')?.classList.toggle('login-compact', panel === 'login');
       const tags = {
         login: 'Đăng nhập', register: 'Nộp hồ sơ', otp: 'Xác thực',
         forgot: 'Quên mật khẩu', reset: 'Đặt lại mật khẩu', success: ''
@@ -578,7 +665,10 @@
       const tagEl = document.getElementById('amModalTag');
       if (tagEl) tagEl.textContent = tags[panel] || '';
 
-      if (panel === 'login') fillRememberedLogin();
+      if (panel === 'login') {
+        fillRememberedLogin();
+        setTimeout(() => renderGoogleLoginButton(), 80);
+      }
 
       // Focus input đầu tiên
       setTimeout(() => {
@@ -636,7 +726,7 @@
 
       setLoading('am-reg-btn', true);
       try {
-        await apiPost('/member-applications', {
+        const applicationData = {
           studentCode,
           fullName,
           className,
@@ -645,15 +735,22 @@
           contactEmail,
           phone,
           note
-        });
+        };
 
-        document.getElementById('am-success-icon').innerHTML = '<i class="fa-solid fa-check" style="color: rgb(0, 255, 177);"></i>';
-        document.getElementById('am-success-title').textContent = 'Đã gửi hồ sơ';
-        document.getElementById('am-success-msg').textContent = 'Ban quản lý sẽ kiểm tra hồ sơ. Hãy luôn theo dõi email để nhận thông báo khi tài khoản được duyệt.';
-        document.getElementById('am-success-btn').textContent = 'Quay lại đăng nhập';
-        document.getElementById('am-success-btn').onclick = () => this.show('login');
-        this.show('success');
-        toast('Đã gửi hồ sơ chờ duyệt', 'success');
+        await apiPost('/member-applications/send-otp', applicationData);
+
+        _pendingApplication = applicationData;
+        _pendingEmail = contactEmail;
+        _pendingPurpose = 'member-application';
+
+        resetOtpInputs();
+        document.getElementById('am-otp-title').textContent = 'Xác thực email nộp hồ sơ';
+        document.getElementById('am-otp-email-display').textContent = contactEmail;
+        document.getElementById('am-otp-back-btn').onclick = () => this.show('register');
+        document.getElementById('am-otp-countdown').style.color = '#e8213a';
+        startCountdown(600);
+        this.show('otp');
+        toast('Đã gửi mã OTP đến email liên hệ', 'success');
       } catch (e) {
         toast(e.message || 'Không thể gửi hồ sơ', 'error');
       } finally {
@@ -674,7 +771,26 @@
 
       setLoading('am-otp-verify-btn', true);
       try {
-        if (_pendingPurpose === 'register') {
+        if (_pendingPurpose === 'member-application') {
+          if (!_pendingApplication) throw new Error('Không tìm thấy dữ liệu hồ sơ đang chờ xác thực');
+
+          await apiPost('/member-applications', {
+            ..._pendingApplication,
+            otp
+          });
+
+          _pendingApplication = null;
+          clearInterval(_countdownTimer);
+
+          document.getElementById('am-success-icon').innerHTML = '<i class="fa-solid fa-check" style="color: rgb(0, 255, 177);"></i>';
+          document.getElementById('am-success-title').textContent = 'Đã gửi hồ sơ';
+          document.getElementById('am-success-msg').textContent = 'Ban quản lý sẽ kiểm tra hồ sơ. Hãy luôn theo dõi email để nhận thông báo khi tài khoản được duyệt.';
+          document.getElementById('am-success-btn').textContent = 'Quay lại đăng nhập';
+          document.getElementById('am-success-btn').onclick = () => this.show('login');
+          this.show('success');
+          toast('Đã xác thực email và gửi hồ sơ chờ duyệt', 'success');
+
+        } else if (_pendingPurpose === 'register') {
           // Xác thực OTP đăng ký → tạo tài khoản
           const r = await apiPost('/auth/verify-otp', {
             email: _pendingEmail,
@@ -709,7 +825,7 @@
           this.show('reset');
         }
       } catch (e) {
-        toast('Mã OTP không đúng hoặc đã hết hạn', 'error');
+        toast(e.message || 'Mã OTP không đúng hoặc đã hết hạn', 'error');
         // Rung hộp OTP
         const boxes = document.getElementById('am-otp-boxes');
         boxes.style.animation = 'am-shake 0.4s';
@@ -724,7 +840,12 @@
       if (resendBtn) resendBtn.disabled = true;
 
       try {
-        await apiPost('/auth/resend-otp', { email: _pendingEmail, purpose: _pendingPurpose });
+        if (_pendingPurpose === 'member-application') {
+          if (!_pendingApplication) throw new Error('Không tìm thấy dữ liệu hồ sơ đang chờ xác thực');
+          await apiPost('/member-applications/send-otp', _pendingApplication);
+        } else {
+          await apiPost('/auth/resend-otp', { email: _pendingEmail, purpose: _pendingPurpose });
+        }
         resetOtpInputs();
         startCountdown(600);
         document.getElementById('am-otp-countdown').style.color = '#e8213a';
@@ -802,7 +923,43 @@
     },
 
     // ── Google OAuth (placeholder) ─────────────────────────────────────────
-    loginGoogle() {
+    async loginGoogle() {
+      if (!GOOGLE_CLIENT_ID || GOOGLE_CLIENT_ID.includes('YOUR_GOOGLE_CLIENT_ID')) {
+        toast('Chưa cấu hình Google Client ID', 'error');
+        return;
+      }
+
+      try {
+        await loadGoogleIdentityScript();
+
+        const idToken = await new Promise((resolve, reject) => {
+          let done = false;
+
+          window.google.accounts.id.initialize({
+            client_id: GOOGLE_CLIENT_ID,
+            callback: response => {
+              done = true;
+              response?.credential
+                ? resolve(response.credential)
+                : reject(new Error('Không nhận được thông tin từ Google'));
+            },
+            cancel_on_tap_outside: false
+          });
+
+          window.google.accounts.id.prompt(notification => {
+            if (done) return;
+            if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
+              reject(new Error('Không thể mở đăng nhập Google. Hãy kiểm tra cấu hình OAuth Client ID.'));
+            }
+          });
+        });
+
+        const r = await apiPost('/auth/google', { idToken });
+        finishGoogleLogin(r.data ?? r);
+      } catch (e) {
+        toast(e.message || 'Đăng nhập Google thất bại', 'error');
+      }
+      return;
       toast('Tính năng đăng nhập Google đang được phát triển!', 'info');
       // Khi triển khai Google OAuth thực sự:
       // window.location.href = `${API_BASE}/auth/google-login`;

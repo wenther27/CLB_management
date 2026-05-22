@@ -27,6 +27,17 @@ namespace ClubManagement.API.Controllers
             return Ok(result);
         }
 
+        // POST /api/auth/google
+        [HttpPost("google")]
+        public async Task<IActionResult> GoogleLogin([FromBody] GoogleLoginDTO dto)
+        {
+            var (result, error) = await _authService.GoogleLoginAsync(dto);
+            if (result == null)
+                return Unauthorized(new { message = error ?? "Không thể đăng nhập bằng Google" });
+
+            return Ok(result);
+        }
+
         // POST /api/auth/send-otp  ← frontend gọi khi đăng ký
         [HttpPost("send-otp")]
         public async Task<IActionResult> SendOtp([FromBody] RegisterDTO dto)

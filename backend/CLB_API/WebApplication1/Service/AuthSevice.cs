@@ -7,14 +7,17 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
+using System.Net.Http.Json;
 using System.Security.Claims;
 using System.Text;
+using System.Text.Json.Serialization;
 
 namespace ClubManagement.API.AuthService
 {
     public interface IAuthService
     {
         Task<AuthResponseDTO?> LoginAsync(LoginDTO dto);
+        Task<(AuthResponseDTO? Result, string? Error)> GoogleLoginAsync(GoogleLoginDTO dto);
         Task<(bool Success, string? Error)> SendRegisterOtpAsync(RegisterDTO dto);
         Task<AuthResponseDTO?> VerifyRegisterOtpAsync(VerifyRegisterOtpDTO dto);
         Task<bool> ResendOtpAsync(string email, string purpose);
@@ -29,14 +32,17 @@ namespace ClubManagement.API.AuthService
         private readonly IConfiguration _config;
         private readonly IOtpService _otpService;
         private readonly IMemoryCache _pendingCache;
+        private readonly IHttpClientFactory _httpClientFactory;
 
         public AuthService(ApplicationDbContext context, IConfiguration config,
-            IOtpService otpService, IMemoryCache pendingCache)
+            IOtpService otpService, IMemoryCache pendingCache,
+            IHttpClientFactory httpClientFactory)
         {
             _context = context;
             _config = config;
             _otpService = otpService;
             _pendingCache = pendingCache;
+            _httpClientFactory = httpClientFactory;
         }
 
         private void AddAuditLog(int? userId, string action, string tableName, int? recordId)
@@ -72,6 +78,52 @@ namespace ClubManagement.API.AuthService
             AddAuditLog(user.UserID, "Đăng nhập hệ thống", "Login", user.UserID);
             await _context.SaveChangesAsync();
             return ToAuthResponse(user);
+        }
+
+        public async Task<(AuthResponseDTO? Result, string? Error)> GoogleLoginAsync(GoogleLoginDTO dto)
+        {
+            var idToken = (dto.IdToken ?? string.Empty).Trim();
+            var clientId = (_config["GoogleAuth:ClientId"] ?? string.Empty).Trim();
+
+            if (string.IsNullOrWhiteSpace(clientId) || clientId.Contains("YOUR_GOOGLE_CLIENT_ID"))
+                return (null, "Chưa cấu hình Google Client ID");
+
+            if (string.IsNullOrWhiteSpace(idToken))
+                return (null, "Thiếu Google token");
+
+            GoogleTokenInfo? tokenInfo;
+            try
+            {
+                var http = _httpClientFactory.CreateClient();
+                tokenInfo = await http.GetFromJsonAsync<GoogleTokenInfo>(
+                    $"https://oauth2.googleapis.com/tokeninfo?id_token={Uri.EscapeDataString(idToken)}");
+            }
+            catch
+            {
+                return (null, "Không thể xác thực tài khoản Google");
+            }
+
+            if (tokenInfo == null ||
+                tokenInfo.Audience != clientId ||
+                !string.Equals(tokenInfo.EmailVerified, "true", StringComparison.OrdinalIgnoreCase) ||
+                string.IsNullOrWhiteSpace(tokenInfo.Email))
+            {
+                return (null, "Tài khoản Google không hợp lệ");
+            }
+
+            var email = tokenInfo.Email.Trim().ToLowerInvariant();
+            var user = await _context.Users
+                .Include(u => u.Role)
+                .Include(u => u.Member)
+                .FirstOrDefaultAsync(u => u.IsActive && u.Email.ToLower() == email);
+
+            if (user == null)
+                return (null, "Email Google này chưa được cấp tài khoản trong hệ thống");
+
+            AddAuditLog(user.UserID, "Đăng nhập bằng Google", "Login", user.UserID);
+            await _context.SaveChangesAsync();
+
+            return (ToAuthResponse(user), null);
         }
 
         public async Task<(bool Success, string? Error)> SendRegisterOtpAsync(RegisterDTO dto)
@@ -260,5 +312,17 @@ namespace ClubManagement.API.AuthService
                 : !string.IsNullOrWhiteSpace(user.Member?.StudentCode)
                     ? user.Member.StudentCode!
                     : user.Email;
+
+        private sealed class GoogleTokenInfo
+        {
+            [JsonPropertyName("aud")]
+            public string? Audience { get; set; }
+
+            [JsonPropertyName("email")]
+            public string? Email { get; set; }
+
+            [JsonPropertyName("email_verified")]
+            public string? EmailVerified { get; set; }
+        }
     }
 }

@@ -13,25 +13,90 @@ function memberText(value, fallback = '—') {
 }
 
 // ── Load danh sách thành viên ─────────────────────────────────────────────────
-async function loadMembers() {
+let memberAdminQuery = {
+  page: 1,
+  pageSize: 10,
+};
+let memberAdminTotalPages = 1;
+
+function buildMemberAdminQuery() {
   const keyword = document.getElementById('mSearch')?.value.trim() || '';
   const status  = document.getElementById('mStatus')?.value || '';
   const faculty = document.getElementById('mFaculty')?.value || '';
+  const params = new URLSearchParams();
 
-  let params = '?page=1&pageSize=50';
-  if (keyword) params += `&keyword=${encodeURIComponent(keyword)}`;
-  if (status)  params += `&status=${status}`;
-  if (faculty) params += `&faculty=${encodeURIComponent(faculty)}`;
+  params.set('page', memberAdminQuery.page);
+  params.set('pageSize', memberAdminQuery.pageSize);
+  if (keyword) params.set('keyword', keyword);
+  if (status) params.set('status', status);
+  if (faculty) params.set('faculty', faculty);
 
+  return `?${params.toString()}`;
+}
+
+function memberAdminPageRange(current, total) {
+  if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
+  const pages = [1];
+  const start = Math.max(2, current - 1);
+  const end = Math.min(total - 1, current + 1);
+  if (start > 2) pages.push('...');
+  for (let i = start; i <= end; i++) pages.push(i);
+  if (end < total - 1) pages.push('...');
+  pages.push(total);
+  return pages;
+}
+
+function renderMemberPagination() {
+  const box = document.getElementById('mPagination');
+  if (!box) return;
+  if (memberAdminTotalPages <= 1) {
+    box.innerHTML = '';
+    return;
+  }
+
+  const current = memberAdminQuery.page;
+  const buttons = memberAdminPageRange(current, memberAdminTotalPages).map(page => {
+    if (page === '...') return '<span class="admin-page-ellipsis">...</span>';
+    return `
+      <button class="admin-page-btn ${page === current ? 'active' : ''}"
+              onclick="changeMemberAdminPage(${page})">${page}</button>`;
+  }).join('');
+
+  box.innerHTML = `
+    <button class="admin-page-btn" onclick="changeMemberAdminPage(${current - 1})" ${current <= 1 ? 'disabled' : ''}>
+      <i class="fa-solid fa-chevron-left"></i>
+    </button>
+    ${buttons}
+    <button class="admin-page-btn" onclick="changeMemberAdminPage(${current + 1})" ${current >= memberAdminTotalPages ? 'disabled' : ''}>
+      <i class="fa-solid fa-chevron-right"></i>
+    </button>`;
+}
+
+function changeMemberAdminPage(page) {
+  if (page < 1 || page > memberAdminTotalPages || page === memberAdminQuery.page) return;
+  memberAdminQuery.page = page;
+  loadMembers();
+}
+
+function searchMembersAdmin() {
+  memberAdminQuery.page = 1;
+  loadMembers();
+}
+
+async function loadMembers() {
   const tbody = document.getElementById('mBody');
   tbody.innerHTML = '<tr><td colspan="7" class="loading"><div class="spinner" style="margin:0 auto"></div></td></tr>';
 
   try {
-    const r = await request('GET', `/members${params}`, null, true);
-    const list = r.data?.items || r.data || [];
+    const r = await request('GET', `/members${buildMemberAdminQuery()}`, null, true);
+    const paged = r.data || {};
+    const list = paged.items || r.data || [];
+    memberAdminTotalPages = paged.totalPages || Math.max(1, Math.ceil((paged.totalCount || list.length) / memberAdminQuery.pageSize));
+    renderMemberPagination();
 
     if (!list.length) {
       tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:30px;color:#475569">Không có thành viên nào</td></tr>';
+      renderMemberPagination();
       return;
     }
 
@@ -80,6 +145,8 @@ async function loadMembers() {
     refreshMemberApplicationsBadge();
 
   } catch (e) {
+    memberAdminTotalPages = 1;
+    renderMemberPagination();
     tbody.innerHTML = `<tr><td colspan="7" style="color:#ff2d55;padding:20px;text-align:center">
       <i class="fa-solid fa-circle-exclamation"></i> ${e.message}
     </td></tr>`;
@@ -709,10 +776,10 @@ function renderMemberApplicationsTable() {
               <td style="padding:13px">
                 ${a.status === 'Pending' ? `
                   <div style="display:flex;gap:7px;flex-wrap:wrap">
-                    <button class="btn-primary btn-sm" onclick="approveMemberApplication(${a.memberApplicationID})">
+                    <button class="btn-primary btn-sm" data-application-action="${a.memberApplicationID}" onclick="approveMemberApplication(${a.memberApplicationID}, this)">
                       <i class="fa-solid fa-check"></i> Duy\u1ec7t
                     </button>
-                    <button class="btn-danger btn-sm" onclick="rejectMemberApplication(${a.memberApplicationID})">
+                    <button class="btn-danger btn-sm" data-application-action="${a.memberApplicationID}" onclick="rejectMemberApplication(${a.memberApplicationID}, this)">
                       <i class="fa-solid fa-xmark"></i> T\u1eeb ch\u1ed1i
                     </button>
                   </div>` : '\u2014'}
@@ -724,8 +791,20 @@ function renderMemberApplicationsTable() {
     </div>`;
 }
 
-async function approveMemberApplication(id) {
+async function approveMemberApplication(id, button) {
   if (!confirm('Duy\u1ec7t h\u1ed3 s\u01a1 n\u00e0y v\u00e0 t\u1ea1o t\u00e0i kho\u1ea3n th\u00e0nh vi\u00ean?')) return;
+  window._processingMemberApplications ??= new Set();
+  if (window._processingMemberApplications.has(id)) return;
+
+  const actionButtons = document.querySelectorAll(`[data-application-action="${id}"]`);
+  window._processingMemberApplications.add(id);
+  actionButtons.forEach(btn => {
+    btn.disabled = true;
+    btn.style.opacity = '0.65';
+    btn.style.pointerEvents = 'none';
+  });
+  if (button) button.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang duyệt';
+
   try {
     await API.approveMemberApplication(id, {});
     Toast.success('\u0110\u00e3 duy\u1ec7t h\u1ed3 s\u01a1 v\u00e0 t\u1ea1o t\u00e0i kho\u1ea3n. M\u1eadt kh\u1ea9u t\u1ea1m l\u00e0 ng\u00e0y sinh d\u1ea1ng ddMMyyyy.');
@@ -734,11 +813,30 @@ async function approveMemberApplication(id) {
     loadStats();
   } catch (e) {
     Toast.error(e.message);
+    window._processingMemberApplications.delete(id);
+    actionButtons.forEach(btn => {
+      btn.disabled = false;
+      btn.style.opacity = '';
+      btn.style.pointerEvents = '';
+    });
+    if (button) button.innerHTML = '<i class="fa-solid fa-check"></i> Duyệt';
   }
 }
 
-async function rejectMemberApplication(id) {
+async function rejectMemberApplication(id, button) {
   const reason = prompt('L\u00fd do t\u1eeb ch\u1ed1i h\u1ed3 s\u01a1 (c\u00f3 th\u1ec3 b\u1ecf tr\u1ed1ng):') || '';
+  window._processingMemberApplications ??= new Set();
+  if (window._processingMemberApplications.has(id)) return;
+
+  const actionButtons = document.querySelectorAll(`[data-application-action="${id}"]`);
+  window._processingMemberApplications.add(id);
+  actionButtons.forEach(btn => {
+    btn.disabled = true;
+    btn.style.opacity = '0.65';
+    btn.style.pointerEvents = 'none';
+  });
+  if (button) button.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang từ chối';
+
   try {
     await API.rejectMemberApplication(id, { reviewNote: reason });
     Toast.success('\u0110\u00e3 t\u1eeb ch\u1ed1i h\u1ed3 s\u01a1');
@@ -746,6 +844,13 @@ async function rejectMemberApplication(id) {
     refreshMemberApplicationsBadge();
   } catch (e) {
     Toast.error(e.message);
+    window._processingMemberApplications.delete(id);
+    actionButtons.forEach(btn => {
+      btn.disabled = false;
+      btn.style.opacity = '';
+      btn.style.pointerEvents = '';
+    });
+    if (button) button.innerHTML = '<i class="fa-solid fa-xmark"></i> Từ chối';
   }
 }
 

@@ -6,6 +6,73 @@
 
 let currentEditId = null;
 let flatpickrLoadPromise = null;
+let activityAdminQuery = {
+  page: 1,
+  pageSize: 10,
+  keyword: '',
+};
+let activityAdminTotalPages = 1;
+
+function buildActivityAdminQuery() {
+  const params = new URLSearchParams();
+  if (activityAdminQuery.keyword) params.append('keyword', activityAdminQuery.keyword);
+  params.append('page', activityAdminQuery.page);
+  params.append('pageSize', activityAdminQuery.pageSize);
+  return `?${params.toString()}`;
+}
+
+function activityAdminPageRange(current, total) {
+  if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
+  if (current <= 4) return [1, 2, 3, 4, 5, '...', total];
+  if (current >= total - 3) return [1, '...', total - 4, total - 3, total - 2, total - 1, total];
+  return [1, '...', current - 1, current, current + 1, '...', total];
+}
+
+function renderActivityPagination() {
+  const wrap = document.getElementById('aPagination');
+  if (!wrap) return;
+  if (activityAdminTotalPages <= 1) {
+    wrap.innerHTML = '';
+    return;
+  }
+
+  const current = activityAdminQuery.page;
+  let html = `
+    <button class="admin-page-btn" onclick="changeActivityAdminPage(${current - 1})" ${current === 1 ? 'disabled' : ''}>
+      <i class="fa-solid fa-chevron-left"></i>
+    </button>`;
+
+  activityAdminPageRange(current, activityAdminTotalPages).forEach(page => {
+    if (page === '...') {
+      html += '<span class="admin-page-ellipsis">...</span>';
+      return;
+    }
+
+    html += `
+      <button class="admin-page-btn ${page === current ? 'active' : ''}" onclick="changeActivityAdminPage(${page})">
+        ${page}
+      </button>`;
+  });
+
+  html += `
+    <button class="admin-page-btn" onclick="changeActivityAdminPage(${current + 1})" ${current === activityAdminTotalPages ? 'disabled' : ''}>
+      <i class="fa-solid fa-chevron-right"></i>
+    </button>`;
+
+  wrap.innerHTML = html;
+}
+
+function changeActivityAdminPage(page) {
+  if (page < 1 || page > activityAdminTotalPages || page === activityAdminQuery.page) return;
+  activityAdminQuery.page = page;
+  loadActivitiesAdmin();
+}
+
+function searchActivitiesAdmin() {
+  activityAdminQuery.keyword = (document.getElementById('activitySearch')?.value || '').trim();
+  activityAdminQuery.page = 1;
+  loadActivitiesAdmin();
+}
 
 function toDisplayDateTime(value) {
   if (!value) return '';
@@ -95,11 +162,15 @@ async function loadActivitiesAdmin() {
   tbody.innerHTML = '<tr><td colspan="9" class="loading"><div class="spinner"></div></td></tr>';
 
   try {
-    const r = await API.getActivities();
+    const r = await API.getActivities(buildActivityAdminQuery());
+    const paged = r.data || {};
     const list = r.data?.items || r.data || [];
+    activityAdminTotalPages = paged.totalPages || Math.max(1, Math.ceil((paged.totalCount || list.length) / activityAdminQuery.pageSize));
+    renderActivityPagination();
 
     if (!list.length) {
       tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:30px;color:#111827">Chưa có hoạt động nào</td></tr>';
+      renderActivityPagination();
       return;
     }
 
@@ -179,6 +250,8 @@ async function loadActivitiesAdmin() {
 
   } catch (e) {
     tbody.innerHTML = `<tr><td colspan="9" style="color:#ff2d55;padding:20px">${e.message}</td></tr>`;
+    activityAdminTotalPages = 1;
+    renderActivityPagination();
   }
 }
 
@@ -551,6 +624,8 @@ function attachActivityTableListeners() {
 }
 
 window.loadActivitiesAdmin = loadActivitiesAdmin;
+window.changeActivityAdminPage = changeActivityAdminPage;
+window.searchActivitiesAdmin = searchActivitiesAdmin;
 window.openActModal = openActModal;
 window.openActModalForEdit = openActModalForEdit;
 window.saveAct = saveAct;

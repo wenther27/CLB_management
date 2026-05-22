@@ -77,6 +77,7 @@ builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IDashboardService, DashboardService>();
 builder.Services.AddScoped<IFundService, FundService>();
 builder.Services.AddScoped<IFundContributionService, FundContributionService>();
+builder.Services.AddHttpClient();
 builder.Services.AddHttpClient<ISepayTransactionSyncService, SepayTransactionSyncService>();
 
 

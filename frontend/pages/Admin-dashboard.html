@@ -165,14 +165,14 @@
           </div>
         </div>
         <div class="filter-bar" style="margin-bottom:18px">
-          <input id="mSearch" placeholder="🔍 Tìm tên, email..." oninput="loadMembers()" style="flex:2">
-          <select id="mStatus" onchange="loadMembers()" aria-label="Lọc theo trạng thái">
+          <input id="mSearch" placeholder="🔍 Tìm tên, email..." oninput="searchMembersAdmin()" style="flex:2">
+          <select id="mStatus" onchange="searchMembersAdmin()" aria-label="Lọc theo trạng thái">
             <option value="">Tất cả trạng thái</option>
             <option value="Active">Hoạt động</option>
             <option value="Inactive">Ngừng</option>
             <option value="Suspended">Tạm đình chỉ</option>
           </select>
-          <select id="mFaculty" onchange="loadMembers()" aria-label="Lọc theo khoa">
+          <select id="mFaculty" onchange="searchMembersAdmin()" aria-label="Lọc theo khoa">
             <option value="">Tất cả khoa</option>
             <option value="Điện tử - Viễn thông">Điện tử - Viễn thông</option>
             <option value="Công nghệ thông tin">Công nghệ thông tin</option>
@@ -193,6 +193,7 @@
             </tbody>
           </table>
         </div>
+        <div id="mPagination" class="admin-pagination"></div>
       </div>
 
       <!-- ACTIVITIES -->
@@ -202,6 +203,9 @@
           <button class="btn-primary btn-sm" onclick="openActModal()">
             <i class="fa-solid fa-plus"></i> Tạo hoạt động
           </button>
+        </div>
+        <div class="admin-filter-bar">
+          <input id="activitySearch" class="form-control" placeholder="Tìm tên hoạt động, địa điểm..." oninput="searchActivitiesAdmin()">
         </div>
         <div class="table-wrap">
           <table>
@@ -217,6 +221,7 @@
             </tbody>
           </table>
         </div>
+        <div id="aPagination" class="admin-pagination"></div>
       </div>
 
       <!-- POSTS -->

@@ -55,6 +55,7 @@ const del = (path) => request('DELETE', path, null, true);
 const API = {
   // Auth
   login: (data) => post('/auth/login', data),
+  googleLogin: (data) => post('/auth/google', data),
   registerUser: (data) => post('/auth/register', data),
   submitMemberApplication: (data) => request('POST', '/member-applications', data, false),
   getMemberApplications: (params = '') => request('GET', `/member-applications${params}`, null, true),

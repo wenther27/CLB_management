@@ -13,7 +13,7 @@ namespace ClubManagement.API.Service
 {
     public interface IOtpService
     {
-        Task<bool> SendOtpAsync(string email, string purpose); // purpose: "register" | "forgot"
+        Task<bool> SendOtpAsync(string email, string purpose); // purpose: "register" | "forgot" | "member-application"
         Task SendMemberApprovedEmailAsync(string email, string fullName, string studentCode, string temporaryPassword);
         Task<bool> VerifyOtpAsync(string email, string otp, string purpose);
         void InvalidateOtp(string email, string purpose);
@@ -64,9 +64,12 @@ namespace ClubManagement.API.Service
 
             try
             {
-                var subject = purpose == "register"
-                    ? "🎉 Mã xác thực đăng ký tài khoản CLB CTXH DUT"
-                    : "🔑 Mã đặt lại mật khẩu CLB CTXH DUT";
+                var subject = purpose switch
+                {
+                    "register" => "🎉 Mã xác thực đăng ký tài khoản CLB CTXH DUT",
+                    "member-application" => "📩 Mã xác thực email nộp hồ sơ CLB CTXH DUT",
+                    _ => "🔑 Mã đặt lại mật khẩu CLB CTXH DUT"
+                };
 
                 await SendEmailAsync(email, subject, BuildEmailHtml(otp, purpose));
                 _logger.LogInformation("[OTP] Sent {Purpose} OTP to {Email}", purpose, email);
@@ -139,13 +142,19 @@ namespace ClubManagement.API.Service
         // ── HTML template email OTP ───────────────────────────────────────────
         private static string BuildEmailHtml(string otp, string purpose)
         {
-            var title = purpose == "register"
-                ? "Xác thực đăng ký tài khoản"
-                : "Đặt lại mật khẩu";
+            var title = purpose switch
+            {
+                "register" => "Xác thực đăng ký tài khoản",
+                "member-application" => "Xác thực email nộp hồ sơ",
+                _ => "Đặt lại mật khẩu"
+            };
 
-            var desc = purpose == "register"
-                ? "Bạn vừa đăng ký tài khoản tại <strong>CLB Công tác Xã hội DUT</strong>. Dùng mã dưới đây để hoàn tất đăng ký:"
-                : "Chúng tôi nhận được yêu cầu đặt lại mật khẩu. Dùng mã dưới đây để tiếp tục:";
+            var desc = purpose switch
+            {
+                "register" => "Bạn vừa đăng ký tài khoản tại <strong>CLB Công tác Xã hội DUT</strong>. Dùng mã dưới đây để hoàn tất đăng ký:",
+                "member-application" => "Bạn vừa nộp hồ sơ thành viên tại <strong>CLB Công tác Xã hội DUT</strong>. Dùng mã dưới đây để xác thực email trước khi gửi hồ sơ đến ban quản lý:",
+                _ => "Chúng tôi nhận được yêu cầu đặt lại mật khẩu. Dùng mã dưới đây để tiếp tục:"
+            };
 
             return $"""
             <!DOCTYPE html>

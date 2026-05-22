@@ -2,11 +2,13 @@ using ClubManagement.API.Data;
 using ClubManagement.API.DTOs.MemberApplications;
 using ClubManagement.API.Models;
 using Microsoft.EntityFrameworkCore;
+using System.Data;
 
 namespace ClubManagement.API.Service
 {
     public interface IMemberApplicationService
     {
+        Task SendOtpAsync(CreateMemberApplicationDTO dto);
         Task<MemberApplicationDTO> SubmitAsync(CreateMemberApplicationDTO dto);
         Task<List<MemberApplicationDTO>> GetAllAsync(string? status = null);
         Task<MemberApplicationDTO?> ApproveAsync(int id, int reviewedByUserId, string? reviewNote = null);
@@ -15,6 +17,7 @@ namespace ClubManagement.API.Service
 
     public class MemberApplicationService : IMemberApplicationService
     {
+        private const string ApplicationOtpPurpose = "member-application";
         private readonly ApplicationDbContext _context;
         private readonly IOtpService _otpService;
 
@@ -36,7 +39,47 @@ namespace ClubManagement.API.Service
             });
         }
 
+        public async Task SendOtpAsync(CreateMemberApplicationDTO dto)
+        {
+            var normalized = await ValidateSubmitAsync(dto);
+            var sent = await _otpService.SendOtpAsync(normalized.Email, ApplicationOtpPurpose);
+            if (!sent) throw new InvalidOperationException("Không thể gửi mã OTP. Vui lòng thử lại.");
+        }
+
         public async Task<MemberApplicationDTO> SubmitAsync(CreateMemberApplicationDTO dto)
+        {
+            var normalized = await ValidateSubmitAsync(dto);
+
+            if (string.IsNullOrWhiteSpace(dto.Otp))
+                throw new InvalidOperationException("Vui lòng nhập mã OTP xác thực email");
+
+            var isOtpValid = await _otpService.VerifyOtpAsync(normalized.Email, dto.Otp, ApplicationOtpPurpose);
+            if (!isOtpValid)
+                throw new InvalidOperationException("Mã OTP không đúng hoặc đã hết hạn");
+
+            var application = new MemberApplication
+            {
+                StudentCode = normalized.StudentCode,
+                FullName = normalized.FullName,
+                ClassName = string.IsNullOrWhiteSpace(dto.ClassName) ? null : dto.ClassName.Trim(),
+                Faculty = normalized.Faculty,
+                BirthDate = normalized.BirthDate,
+                ContactEmail = normalized.Email,
+                Phone = string.IsNullOrWhiteSpace(dto.Phone) ? null : dto.Phone.Trim(),
+                Note = string.IsNullOrWhiteSpace(dto.Note) ? null : dto.Note.Trim(),
+                Status = "Pending",
+                SubmittedAt = DateTime.Now
+            };
+
+            _context.MemberApplications.Add(application);
+            await _context.SaveChangesAsync();
+            AddAuditLog(null, $"Nộp hồ sơ thành viên: {application.FullName} ({application.StudentCode})", "MemberApplications", application.MemberApplicationID);
+            await _context.SaveChangesAsync();
+
+            return Map(application);
+        }
+
+        private async Task<(string StudentCode, string FullName, string Faculty, DateTime BirthDate, string Email)> ValidateSubmitAsync(CreateMemberApplicationDTO dto)
         {
             var studentCode = NormalizeStudentCode(dto.StudentCode);
             var fullName = dto.FullName?.Trim() ?? string.Empty;
@@ -60,26 +103,7 @@ namespace ClubManagement.API.Service
                 (a.StudentCode == studentCode || a.ContactEmail.ToLower() == email) && a.Status != "Rejected");
             if (existedApplication) throw new InvalidOperationException("Hồ sơ với MSSV hoặc email này đang chờ duyệt hoặc đã được duyệt");
 
-            var application = new MemberApplication
-            {
-                StudentCode = studentCode,
-                FullName = fullName,
-                ClassName = string.IsNullOrWhiteSpace(dto.ClassName) ? null : dto.ClassName.Trim(),
-                Faculty = faculty,
-                BirthDate = dto.BirthDate.Value.Date,
-                ContactEmail = email,
-                Phone = string.IsNullOrWhiteSpace(dto.Phone) ? null : dto.Phone.Trim(),
-                Note = string.IsNullOrWhiteSpace(dto.Note) ? null : dto.Note.Trim(),
-                Status = "Pending",
-                SubmittedAt = DateTime.Now
-            };
-
-            _context.MemberApplications.Add(application);
-            await _context.SaveChangesAsync();
-            AddAuditLog(null, $"Nộp hồ sơ thành viên: {application.FullName} ({application.StudentCode})", "MemberApplications", application.MemberApplicationID);
-            await _context.SaveChangesAsync();
-
-            return Map(application);
+            return (studentCode, fullName, faculty, dto.BirthDate.Value.Date, email);
         }
 
         public async Task<List<MemberApplicationDTO>> GetAllAsync(string? status = null)
@@ -102,6 +126,8 @@ namespace ClubManagement.API.Service
 
         public async Task<MemberApplicationDTO?> ApproveAsync(int id, int reviewedByUserId, string? reviewNote = null)
         {
+            await using var transaction = await _context.Database.BeginTransactionAsync(IsolationLevel.Serializable);
+
             var application = await _context.MemberApplications
                 .Include(a => a.ReviewedByUser)
                 .ThenInclude(u => u!.Member)
@@ -129,8 +155,6 @@ namespace ClubManagement.API.Service
             if (existingUser != null && existingMember != null &&
                 existingMember.UserID.HasValue && existingMember.UserID.Value != existingUser.UserID)
                 throw new InvalidOperationException("MSSV và email đang thuộc hai tài khoản khác nhau");
-
-            await using var transaction = await _context.Database.BeginTransactionAsync();
 
             var user = existingUser ?? new User
             {

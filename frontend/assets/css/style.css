@@ -3619,6 +3619,68 @@ footer ul li a:hover { color: white; }
   font-weight: 700;
 }
 
+.admin-filter-bar {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 12px;
+  margin-bottom: 14px;
+  box-shadow: var(--shadow-sm);
+}
+
+.admin-filter-bar .form-control {
+  width: 100%;
+}
+
+.admin-pagination {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-top: 16px;
+}
+
+.admin-page-btn,
+.admin-page-ellipsis {
+  min-width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.admin-page-btn {
+  border: 1px solid #dbe3ef;
+  background: #ffffff;
+  color: #111827;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06);
+}
+
+.admin-page-btn:hover:not(:disabled),
+.admin-page-btn.active {
+  border-color: #e8213a;
+  background: #e8213a;
+  color: #ffffff;
+}
+
+.admin-page-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.admin-page-ellipsis {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #64748b;
+}
+
 .top-activities-list {
   display: flex;
   flex-direction: column;

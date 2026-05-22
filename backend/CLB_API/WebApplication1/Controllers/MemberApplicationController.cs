@@ -20,6 +20,23 @@ namespace ClubManagement.API.Controllers
 
         private int GetUserId() => int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "0");
 
+        [HttpPost("send-otp")]
+        [AllowAnonymous]
+        public async Task<IActionResult> SendOtp([FromBody] CreateMemberApplicationDTO dto)
+        {
+            if (!ModelState.IsValid) return BadRequest(ApiResponse<string>.Fail("Dữ liệu hồ sơ không hợp lệ"));
+
+            try
+            {
+                await _service.SendOtpAsync(dto);
+                return Ok(ApiResponse<string>.Ok("Mã OTP đã được gửi đến email liên hệ"));
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(ApiResponse<string>.Fail(ex.Message));
+            }
+        }
+
         [HttpPost]
         [AllowAnonymous]
         public async Task<IActionResult> Submit([FromBody] CreateMemberApplicationDTO dto)
