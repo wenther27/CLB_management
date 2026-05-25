@@ -117,7 +117,8 @@ namespace ClubManagement.API.Controllers
 
         [HttpPost("receipt")]
         [Authorize(Roles = "Admin,ExecutiveBoard")]
-        public async Task<IActionResult> UploadReceipt([FromForm] IFormFile file)
+        [Consumes("multipart/form-data")]
+        public async Task<IActionResult> UploadReceipt(IFormFile file)
         {
             try
             {
@@ -141,7 +142,8 @@ namespace ClubManagement.API.Controllers
 
         [HttpPost("avatar")]
         [Authorize]
-        public async Task<IActionResult> UploadAvatar([FromForm] IFormFile thumbnail)
+        [Consumes("multipart/form-data")]
+        public async Task<IActionResult> UploadAvatar(IFormFile thumbnail)
         {
             try
             {

@@ -53,6 +53,7 @@ builder.Services.AddAuthorization();
 // ========== CONTROLLERS ==========
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
 
 // ========== CORS ==========
 builder.Services.AddCors(options =>
@@ -95,6 +96,11 @@ builder.Services.Configure<FormOptions>(options =>
 // ========== BUILD APP ==========
 var app = builder.Build();
 
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
 
 var uploadsFolder = Path.Combine(app.Environment.WebRootPath ?? "wwwroot", "uploads", "activities");
 if (!Directory.Exists(uploadsFolder))
