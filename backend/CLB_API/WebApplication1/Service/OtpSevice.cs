@@ -1,9 +1,4 @@
-﻿// ================================================
-// OtpService.cs
-// Dịch vụ gửi OTP qua Gmail SMTP
-// Thêm vào: WebApplication1/Service/OtpService.cs
-// ================================================
-
+﻿
 using System.Net;
 using System.Net.Mail;
 using System.Security.Cryptography;
@@ -40,7 +35,7 @@ namespace ClubManagement.API.Service
             _env = env;
         }
 
-        // ── Tạo OTP 6 số ngẫu nhiên an toàn ──────────────────────────────────
+        //Tạo OTP 6 số ngẫu nhiên
         private static string GenerateOtp()
         {
             using var rng = RandomNumberGenerator.Create();
@@ -50,11 +45,11 @@ namespace ClubManagement.API.Service
             return number.ToString("D6");
         }
 
-        // ── Cache key ─────────────────────────────────────────────────────────
+        // Cache key 
         private static string CacheKey(string email, string purpose)
             => $"otp:{purpose}:{email.ToLower()}";
 
-        // ── Gửi OTP qua Gmail SMTP ────────────────────────────────────────────
+        // Gửi OTP qua Gmail SMTP 
         public async Task<bool> SendOtpAsync(string email, string purpose)
         {
             var otp = GenerateOtp();
@@ -88,7 +83,7 @@ namespace ClubManagement.API.Service
             }
         }
 
-        // ── Xác thực OTP ──────────────────────────────────────────────────────
+        // Xác thực OTP 
         public Task<bool> VerifyOtpAsync(string email, string otp, string purpose)
         {
             var key = CacheKey(email, purpose);
@@ -102,7 +97,7 @@ namespace ClubManagement.API.Service
             return Task.FromResult(isValid);
         }
 
-        // ── Xóa OTP (khi user đăng ký xong) ─────────────────────────────────
+        //  Xóa OTP (khi user đăng ký xong) 
         public void InvalidateOtp(string email, string purpose)
             => _cache.Remove(CacheKey(email, purpose));
 
@@ -126,7 +121,7 @@ namespace ClubManagement.API.Service
             _logger.LogInformation("[MEMBER_APPLICATION] Sent rejection email to {Email}", email);
         }
 
-        // ── Gửi email qua Gmail SMTP ──────────────────────────────────────────
+        // Gửi email qua Gmail SMTP
         private async Task SendEmailAsync(string toEmail, string subject, string htmlBody)
         {
             var smtpHost = _config["Gmail:SmtpHost"] ?? "smtp.gmail.com";
@@ -154,7 +149,7 @@ namespace ClubManagement.API.Service
             await client.SendMailAsync(message);
         }
 
-        // ── HTML template email OTP ───────────────────────────────────────────
+        // HTML template email OTP 
         private string BuildEmailHtml(string otp, string purpose)
         {
             var title = purpose switch

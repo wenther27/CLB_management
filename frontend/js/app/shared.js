@@ -123,14 +123,16 @@ async function showActivityDetail(activityId, options = {}) {
         hasRegistered = regCheck.data === true;
 
         // Kiểm tra điểm danh từ localStorage (attendance data)
-        if (hasRegistered) {
-          const attendanceKey = `attendance_${activityId}`;
-          const attendanceData = JSON.parse(localStorage.getItem(attendanceKey) || '{}');
-          const user = Auth.getUser();
-          if (user && attendanceData[user.userID]) {
-            hasAttended = true;
-          }
-        }
+       if (hasRegistered) {
+  const myRegsRes = await API.getMyRegistrations(1, 100);
+  const myRegs = myRegsRes.data?.items || [];
+
+  const currentReg = myRegs.find(reg =>
+    Number(reg.activityID) === Number(activityId)
+  );
+
+  hasAttended = currentReg?.isAttended === true;
+}
       } catch (e) { console.error('check registration error:', e); }
     }
 

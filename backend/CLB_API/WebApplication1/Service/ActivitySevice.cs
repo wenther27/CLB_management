@@ -84,7 +84,7 @@ namespace ClubManagement.API.Service
                 PageSize = query.PageSize
             };
         }
-
+        // lấy chi tiết một hoạt động thoe ID
         public async Task<ActivityDTO?> GetByIdAsync(int id)
         {
             var activity = await _context.Activities
@@ -95,7 +95,7 @@ namespace ClubManagement.API.Service
                 .FirstOrDefaultAsync(a => a.ActivityID == id);
             return activity == null ? null : MapToDTO(activity);
         }
-
+        // tạo hoạt động mới
         public async Task<ActivityDTO?> CreateAsync(CreateActivityDTO dto, int creatorUserId)
         {
             if (dto.RegistrationDeadLine.HasValue && dto.RegistrationDeadLine.Value >= dto.Time)

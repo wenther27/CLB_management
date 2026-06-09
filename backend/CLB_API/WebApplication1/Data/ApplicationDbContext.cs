@@ -143,10 +143,10 @@ namespace ClubManagement.API.Data
                 .HasForeignKey(a => a.ReviewedByUserID)
                 .OnDelete(DeleteBehavior.NoAction);
             modelBuilder.Entity<Role>().HasData(
-                new Role { RoleID = 1, RoleName = "Admin", Description = "Qu\u1ea3n tr\u1ecb vi\u00ean h\u1ec7 th\u1ed1ng" },
-                new Role { RoleID = 2, RoleName = "ExecutiveBoard", Description = "Ban ch\u1ee7 nhi\u1ec7m" },
-                new Role { RoleID = 3, RoleName = "Member", Description = "Th\u00e0nh vi\u00ean" },
-                new Role { RoleID = 4, RoleName = "Guest", Description = "Kh\u00e1ch" }
+                new Role { RoleID = 1, RoleName = "Admin", Description = "Quảnn trị viênn hệ thống" },
+                new Role { RoleID = 2, RoleName = "ExecutiveBoard", Description = "Ban chủ nhiệm" },
+                new Role { RoleID = 3, RoleName = "Member", Description = "Thành viên" },
+                new Role { RoleID = 4, RoleName = "Guest", Description = "Khách" }
             );
             modelBuilder.Entity<ExecutiveBoard>(entity =>
             {
